@@ -1,0 +1,33 @@
+.navigation
+{
+	width: auto;
+	display: flex;
+	justify-content: space-between;
+	background-color: black;
+	color: white;
+	height: 3em;
+	border-bottom: solid 1px #222;
+	}
+	.navigation-title
+	{
+		padding: 1px 5px;
+		font-size: 2em;
+		font-weight: 600;
+	}
+	.navigation-shoutout
+	{
+		line-height: 3em;
+		font-size: 1em;
+		padding: 1px 5px;
+	}
+
+@media screen and (max-width: 500px){
+	.navigation-title
+	{
+		font-size: 1.6em;
+	}
+	.navigation-shoutout
+	{
+		display: none;
+	}
+}

@@ -1,0 +1,21 @@
+.navigation-links{
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    }
+    .navigation-links li{
+        margin: 0px 5px;
+    }
+    .navigation-links a{
+        color: white;
+        text-decoration: none;
+        font-weight: 400;
+    }
+    .navigation-links a:hover,
+    .navigation-links a:active,
+    .navigation-links a.active
+    {
+        text-decoration: underline;
+        font-weight: 700;
+    }

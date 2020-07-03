@@ -1,26 +1,27 @@
 import React from 'react';
+import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
+import Navigation from './components/MainUI/Navigation';
+import Feed from './pages/Feed';
 import logo from './logo.svg';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <Router>
+      <Navigation />
+      <main>
+      <Switch>
+          <Route path="/feed/:userID" exact component={Feed}> 
+            {/* This component = {} syntax actually passes userID prop */}
+          </Route>
+          <Route path="/explore" >
+            {/*Explore page go here*/}
+          </Route>
+          <Redirect to="/feed" />
+        </Switch>
+      </main>
+    </Router>
+);
 }
 
 export default App;
