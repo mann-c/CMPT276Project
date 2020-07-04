@@ -19,8 +19,19 @@ class Feed extends React.Component {
                     .catch( err => console.error(err) );
     };
 
+    componentDidUpdate(prevProps){
+        if(this.props.match.params.userID !== this.state.uid){
+            this.setState({uid: this.props.match.params.userID}, () => {
+                fetch(`/api/event/byuser/${this.state.uid}`)
+                    .then( res => res.json())
+                    .then( res => this.setState({events: res.items}) )
+                    .catch( err => console.error(err) );
+            });
+            
+        }
+    }
+
     render(){
-        console.log("Rendering with array: " + this.state.events);
         return(
         <div className="feed-wrapper">
             {this.state.events.length > 0 && 

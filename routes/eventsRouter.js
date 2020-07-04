@@ -10,10 +10,6 @@ if(process.env.NODE_ENV!="production"){
 }
 const router = Router();
 
-router.use( (req,res,next) => {
-    console.log(req.path, req.body);
-    next();
-})
 router.get('/byuser/:uid', (req, res) => {
     let uid = req.params.uid;
     eventsController.getByUserId(uid)
