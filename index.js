@@ -22,12 +22,12 @@ app.set('view engine', 'ejs');
 app.get('/', (req, res) => res.render('pages/index'))
 
 app.get('/feed', (req, res) => {
-  /* my code
   let uid = 1; //Should be current logged in user
   eventsController.getByUserId(uid)
-      .then(answer => res.render(answer))
-      .catch(err => res.status(404).json({"message" : "Events not found"}));
-  */
+      .then(answer => answer.json())
+      .then(answer => res.render('/pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
+      .catch(err => res.status(404).render('pages/404', {path: '/feed'}));
+  
 
 });
 

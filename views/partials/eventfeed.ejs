@@ -1,0 +1,17 @@
+<div class="event-feed">
+    <% if(events.length > 0) { %>
+
+        <% for (let event of events) { %> 
+            <div className="event-div">
+                <p>User id: <%= event.userid %></p>
+                <p>Restaurant id: <%= event.restid %></p>
+                <p>Date: <%= event.time %></p>
+            </div>
+            <% } %> 
+
+    <% } else { %> 
+        <h1>
+            There are no events in the upcoming future, let's start one?
+        </h1>
+    <% } %> 
+</div>
