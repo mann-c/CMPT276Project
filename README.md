@@ -1,39 +1,17 @@
-# node-js-getting-started
+# Grababite
+## Abstract
+Grababite is an online web application that functions as a social networking application based around dining experiences. It differs from other competitors in the market as it is designed to encourage users to try new restaurants, and allows any user to create an event. The features of the application include sharing dining invitations with friends, searching for friends on the application, searching for new restaurants, a map view of restaurants in the area and an explore page which shows events and restaurants a user might want to enjoy. What makes this application stand out from the products marketed by other competitors events can be created by any of the users at the restaurant of their choosing, and restaurants can promote their restaurants as well. This application is designed to be utilized by consumers as an entertainment application who want to spend more time with friends sharing new experiences.
 
-A barebones Node.js app using [Express 4](http://expressjs.com/).
+## Setup
+The root directory contains the backend node environment with the frontend logic in the frontend folder.
 
-This application supports the [Getting Started on Heroku with Node.js](https://devcenter.heroku.com/articles/getting-started-with-nodejs) article - check it out.
+### Getting started
+    git pull //or clone if this is your first setup
+    npm install //Get all packages for the backend
 
-## Running Locally
+For any secrets or API keys create a '.env' file and write them there (will be ignored by git)
 
-Make sure you have [Node.js](http://nodejs.org/) and the [Heroku CLI](https://cli.heroku.com/) installed.
-
-```sh
-$ git clone https://github.com/heroku/node-js-getting-started.git # or clone your own fork
-$ cd node-js-getting-started
-$ npm install
-$ npm start
-```
-
-Your app should now be running on [localhost:5000](http://localhost:5000/).
-
-## Deploying to Heroku
-
-```
-$ heroku create
-$ git push heroku master
-$ heroku open
-```
-or
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-## Documentation
-
-For more information about using Node.js on Heroku, see these Dev Center articles:
-
-- [Getting Started on Heroku with Node.js](https://devcenter.heroku.com/articles/getting-started-with-nodejs)
-- [Heroku Node.js Support](https://devcenter.heroku.com/articles/nodejs-support)
-- [Node.js on Heroku](https://devcenter.heroku.com/categories/nodejs)
-- [Best Practices for Node.js Development](https://devcenter.heroku.com/articles/node-best-practices)
-- [Using WebSockets on Heroku with Node.js](https://devcenter.heroku.com/articles/node-websockets)
+### Useful commands
+#### Adding packages
+    npm install --save PACKAGE_NAME //for packages that are required for the app in production
+    npm install --save-dev PACKAGE_NAME //for packages that are required for development but not production
