@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include ../partials/header.ejs %>
+</head>
+
+<body>
+
+<% include ../partials/nav.ejs %>
+
+<div class="container">
+    <a style="float: right;">
+    <!-- add link to edit page when auth works -->
+        <button>
+            Edit
+        </button>
+    </a>
+    <p style="font-size: large;">Restaurant Profile</p>
+    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
+    font-size: x-large;"><%=attributes.name%></h2>
+    <body>
+        <div style="font-size: large; color: maroon;"><%= attributes.name%></div>
+        <div style="font-size: large; color: maroon;"><%=attributes.city%></div>
+    </body>
+</div>
+
+</body>
+</html>
