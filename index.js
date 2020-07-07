@@ -5,8 +5,8 @@ const PORT = process.env.PORT || 5000
 
 const { Pool } = require('pg');
 var pool;
-pool = new Pool({
-  connectionString:
+pool = new Pool({ 
+  connectionString: 
 })
 
 express()
