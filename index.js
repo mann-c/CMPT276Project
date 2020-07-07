@@ -3,7 +3,6 @@ const path = require('path')
 const PORT = process.env.PORT || 5000
 const eventsController = require('./controllers/events');
 
-<<<<<<< HEAD
 //For local testing
 //Guarded include for dotenv as it is not a production dependency
 if(process.env.NODE_ENV!="production"){
@@ -21,8 +20,6 @@ pool = new Pool({
   connectionString: constring
 });
 
-=======
->>>>>>> 7a749faad9ed8071998e154551088c0b3ac702d6
 const app = express();
 
 app.use(express.json());
@@ -37,16 +34,21 @@ app.get('/', (req, res) => res.render('pages/index'))
 
 app.get('/restaurant/:uid', (req, res) => {
   var uid = req.params.uid;
-  console.log(uid);
   var query = `select * from restaurants where id=${uid}`;
 
   pool.query(query, (error, result)=>{
-    if(error)
-      res.end(error);
+    if(error) 
+      res.send(error);
       
-    console.log(result);
     var results = {'attributes':result.rows[0]};
-    res.render('pages/restaurantprofile', results);
+    console.log(results);
+    var pathforprofile = '/restaurant/' + `${uid}`;
+    if(results.attributes !== undefined){
+      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile});
+    }
+    else{
+      res.status(404).render('pages/404', {path: pathforprofile});
+    }
   })
 });
 
