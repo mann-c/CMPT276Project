@@ -1,0 +1,24 @@
+<div class="event-feed">
+    <% if(events.length > 0) { %>
+
+        <% for (let event of events) { %> 
+            <div class="event-div">
+                <p>
+                    <span class="event-creator">
+                        <%= event.firstname %> <%= event.lastname %>
+                    </span>
+                    <span class="event-creator-city">
+                        <%= event.usercity %> 
+                    </span>
+                </p>
+                <p class="event-restaurant">is eating at <%= event.name %> 📍<%= event.city %></p>
+                <p><%= event.starttime %> - <%= event.endtime %> </p>
+            </div>
+            <% } %> 
+
+    <% } else { %> 
+        <h1>
+            There are no upcoming events, why not start one?
+        </h1>
+    <% } %> 
+</div>
