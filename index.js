@@ -1,67 +1,143 @@
-const express = require('express')
-const path = require('path')
-const PORT = process.env.PORT || 5000
-const eventsController = require('./controllers/events');
+const express = require("express");
+const path = require("path");
+const bcrypt = require("bcrypt");
+const passport = require("passport");
+const flash = require("express-flash");
+const session = require("express-session");
+const intiliazePassport = require("./passport-config");
 
-//For local testing
-//Guarded include for dotenv as it is not a production dependency
-if(process.env.NODE_ENV!="production"){
-  console.log(`Running locally in ${process.env.NODE_ENV}`);
-  const env = require('dotenv');
-  env.config();
-  if(env.error) throw env.error;
+const PORT = process.env.PORT || 5000;
+var bodyParser = require("body-parser");
+const { Pool, Client } = require("pg");
+const { LOADIPHLPAPI } = require("dns");
+var pool;
+//connect db
+pool = new Pool({
+  connectionString: "postgres://postgres:root@localhost/grababite",
+});
+var names;
+function findname(name) {
+  console.log(name);
+  names = name;
 }
 
-const { Pool } = require('pg');
-var pool;
-const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
-
-pool = new Pool({
-  connectionString: constring
-});
-
-const app = express();
-
+var app = express();
 app.use(express.json());
-app.use(express.urlencoded({extended:false}));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.get('/', (req, res) => res.render('pages/index'))
-
-app.get('/restaurant/:uid', (req, res) => {
-  var uid = req.params.uid;
-  var query = `select * from restaurants where id=${uid}`;
-
-  pool.query(query, (error, result)=>{
-    if(error) 
-      res.send(error);
-      
-    var results = {'attributes':result.rows[0]};
-    console.log(results);
-    var pathforprofile = '/restaurant/' + `${uid}`;
-    if(results.attributes !== undefined){
-      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile});
-    }
-    else{
-      res.status(404).render('pages/404', {path: pathforprofile});
-    }
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
   })
+);
+
+app.get("/", (req, res) => res.render("pages/index"));
+
+app.get("/homepage", (req, res) => res.render("pages/homepage"));
+app.get("/loginuser", (req, res) => res.render("pages/loginuser"));
+app.get("/registeruser", (req, res) => res.render("pages/registeruser"));
+app.get("/a", (req, res) => {
+  var getUsersQuery = `SELECT * FROM users `;
+  pool.query(getUsersQuery, (error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    //console.log(result);
+    var results = { rows: result.rows };
+    res.send(results);
+  });
 });
 
-app.get('/feed', (req, res) => {
-  let uid = 1; //Should be current logged in user
-  eventsController.getByUserId(uid)
-      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
-      .catch(err => {
-        console.log(err);
-        res.status(404).render('pages/404', {path: '/feed'})
+app.post("/log", (req, res) => {
+  var usernameinput = req.body.username;
+  var password = req.body.password;
+  var usernamedata;
+  let errors = [];
+  var getUsersQuery = `SELECT * FROM users WHERE login='${usernameinput}'`;
+
+  pool.query(getUsersQuery, (error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    ///passes username check
+    if (result.rowCount === 1) {
+      usernamedata = result.rows[0].login;
+      //passes password check
+      if (password === result.rows[0].password) {
+        console.log("password correct");
+      }
+      //fails password check
+      else {
+        errors.push({ msg: "incorrect password" });
+        res.render("pages/loginuser", {
+          errors,
+          usernameinput,
+          password,
+        });
+      }
+    }
+    ///fails username check
+    else {
+      errors.push({ msg: "login is invalid" });
+      res.render("pages/loginuser", {
+        errors,
+        usernameinput,
+        password,
       });
-  
+    }
 
+    ///res.render("pages/loginuser");
+  });
 });
 
-app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
+app.post("/reg", (req, res) => {
+  var username = req.body.username;
+  var first_name = req.body.first_name;
+  var last_name = req.body.last_name;
+  var city = req.body.city;
+  var password = req.body.password;
+  let errors = [];
+  let check = false;
+  let inputplaced;
+  pool.query(
+    `SELECT * FROM users WHERE login='${username}'`,
+    (error, result) => {
+      if (error) {
+        res.end(error);
+      }
+      console.log(result.rowCount);
+      if (result.rowCount === 1) {
+        if (username === result.rows[0].login) {
+          console.log("same");
+          errors.push({ msg: "Login is already taken" });
+          console.log(errors[0]);
+          res.render("pages/registeruser", {
+            errors,
+            username,
+            first_name,
+            last_name,
+            city,
+            password,
+          });
+        }
+      } else {
+        pool.query(
+          `INSERT INTO users VALUES('${username}','${first_name}','${last_name}','${city}','${password}')`,
+          (error, result) => {
+            if (error) {
+              res.end(error);
+            }
+          }
+        );
+        res.redirect("/a");
+      }
+    }
+  );
+});
+
+app.listen(PORT, () => console.log(`Listening on ${PORT}`));

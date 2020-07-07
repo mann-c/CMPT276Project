@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>USER LOGIN</title>
+  </head>
+  <h1 align="center">LOGIN</h1>
+  <ul>
+    <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
+    <%=error.msg %> <%});} %>
+  </ul>
+  <body>
+    <form class="" action="/log" method="post">
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
+      /><br /><br />
+      <label for="password">Password:</label>
+      <input
+        type="text"
+        id="password"
+        name="password"
+        value="<%= typeof password != 'undefined' ? password : '' %>"
+      /><br /><br />
+      <input type="submit" value="ADD" />
+    </form>
+  </body>
+</html>
