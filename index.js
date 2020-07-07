@@ -3,14 +3,6 @@ const path = require('path')
 const PORT = process.env.PORT || 5000
 const eventsController = require('./controllers/events');
 
-const { Pool } = require('pg');
-var pool;
-const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
-
-pool = new Pool({
-  connectionString: constring
-});
-
 //For local testing
 //Guarded include for dotenv as it is not a production dependency
 if(process.env.NODE_ENV!="production"){
@@ -19,6 +11,14 @@ if(process.env.NODE_ENV!="production"){
   env.config();
   if(env.error) throw env.error;
 }
+
+const { Pool } = require('pg');
+var pool;
+const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
+
+pool = new Pool({
+  connectionString: constring
+});
 
 const app = express();
 
@@ -32,7 +32,7 @@ app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => res.render('pages/index'))
 
-app.get('/restaurant/profile/:uid', (req, res) => {
+app.get('/restaurant/:uid', (req, res) => {
   var uid = req.params.uid;
   console.log(uid);
   var query = `select * from restaurants where id=${uid}`;
