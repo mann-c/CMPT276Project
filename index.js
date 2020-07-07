@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000
 const { Pool } = require('pg');
 var pool;
 pool = new Pool({
-  connectionString: 'postgres://postgres:Godisone22@localhost/grababite'
+  connectionString: 
 })
 
 express()
@@ -40,3 +40,5 @@ express()
  
   
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+
+  //
