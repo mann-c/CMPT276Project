@@ -9,6 +9,16 @@
     <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
     <%=error.msg %> <%});} %>
   </ul>
+  <ul>
+    <% if (messages.error) { %>
+    <li><%= messages.error %></li>
+    <% } %>
+  </ul>
+  <ul>
+    <% if (messages.msg) { %>
+    <li><%= messages.msg%></li>
+    <% } %>
+  </ul>
   <body>
     <form class="" action="/log" method="post">
       <label for="username">Username:</label>

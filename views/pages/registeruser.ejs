@@ -12,20 +12,45 @@
   <body>
     <form class="" action="/reg" method="post">
       <label for="username">Username:</label>
-      <input type="text" id="username" name="username" required /><br /><br />
+      <input
+        type="text"
+        id="username"
+        name="username"
+        value="<%= typeof username != 'undefined' ? username : '' %>"
+        required
+      /><br /><br />
       <label for="first_name">First Name:</label>
       <input
         type="text"
         id="first_name"
         name="first_name"
+        value="<%= typeof first_name != 'undefined' ? first_name : '' %>"
         required
       /><br /><br />
       <label for="last_name">Last Name:</label>
-      <input type="text" id="last_name" name="last_name" required /><br /><br />
+      <input
+        type="text"
+        id="last_name"
+        name="last_name"
+        value="<%= typeof last_name != 'undefined' ? last_name : '' %>"
+        required
+      /><br /><br />
       <label for="city">City:</label>
-      <input type="text" id="city" name="city" required /><br /><br />
+      <input
+        type="text"
+        id="city"
+        name="city"
+        required
+        value="<%= typeof city != 'undefined' ? city : '' %>"
+      /><br /><br />
       <label for="password">Password:</label>
-      <input type="text" id="password" name="password" required /><br /><br />
+      <input
+        type="text"
+        id="password"
+        name="password"
+        required
+        value="<%= typeof password != 'undefined' ? password : '' %>"
+      /><br /><br />
       <input type="submit" value="ADD" />
     </form>
   </body>

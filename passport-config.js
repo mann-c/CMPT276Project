@@ -1,25 +1,74 @@
-const { authenticate } = require("passport");
-const { compare } = require("bcrypt");
-
 const LocalStrategy = require("passport-local").Strategy;
+const { pool } = require("./dbconfig.js");
+const bcrypt = require("bcrypt");
 
-function intiliaze(passport, getUserByUsername) {
-  const authenticate = (username, password, done) => {
-    const user = getUserByUsername(username);
-    if (user == null) {
-      return done(null, false, { message: "NO USER with that username" });
-    }
-    if (compare(password, user.password)) {
-      return done(null, user);
-    } else {
-      return done(null, false, { message: "password does not match" });
-    }
+function initialize(passport) {
+  console.log("Initialized");
+
+  const authenticateUser = (username, password, done) => {
+    console.log(username, password);
+    pool.query(
+      `SELECT * FROM users WHERE login = $1`,
+      [username],
+      (err, results) => {
+        if (err) {
+          throw err;
+        }
+        console.log(results.rows);
+
+        if (results.rows.length > 0) {
+          const user = results.rows[0];
+
+          //passes password check
+          if (password === results.rows[0].password) {
+            console.log("here");
+
+            console.log(user);
+
+            return done(null, user);
+          }
+          //fails password check
+          else {
+            return done(null, false, { message: "Password is incorrect" });
+          }
+        } else {
+          // No user
+          return done(null, false, {
+            message: "No user with that login address",
+          });
+        }
+      }
+    );
   };
+
   passport.use(
-    new LocalStrategy({ usernameField: "username" }),
-    authenticateuser
+    new LocalStrategy(
+      { usernameField: "username", passwordField: "password" },
+      authenticateUser
+    )
   );
-  passport.serializeUser((user, done) => {});
-  passport.deserializeUser((id, done) => {});
+  // Stores user details inside session. serializeUser determines which data of the user
+  // object should be stored in the session. The result of the serializeUser method is attached
+  // to the session as req.session.passport.user = {}. Here for instance, it would be (as we provide
+  //   the user id as the key) req.session.passport.user = {id: 'xyz'}
+  passport.serializeUser((user, done) => done(null, user.login));
+
+  // In deserializeUser that key is matched with the in memory array / database or any data resource.
+  // The fetched object is attached to the request object as req.user
+
+  passport.deserializeUser((login, done) => {
+    pool.query(
+      `SELECT * FROM users WHERE login = $1`,
+      [login],
+      (err, results) => {
+        if (err) {
+          return done(err);
+        }
+        console.log(`ID is ${results.rows[0].login}`);
+        return done(null, results.rows[0]);
+      }
+    );
+  });
 }
-module.export = intiliaze;
+
+module.exports = initialize;
