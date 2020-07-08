@@ -3,15 +3,30 @@ const path = require("path");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
-const { pool } = require("./dbconfig");
 const PORT = process.env.PORT || 5000;
-var bodyParser = require("body-parser");
+const eventsController = require('./controllers/events');
 const intiliazePassport = require("./passport-config");
 intiliazePassport(passport);
 
-var app = express();
+if(process.env.NODE_ENV!="production"){
+  console.log(`Running locally in ${process.env.NODE_ENV}`);
+  const env = require('dotenv');
+  env.config();
+  if(env.error) throw env.error;
+}
+
+const { Pool } = require('pg');
+
+const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
+
+const pool = new Pool({
+  connectionString: constring
+});
+
+const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -114,7 +129,7 @@ app.post("/reg", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES('${username}','${first_name}','${last_name}','${city}','${password}')`,
+          `INSERT INTO users VALUES('${username}','${first_name}','${last_name}','${city}','','${password}')`,
           (error, result) => {
             if (error) {
               res.end(error);
@@ -127,4 +142,4 @@ app.post("/reg", (req, res) => {
   );
 });
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
