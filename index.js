@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.get('/', (req, res) => res.render('pages/index'))
+app.get('/', (req, res) => res.render('pages/Mainpage'))
 
 app.get('/restaurant/:uid', (req, res) => {
   var uid = req.params.uid;
@@ -61,7 +61,24 @@ app.get('/feed', (req, res) => {
         res.status(404).render('pages/404', {path: '/feed'})
       });
   
-
 });
 
-app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
+app.get('/GotoResReg',(req,res) => res.render('pages/RestaurantSignup'));
+
+app.get('/BacktoSignupres',(req,res)=> res.render('pages/RestaurantSignUp'));
+
+app.post('/PostRestaurant', (request,response) =>{
+  const {id,name,city,password}=request.body;
+  pool.query('INSERT INTO restaurants (id,name,city,password) VALUES($1,$2,$3,$4)',[id,name,city,password], (error,results) =>{
+    if (error){
+
+      response.render('pages/RestaurantSignuperr');
+
+    }
+
+    response.render('pages/Mainpage');
+  })
+});
+
+
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
