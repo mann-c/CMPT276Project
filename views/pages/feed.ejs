@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+  <link rel="stylesheet" type="text/css" href="/stylesheets/feed.css" />
+</head>
+
+<body>
+
+    <%- include ('../partials/nav.ejs', {path: path}) %>
+
+    <%- include ('../partials/eventfeed.ejs', {events: events}) %> 
+
+</body>
+</html>

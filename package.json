@@ -1,23 +1,26 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.3.0",
-  "description": "A sample Node.js app using Express 4",
+  "name": "grababite",
+  "version": "1.0.0",
+  "description": "Grababite a foodie social network",
   "engines": {
     "node": "12.x"
   },
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "node test.js"
   },
   "dependencies": {
-    "ejs": "^2.7.4",
+    "ejs": "^3.1.3",
     "express": "^4.17.1",
     "pg": "^8.2.1",
     "popups": "^1.1.3"
   },
   "devDependencies": {
+    "dotenv": "^8.2.0",
     "got": "^11.3.0",
+    "nodemon": "^2.0.4",
     "tape": "^4.7.0"
   },
   "repository": {
