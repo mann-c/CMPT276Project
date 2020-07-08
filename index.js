@@ -1,13 +1,11 @@
 const express = require("express");
 const path = require("path");
-const bcrypt = require("bcrypt");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
 const { pool } = require("./dbconfig");
 const PORT = process.env.PORT || 5000;
 var bodyParser = require("body-parser");
-const { LOADIPHLPAPI } = require("dns");
 const intiliazePassport = require("./passport-config");
 intiliazePassport(passport);
 
@@ -35,6 +33,8 @@ app.get("/homepage", (req, res) => res.render("pages/homepage"));
 app.get("/loginuser", checkAuthenticated, (req, res) =>
   res.render("pages/loginuser")
 );
+//you can access you restaurant data, through the restaurant login page
+app.get("/rest", checkAuthenticated, (req, res) => res.render("pages/rest"));
 app.get("/registeruser", checkAuthenticated, (req, res) =>
   res.render("pages/registeruser")
 );
@@ -61,47 +61,6 @@ app.get("/a", (req, res) => {
   });
 });
 
-// app.post("/log", (req, res) => {
-//   var usernameinput = req.body.username;
-//   var password = req.body.password;
-//   var usernamedata;
-//   let errors = [];
-//   var getUsersQuery = `SELECT * FROM users WHERE login='${usernameinput}'`;
-
-//   pool.query(getUsersQuery, (error, result) => {
-//     if (error) {
-//       res.end(error);
-//     }
-//     ///passes username check
-//     if (result.rowCount === 1) {
-//       usernamedata = result.rows[0].login;
-//       //passes password check
-//       if (password === result.rows[0].password) {
-//         console.log("password correct");
-//       }
-//       //fails password check
-//       else {
-//         errors.push({ msg: "incorrect password" });
-//         res.render("pages/loginuser", {
-//           errors,
-//           usernameinput,
-//           password,
-//         });
-//       }
-//     }
-//     ///fails username check
-//     else {
-//       errors.push({ msg: "login is invalid" });
-//       res.render("pages/loginuser", {
-//         errors,
-//         usernameinput,
-//         password,
-//       });
-//     }
-
-//     ///res.render("pages/loginuser");
-//   });
-// });
 app.post(
   "/log",
   passport.authenticate("local", {
