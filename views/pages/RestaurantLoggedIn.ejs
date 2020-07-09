@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+
+<body>
+
+
+
+<div class="container">
+
+<h2>Welcome</h2>
+
+<% rows.forEach(function(r) { %>
+  <span>Name:</span> <%= r.name %>  <br>
+  <span>City:</span><%= r.city %>
+  <%=r.length%>
+<% }); %>
+
+</div>
+
+</body>
+</html>

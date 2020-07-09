@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+
+</head>
+
+<body style="border: solid black; padding-bottom: 300px;">
+  
+
+    <div style="font-size: 30px; background-color: black; color: white; padding-top: 13px ; padding-left: 25px; padding-bottom: 13px; font-weight:bold">
+        Grababite
+      </div>
+
+    <div class="container" style="padding-left: 30px;">
+        <h2 style="position: absolute; left:550px; top:70px">Restaurants</h2> <br>
+    
+
+        <script type="text/javascript">
+            var counter=0;
+        </script>
+
+        <%  var count=1; %>
+
+
+        <% rows.forEach(function(r) { %>
+            <h3 style="border-bottom: solid grey; margin-right: 1110px; padding: 0px 15px 0px 9px;"> <span>Option #</span> <%= count %> </h3> 
+            <span style="font-weight: bold ">Restaurant Name:</span> <span><%= r.name %> </span> <br>
+            <span >  Location:</span> <span><%= r.city%></span> <br>
+            <span> Type:</span> <span> <%=r.type%></span> <br>
+
+             <% count=count+1; %>
+    
+            <script type="text/javascript">
+                counter=counter+1;
+            </script>
+
+        <% }); %>
+
+
+
+    </div>
+
+
+
+
+    <div style="position: absolute; top:200px; left:800px; border: solid black; padding-left:40px; padding-right:40px; padding-bottom:30px">
+        <h3> Select Restaurant to Explore</h3>
+
+        <form id="myform" action='SelectedRestaurantfromSearch' method="POST" onsubmit="return checkfun()">
+            <span>Enter Option #:</span><input type="number" name="place" required> <br> <br>
+            <input id=EnterButton type="submit" value="Explore" >
+            <p id="Errmsg" style="color: red;"></p>
+
+        </form>
+
+    </div>
+
+
+    <style media="screen">
+        #EnterButton{
+            font-size: larger;
+            background-color: lightgray;
+            border-bottom: solid black;
+        }
+
+        #EnterButton:hover{
+            cursor: pointer;
+            background-color: rgb(248, 242, 242);
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        function checkfun(){
+            var optionnum=document.forms["myform"]["place"].value;
+            if (optionnum<1|| optionnum>counter){
+                document.getElementById("Errmsg").innerHTML="Enter Valid Restaurant Option";
+                return false;
+            }
+            document.forms["myform"]["place"].value= optionnum-1;
+        }
+
+    </script>
+
+
+
+</body>
+</html>

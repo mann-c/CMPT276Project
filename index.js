@@ -37,7 +37,41 @@ express()
   })
 
  
+  .post('/ResLoggedIn', (request,response) =>{
 
+    const {id,password}=request.body;
+    pool.query('SELECT * FROM restaurants WHERE id=$1 AND password=$2',[id,password], (error,result) =>{
+      if (error){
+        throw error;
+      }
+      var results={'rows':result.rows};
+      response.render('pages/RestaurantLoggedIn',results);
+    })
+  })
+
+
+
+  .get('/RestaurantSearch',(request,response) =>{
+    pool.query('SELECT * FROM restaurants ', (error,result) =>{
+      if (error){
+        throw error;
+      }
+      var results={'rows':result.rows};
+      response.render('pages/RestaurantSearch',results);
+    })
+    
+  })
+
+  .post('/SelectedRestaurantfromSearch',(request,response) =>{
+    const {place}=request.body;
+    pool.query('SELECT * FROM restaurants OFFSET $1 LIMIT 1',[place],(error,result) =>{
+      if (error){
+        throw error;
+      }
+      var results={'rows':result.rows};
+      response.render('pages/RestaurantSearchResult',results);
+    })
+  })
  
   
   .listen(PORT, () => console.log(`Listening on ${ PORT }`))
