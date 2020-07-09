@@ -4,7 +4,9 @@ const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
 const PORT = process.env.PORT || 5000;
-const eventsController = require("./controllers/events");
+const USER = 'USER';
+const REST = 'REST';
+const eventsController = require('./controllers/events');
 const intiliazePassport = require("./passport-config");
 intiliazePassport(passport);
 
@@ -83,7 +85,7 @@ app.post(
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-    return res.redirect("/dashboard");
+    return res.redirect("/feed");
   }
   next();
 }
@@ -197,7 +199,6 @@ app.get("/restaurant/:uid", (req, res) => {
     }
   });
 });
-
 app.get("/feed", (req, res) => {
   let uid = 1; //Should be current logged in user
   eventsController
@@ -226,4 +227,52 @@ app.get("/*", (req, res) =>
   res.status(404).render("pages/404", { path: "PAGE NOT FOUND " })
 );
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
+  var login = req.params.login;
+  var sql = "SELECT * FROM Users where login = $1";
+  pool.query(sql,[login],function(err,data){
+    if(err) console.error(err);
+    res.render('pages/user',{title:"User Profile",row:data.rows});
+
+  });
+});
+
+//Update User Profile
+app.post('/update',function(req,res){
+  const login = req.body.login;
+  const firstname = req.body.firstname;
+  const lastname = req.body.lastname;
+  const last = req.body.lastname;
+  const city = req.body.city;
+  const description = req.body.description;
+  const password = req.body.password;
+
+  if(req.body.function === 'update'){
+    var sql = "update users set firstname = $1, lastname=$2, city=$3, description=$4 password=$5 where login=$6";
+    var input = [firstname,lastname,city,description,password,login];
+
+    pool.query(sql, input, (err,data)=>{
+      if(err) console.error(err);
+      //if password is correct condition
+        //redirect to user profile page
+        res.redirect('/user/'+login);
+    });
+  };
+});
+
+//reroute to user when you don't know who is logged in
+app.get('/user', checkNotAuthenticated, (req,res,next) => {
+  switch(req.user.type){
+    case USER:
+      res.redirect(`/user/${req.user.data.login}`);
+      break;
+    case REST:
+      res.redirect(`restaurant/${req.user.data.id}`);
+      break;
+    default:
+      console.log("Something has gone terribly wrong here");
+  }
+})
+
+app.listen(PORT, () => console.log(`Listening on ${ PORT }`));

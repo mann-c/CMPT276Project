@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+
+<title>Create person</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body >
+<div class="container">
+  <h2 class="title">Insert a new person</h2>
+  <form action="/update" method="post">
+    <form action="/update" method="post">
+        <table border="1">
+            <tr>
+                <td>ID</td>
+                <td><input type="text" name="login" id="login" value="<%=row[0].login%>" readonly="readonly"/></td>
+            </tr>
+            <tr>
+                <td>First Name</td>
+                <td><input type="text" name="firstname" id="firstname" value="<%=row[0].firstname%>" required/></td>
+            </tr>
+            <tr>
+                <td>Last Name</td>
+                <td><input type="text" name="lastname" id="lastname" value="<%=row[0].lastname%>" required/></td>
+            </tr>
+            <tr>
+                <td>City</td>
+                <td><input type="text" name="city" id="city" value="<%=row[0].city%>" required/></td>
+            </tr>
+            <tr>
+                <td>Bio</td>
+                <td><input type="text" name="description" id="description" value="<%=row[0].description%>" required/></td>
+            </tr>
+
+  </form>
+</div>
+</body>
+</html>
