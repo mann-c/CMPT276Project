@@ -153,8 +153,13 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
 
 app.get('/feed', checkNotAuthenticated, (req, res) => {
   let uid = 1; //Should be current logged in user
-  eventsController.getByUserId(uid, pool)
-      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed', user: req.user}))
+  eventsController.getFeedEvents(req.user.type, req.user.data, pool)
+      .then(answer => res.render('pages/feed', {
+        events: answer,
+        pageTitle: 'Your feed', 
+        path: '/feed', 
+        user: req.user})
+      )
       .catch(err => {
         console.log(err);
         res.status(404).render('pages/404', {path: '/feed'})

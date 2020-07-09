@@ -1,5 +1,5 @@
 <div class="event-feed">
-    <% if(events.length > 0) { %>
+    <% if(events && events.length > 0) { %>
 
         <% for (let event of events) { %> 
             <div class="event-div">
@@ -12,7 +12,7 @@
                     </span>
                 </p>
                 <p class="event-restaurant">is eating at <%= event.name %> 📍<%= event.city %></p>
-                <p><%= event.starttime %> - <%= event.endtime %> </p>
+                <p><%= event.startdate %> - <%= event.starttime %> </p>
             </div>
             <% } %> 
 
