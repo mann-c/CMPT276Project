@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>USER REGISTERATION</title>
+  </head>
+  <h1 align="center">REGISTER</h1>
+  <ul>
+    <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
+    <%=error.msg %> <%});} %>
+  </ul>
+  <body>
+    <form class="" action="/reg" method="post">
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        value="<%= typeof username != 'undefined' ? username : '' %>"
+        required
+      /><br /><br />
+      <label for="first_name">First Name:</label>
+      <input
+        type="text"
+        id="first_name"
+        name="first_name"
+        value="<%= typeof first_name != 'undefined' ? first_name : '' %>"
+        required
+      /><br /><br />
+      <label for="last_name">Last Name:</label>
+      <input
+        type="text"
+        id="last_name"
+        name="last_name"
+        value="<%= typeof last_name != 'undefined' ? last_name : '' %>"
+        required
+      /><br /><br />
+      <label for="city">City:</label>
+      <input
+        type="text"
+        id="city"
+        name="city"
+        required
+        value="<%= typeof city != 'undefined' ? city : '' %>"
+      /><br /><br />
+      <label for="password">Password:</label>
+      <input
+        type="text"
+        id="password"
+        name="password"
+        required
+        value="<%= typeof password != 'undefined' ? password : '' %>"
+      /><br /><br />
+      <input type="submit" value="ADD" />
+    </form>
+  </body>
+</html>
