@@ -179,6 +179,7 @@ app.post('/PostRestaurant', (request,response) =>{
   })
 });
 
+
 //reroute to user when you don't know who is logged in
 app.get('/user', checkNotAuthenticated, (req,res,next) => {
   switch(req.user.type){
@@ -191,7 +192,10 @@ app.get('/user', checkNotAuthenticated, (req,res,next) => {
     default:
       console.log("Something has gone terribly wrong here");
   }
-})
+});
+
+
+
 app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
   var sql = "SELECT * FROM Users where login = $1";
@@ -201,6 +205,7 @@ app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
 
   });
 });
+
 //Update User Profile
 app.post('/update',function(req,res){
   const login = req.body.login;
