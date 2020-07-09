@@ -101,7 +101,6 @@ app.post("/reg", (req, res) => {
     `SELECT * FROM users WHERE login='${username}'`,
     (error, result) => {
       if (error) {
-        console.log(error);
         res.end(error);
       }
       console.log(result.rows.length);
@@ -126,13 +125,13 @@ app.post("/reg", (req, res) => {
             }
           }
         );
-        res.redirect(`/loginuser`); //Login after registering
+        res.redirect('/loginuser'); //Login after registering
       }
     }
   );
 });
 
-app.get('/restaurant/:uid', (req, res) => {
+app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   var query = `select * from restaurants where id=${uid}`;
 
@@ -144,7 +143,7 @@ app.get('/restaurant/:uid', (req, res) => {
     console.log(results);
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
-      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile});
+      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile, user: req.user});
     }
     else{
       res.status(404).render('pages/404', {path: pathforprofile});
@@ -193,7 +192,7 @@ app.get('/user', checkNotAuthenticated, (req,res,next) => {
       console.log("Something has gone terribly wrong here");
   }
 })
-app.get('/user/:login',function(req,res,next){
+app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
   var sql = "SELECT * FROM Users where login = $1";
   pool.query(sql,[login],function(err,data){
