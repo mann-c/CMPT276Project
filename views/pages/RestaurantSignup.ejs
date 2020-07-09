@@ -1,114 +1,152 @@
 <!DOCTYPE html>
 <html>
-<head>
- 
-</head>
+  <head> </head>
 
-<body style="border: solid black; padding-bottom: 300px;">
+  <body style="border: solid black; padding-bottom: 300px;">
+    <div class="container">
+      <div
+        style="
+          font-size: 30px;
+          background-color: black;
+          color: white;
+          padding-top: 13px;
+          padding-left: 25px;
+          padding-bottom: 13px;
+          font-weight: bold;
+        "
+      >
+        Grababite
+      </div>
 
+      <ul>
+        <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
+        <%=error.msg %> <%});} %>
+      </ul>
 
+      <div style="position: relative; left: 50px;">
+        <h2>Restaurant Profile Creation</h2>
 
-<div class="container">
+        <div style="border: solid black; margin-right: 600px; padding: 30px;">
+          <form
+            name="addrestaurant"
+            action="regrest"
+            method="post"
+            onsubmit="return check()"
+          >
+            <span style="font-size: 20px;">Enter Restaurant id:</span>
+            <input
+              type="number"
+              style="border: solid grey;"
+              name="id"
+              value="<%= typeof id != 'undefined' ? id : '' %>"
+            /><br />
+            <p id="iderr" style="color: red;"></p>
+            <span style="font-size: 20px;"> Enter Restaurant name:</span
+            ><input
+              type="text"
+              name="name"
+              style="border: solid grey;"
+              value="<%= typeof name != 'undefined' ? name : '' %>"
+            /><br />
+            <p id="nameerr" style="color: red;"></p>
+            <span style="font-size: 20px;"> Enter City:</span>
+            <input
+              type="text"
+              name="city"
+              style="border: solid grey;"
+              value="<%= typeof city != 'undefined' ? city : '' %>"
+            /><br />
+            <p id="cityerr" style="color: red;"></p>
+            <span style="font-size: 20px;"> Enter Password:</span>
+            <input
+              type="password"
+              name="password"
+              style="border: solid grey;"
+              value="<%= typeof password != 'undefined' ? password : '' %>"
+            /><br />
+            <p id="passerr" style="color: red;"></p>
 
+            <span style="font-size: 20px;"> Re-Enter Password:</span>
+            <input
+              type="password"
+              name="passwordm"
+              style="border: solid grey;"
+              value="<%= typeof password != 'undefined' ? password: '' %>"
+            /><br />
+            <p id="passwordmerr" style="color: red;"></p>
 
-<div style="font-size: 30px; background-color: black; color: white; padding-top: 13px ; padding-left: 25px; padding-bottom: 13px; font-weight:bold">
-  Grababite
-</div>
+            <input
+              type="submit"
+              id="subbut"
+              value="Create Restaurant Profile"
+              style="border: solid black; position: relative; left: 450px;"
+            />
+          </form>
+          <p id="Errormsg"></p>
+        </div>
+      </div>
+    </div>
 
+    <style media="screen">
+      #subbut:hover {
+        cursor: pointer;
+        background-color: lightgray;
+      }
+    </style>
 
+    <script type="text/javascript">
+      function check() {
+        var temp = 0;
+        if (document.forms["addrestaurant"]["id"].value == "") {
+          document.getElementById("iderr").innerHTML = "Enter ID";
+          temp = 1;
+        }
 
+        if (document.forms["addrestaurant"]["name"].value == "") {
+          document.getElementById("nameerr").innerHTML = "Enter Name";
+          temp = 1;
+        }
+        if (document.forms["addrestaurant"]["city"].value == "") {
+          document.getElementById("cityerr").innerHTML = "Enter City";
+          temp = 1;
+        }
+        if (document.forms["addrestaurant"]["password"].value == "") {
+          document.getElementById("passerr").innerHTML = "Enter Password";
+          temp = 1;
+        }
+        if (document.forms["addrestaurant"]["id"].value != "") {
+          document.getElementById("iderr").innerHTML = "";
+        }
+        if (document.forms["addrestaurant"]["name"].value != "") {
+          document.getElementById("nameerr").innerHTML = "";
+        }
+        if (document.forms["addrestaurant"]["city"].value != "") {
+          document.getElementById("cityerr").innerHTML = "";
+        }
+        if (document.forms["addrestaurant"]["password"].value != "") {
+          document.getElementById("passerr").innerHTML = "";
+        }
 
-<div style="position: relative; left:50px">
-<h2>Restaurant Profile Creation</h2>
+        if (
+          document.forms["addrestaurant"]["passwordm"].value !=
+          document.forms["addrestaurant"]["password"].value
+        ) {
+          document.getElementById("passwordmerr").innerHTML =
+            "Passwords do not Match";
+          temp = 1;
+        }
 
-<div style="border: solid black; margin-right: 600px; padding:30px;">
-<form name="addrestaurant" action="PostRestaurant" method="post" onsubmit="return check()" >
+        if (
+          document.forms["addrestaurant"]["passwordm"].value ==
+          document.forms["addrestaurant"]["password"].value
+        ) {
+          document.getElementById("passwordmerr").innerHTML = "";
+        }
 
-  <span style="font-size: 20px; ;">Enter Restaurant id:</span> <input type="number" style="border: solid grey; " name="id"  /><br> 
-  <p id="iderr" style="color: red;"></p>
-  <span style="font-size: 20px"> Enter Restaurant name:</span><input type="text" name="name" style="border: solid grey" /><br>
-  <p id="nameerr" style="color: red;"></p>
-   <span style="font-size: 20px;"> Enter City:</span> <input type="text" name="city" style="border:solid grey" ><br>
-   <p id="cityerr" style="color: red;"></p>
-  <span style="font-size: 20px;"> Enter Password:</span> <input type="password" name="password" style="border: solid grey;" ><br>
-  <p id="passerr" style="color: red;"></p>
-
-  <span style="font-size: 20px;"> Re-Enter Password:</span> <input type="password" name="passwordm" style="border: solid grey;" ><br>
-  <p id="passwordmerr" style="color: red;"></p>
-
-<input type="submit" id="subbut" value="Create Restaurant Profile" style=" border:solid black; position: relative; left:450px;" >
-
-</form>
-<p id="Errormsg"></p>
-</div>
-
-</div>
-
-
-</div>
-
-
-
-<style media="screen">
-  #subbut:hover{
-    cursor: pointer;
-    background-color: lightgray;
-  } 
-
-</style>
-
-
-
-
-<script type="text/javascript">
-  function check(){
-    var temp=0;
-    if (document.forms["addrestaurant"]["id"].value==""){
-      document.getElementById("iderr").innerHTML="Enter ID";
-      temp=1;
-    }
-      
-    if (document.forms["addrestaurant"]["name"].value==""){
-      document.getElementById("nameerr").innerHTML="Enter Name";
-      temp=1;
-    }
-    if (document.forms["addrestaurant"]["city"].value==""){
-      document.getElementById("cityerr").innerHTML="Enter City";
-      temp=1;
-    }
-    if (document.forms["addrestaurant"]["password"].value==""){
-      document.getElementById("passerr").innerHTML="Enter Password";
-      temp=1
-    }
-    if (document.forms["addrestaurant"]["id"].value!=""){
-      document.getElementById("iderr").innerHTML="";
-    }
-    if (document.forms["addrestaurant"]["name"].value!=""){
-      document.getElementById("nameerr").innerHTML="";
-    }
-    if (document.forms["addrestaurant"]["city"].value!=""){
-      document.getElementById("cityerr").innerHTML="";
-    }
-    if (document.forms["addrestaurant"]["password"].value!=""){
-      document.getElementById("passerr").innerHTML="";
-    }
-
-    if (document.forms["addrestaurant"]["passwordm"].value!=document.forms["addrestaurant"]["password"].value){
-      document.getElementById("passwordmerr").innerHTML="Passwords do not Match";
-      temp=1;
-    }
-
-    if (document.forms["addrestaurant"]["passwordm"].value==document.forms["addrestaurant"]["password"].value){
-      document.getElementById("passwordmerr").innerHTML="";
-    
-    }
-
-
-    if(temp==1){
-      return false;
-    }
-  
-  }
-</script>
-</body>
+        if (temp == 1) {
+          return false;
+        }
+      }
+    </script>
+  </body>
 </html>
