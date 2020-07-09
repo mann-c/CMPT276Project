@@ -1,46 +1,101 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <link rel='stylesheet' href='/stylesheets/style.css'/>
-</head>
-<body>
-<title><%=row[0].login%>Page</title>
-<form action="/update" method="post">
-  <h1><%=row[0].firstname%><%=row[0].lastname%> Profile</h1>
-    <table border="1">
+  <head>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <title><%=user.data.login%>Page</title>
+    <form action="/update" method="post">
+      <h1><%=user.data.firstname%><%=user.data.lastname%> Profile</h1>
+      <table border="1">
         <tr>
-            <td>ID</td>
-            <td><input type="text" name="login" id="login" value="<%=row[0].login%>" readonly="readonly"/></td>
+          <td>ID</td>
+          <td>
+            <input
+              type="text"
+              name="login"
+              id="login"
+              value="<%=user.data.login%>"
+              readonly="readonly"
+            />
+          </td>
         </tr>
         <tr>
-            <td>First Name</td>
-            <td><input type="text" name="firstname" id="firstname" value="<%=row[0].firstname%>" required/></td>
+          <td>First Name</td>
+          <td>
+            <input
+              type="text"
+              name="firstname"
+              id="firstname"
+              value="<%=user.data.firstname%>"
+              required
+            />
+          </td>
         </tr>
         <tr>
-            <td>Last Name</td>
-            <td><input type="text" name="lastname" id="lastname" value="<%=row[0].lastname%>" required/></td>
+          <td>Last Name</td>
+          <td>
+            <input
+              type="text"
+              name="lastname"
+              id="lastname"
+              value="<%=user.data.lastname%>"
+              required
+            />
+          </td>
         </tr>
         <tr>
-            <td>City</td>
-            <td><input type="text" name="city" id="city" value="<%=row[0].city%>" required/></td>
+          <td>City</td>
+          <td>
+            <input
+              type="text"
+              name="city"
+              id="city"
+              value="<%=user.data.city%>"
+              required
+            />
+          </td>
         </tr>
         <tr>
-            <td>Bio</td>
-            <td><input type="text" name="description" id="description" value="<%=row[0].description%>" required/></td>
+          <td>Bio</td>
+          <td>
+            <input
+              type="text"
+              name="description"
+              id="description"
+              value="<%=user.data].description%>"
+              required
+            />
+          </td>
         </tr>
         <tr>
-            <td>Password</td>
-            <td><input type="text" name="password" id="password" value="<%=row[0].password%>" required/></td>
+          <td>Password</td>
+          <td>
+            <input
+              type="text"
+              name="password"
+              id="password"
+              value="<%=user.data.password%>"
+              required
+            />
+          </td>
         </tr>
         <tr>
           <div>
             <td colspan="2">
-                <button class ="btn2" type="submit" name="function" value="update" style="cursor:pointer;">Update</button>
+              <button
+                class="btn2"
+                type="submit"
+                name="function"
+                value="update"
+                style="cursor: pointer;"
+              >
+                Update
+              </button>
             </td>
           </div>
         </tr>
-    </table>
-</form>
-
-</body>
+      </table>
+    </form>
+  </body>
 </html>

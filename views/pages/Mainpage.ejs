@@ -41,10 +41,10 @@
       "
     >
       <h3>Restaurant Login</h3>
-      <form action="/logrest" method="post">
-        <span> ID:</span>
+      <form action="/logrestaurant" method="post">
+        <span> ID(Numeric):</span>
         <input
-          type="text"
+          type="number"
           id="username"
           name="username"
           value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
@@ -52,7 +52,7 @@
         /><br />
         <span>Password: </span
         ><input
-          type="text"
+          type="password"
           id="password"
           name="password"
           maxlength="20"
@@ -92,7 +92,7 @@
         /><br />
         <span>Password: </span
         ><input
-          type="text"
+          type="password"
           id="password"
           name="password"
           maxlength="12"

@@ -7,23 +7,33 @@
         </a>
       </li>
       <li>
-        <% if(user.type=='USER'){ %> 
-          <a href="/user/<%=user.data.login%>" class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>">
-            Profile
-          </a>
-       <% } else { %>
-        <a href="/restaurant/<%=user.data.id%>" class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
+        <% if(user.type=='USER'){ %>
+        <a
+          href="/user/<%=user.data.login%>"
+          class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>"
+        >
           Profile
         </a>
-      <% } %> 
+        <% } else { %>
+        <a
+          href="/restaurant/<%=user.data.id%>"
+          class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>"
+        >
+          Profile
+        </a>
+        <% } %>
       </li>
-      <li >
-        <a href="/feed" class="<%= path === '/feed' ? 'active' : '' %>"><span class="glyphicon glyphicon-home"></span> Feed</a>
+      <li>
+        <a href="/feed" class="<%= path === '/feed' ? 'active' : '' %>"
+          ><span class="glyphicon glyphicon-home"></span> Feed</a
+        >
       </li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li class="navbar-right">
-        <a href="/logout"><span class="glyphicon glyphicon-book"></span> Logout</a>
+        <a href="/logout"
+          ><span class="glyphicon glyphicon-book"></span> Logout</a
+        >
       </li>
     </ul>
   </div>
