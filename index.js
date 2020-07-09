@@ -21,7 +21,7 @@ const constring =
   process.env.DATABASE_URL ||
   `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
-  connectionString: constring,
+    connectionString: constring
 });
 
 const app = express();
@@ -80,8 +80,7 @@ app.post(
     successRedirect: "/restaurantprofile",
     failureRedirect: "/mainpage",
     failureFlash: true,
-  })
-);
+}));
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -227,36 +226,39 @@ app.get("/*", (req, res) =>
   res.status(404).render("pages/404", { path: "PAGE NOT FOUND " })
 );
 
-
 app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
-  var sql = "SELECT * FROM Users where login = $1";
-  pool.query(sql,[login],function(err,data){
-    if(err) console.error(err);
-    res.render('pages/user',{title:"User Profile",row:data.rows});
+  var query = `select * from Users where login ='${login}'`;
 
-  });
+  pool.query(query,(error,result)=>{
+    if(error)
+      res.send(error);
+    var results = {'attributes':result.rows[0]};
+    var pathforprofile = '/user' + `${login}`;
+    if(results.attributes !== undefined){
+      res.render('pages/user',{'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
+    }
+    else{
+      res.status(404).render('pages/404',{path:pathforprofile});
+    }
+  })
 });
 
 //Update User Profile
-app.post('/update',function(req,res){
+app.post('/update',checkNotAuthenticated,function(req,res){
   const login = req.body.login;
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
-  const last = req.body.lastname;
   const city = req.body.city;
   const description = req.body.description;
   const password = req.body.password;
-
   if(req.body.function === 'update'){
-    var sql = "update users set firstname = $1, lastname=$2, city=$3, description=$4 password=$5 where login=$6";
+    var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
-
-    pool.query(sql, input, (err,data)=>{
+    pool.query(sql,input, (err,data)=>{
       if(err) console.error(err);
-      //if password is correct condition
         //redirect to user profile page
-        res.redirect('/user/'+login);
+        res.redirect('/user/' + login);
     });
   };
 });
