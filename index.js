@@ -85,7 +85,7 @@ function checkNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/loginuser");
+  res.redirect("/homepage");
 }
 
 app.post("/reg", (req, res) => {
