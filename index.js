@@ -18,8 +18,7 @@ if(process.env.NODE_ENV!="production"){
 const { Pool } = require('pg');
 const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
-  //connectionString: constring
-  connectionString: "postgres://JenniceLee:root@localhost:5432/grababite"
+  connectionString: constring
 });
 
 const app = express();
