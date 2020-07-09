@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-var fs = require("fs");
 var ejs = require("ejs");
 const PORT = process.env.PORT || 5000
 const eventsController = require('./controllers/events');
@@ -47,16 +46,6 @@ app.get('/feed', (req, res) => {
   */
 
 });
-//User Profile page
-// app.get('/user/:login',function(req,res,next){
-//   var login = req.params.login;
-//   var sql = "SELECT * FROM Users where login = $1";
-//   pool.query(sql,[login],function(err,data){
-//     if(err) console.error(err);
-//     res.render('pages/user',{title:"User Profile",row:data.rows[0]});
-//
-//   });
-// });
 
 app.get('/user/:login',function(req,res,next){
   var login = req.params.login;
@@ -77,7 +66,7 @@ app.post('/update',function(req,res){
   const description = req.body.description;
 
   if(req.body.function === 'update'){
-    var sql = "update users set firstname = $1, lastname=$2, city=$3, description=$4 where login=$5";
+    var sql = "update users set firstname = $1, lastname=$2, city=$3, description=$4 password=$5 where login=$6";
     var input = [firstname,lastname,city,description,login];
 
     pool.query(sql, input, (err,data)=>{
