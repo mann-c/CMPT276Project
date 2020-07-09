@@ -16,9 +16,7 @@ if(process.env.NODE_ENV!="production"){
 }
 
 const { Pool } = require('pg');
-
 const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
-
 const pool = new Pool({
   connectionString: constring
 });
@@ -42,7 +40,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.get("/", (req, res) => res.render("pages/index"));
+app.get('/', (req, res) => res.render('pages/Mainpage'))
 
 app.get("/homepage", (req, res) => res.render("pages/homepage"));
 app.get("/loginuser", checkAuthenticated, (req, res) =>
@@ -140,6 +138,54 @@ app.post("/reg", (req, res) => {
       }
     }
   );
+});
+  
+app.get('/restaurant/:uid', (req, res) => {
+  var uid = req.params.uid;
+  var query = `select * from restaurants where id=${uid}`;
+
+  pool.query(query, (error, result)=>{
+    if(error) 
+      res.send(error);
+      
+    var results = {'attributes':result.rows[0]};
+    console.log(results);
+    var pathforprofile = '/restaurant/' + `${uid}`;
+    if(results.attributes !== undefined){
+      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile});
+    }
+    else{
+      res.status(404).render('pages/404', {path: pathforprofile});
+    }
+  })
+});
+
+app.get('/feed', (req, res) => {
+  let uid = 1; //Should be current logged in user
+  eventsController.getByUserId(uid)
+      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
+      .catch(err => {
+        console.log(err);
+        res.status(404).render('pages/404', {path: '/feed'})
+      });
+  
+});
+
+app.get('/GotoResReg',(req,res) => res.render('pages/RestaurantSignup'));
+
+app.get('/BacktoSignupres',(req,res)=> res.render('pages/RestaurantSignUp'));
+
+app.post('/PostRestaurant', (request,response) =>{
+  const {id,name,city,password}=request.body;
+  pool.query('INSERT INTO restaurants (id,name,city,password) VALUES($1,$2,$3,$4)',[id,name,city,password], (error,results) =>{
+    if (error){
+
+      response.render('pages/RestaurantSignuperr');
+
+    }
+
+    response.render('pages/Mainpage');
+  })
 });
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
