@@ -4,22 +4,24 @@ const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
 const PORT = process.env.PORT || 5000;
+const USER = 'USER';
+const REST = 'REST';
 const eventsController = require('./controllers/events');
 const intiliazePassport = require("./passport-config");
 intiliazePassport(passport);
 
-if(process.env.NODE_ENV!="production"){
+if (process.env.NODE_ENV != "production") {
   console.log(`Running locally in ${process.env.NODE_ENV}`);
-  const env = require('dotenv');
+  const env = require("dotenv");
   env.config();
-  if(env.error) throw env.error;
+  if (env.error) throw env.error;
 }
-
-const { Pool } = require('pg');
-const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
+const { Pool } = require("pg");
+const constring =
+  process.env.DATABASE_URL ||
+  `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
     connectionString: constring
-
 });
 
 const app = express();
@@ -41,9 +43,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.get('/', (req, res) => res.render('pages/Mainpage'))
+app.get("/", (req, res) => res.render("pages/mainpage"));
 
-app.get("/homepage", (req, res) => res.render("pages/homepage"));
+app.get("/mainpage", (req, res) => res.render("pages/mainpage"));
 app.get("/loginuser", checkAuthenticated, (req, res) =>
   res.render("pages/loginuser")
 );
@@ -59,33 +61,30 @@ app.get("/logout", (req, res) => {
   let errors = [];
   req.logOut();
   errors.push({ msg: "you have logged out" });
-  res.render("pages/loginuser", {
+  res.render("pages/mainpage", {
     errors,
-  });
-});
-app.get("/a", (req, res) => {
-  var getUsersQuery = `SELECT * FROM users `;
-  pool.query(getUsersQuery, (error, result) => {
-    if (error) {
-      res.end(error);
-    }
-    //console.log(result);
-    var results = { rows: result.rows };
-    res.render("pages/db", results);
   });
 });
 
 app.post(
-  "/log",
+  "/login",
   passport.authenticate("local", {
     successRedirect: "/dashboard",
-    failureRedirect: "/loginuser",
+    failureRedirect: "/mainpage",
+    failureFlash: true,
+  })
+);
+app.post(
+  "/logrest",
+  passport.authenticate("local", {
+    successRedirect: "/restaurantprofile",
+    failureRedirect: "/mainpage",
     failureFlash: true,
 }));
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-    return res.redirect("/dashboard");
+    return res.redirect("/feed");
   }
   next();
 }
@@ -94,10 +93,10 @@ function checkNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/loginuser");
+  res.redirect("/mainpage");
 }
 
-app.post("/reg", (req, res) => {
+app.post("/reguser", (req, res) => {
   var username = req.body.username;
   var first_name = req.body.first_name;
   var last_name = req.body.last_name;
@@ -134,61 +133,100 @@ app.post("/reg", (req, res) => {
             }
           }
         );
-        res.redirect("/a");
+        res.redirect("mainpage");
       }
     }
   );
 });
+app.post("/regrest", (req, res) => {
+  var id = req.body.id;
+  var name = req.body.name;
+  var city = req.body.city;
+  var password = req.body.password;
+  let errors = [];
+  let check = false;
+  let inputplaced;
+  pool.query(`SELECT * FROM restaurants WHERE id='${id}'`, (error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    console.log(result.rows.length);
+    if (result.rows.length > 0) {
+      console.log("same");
+      errors.push({ msg: "Login is already taken" });
+      console.log(errors[0]);
+      res.render("pages/RestaurantSignup", {
+        errors,
+        id,
+        name,
+        city,
+        password,
+      });
+    } else {
+      pool.query(
+        "INSERT INTO restaurants (id,name,city,password) VALUES($1,$2,$3,$4)",
+        [id, name, city, password],
+        (error, results) => {
+          if (error) {
+            res.end(error);
+          }
+        }
+      );
+      res.redirect("mainpage");
+    }
+  });
+});
 
-app.get('/restaurant/:uid', (req, res) => {
+app.get("/restaurant/:uid", (req, res) => {
   var uid = req.params.uid;
   var query = `select * from restaurants where id=${uid}`;
 
-  pool.query(query, (error, result)=>{
-    if(error)
-      res.send(error);
+  pool.query(query, (error, result) => {
+    if (error) res.send(error);
 
-    var results = {'attributes':result.rows[0]};
+    var results = { attributes: result.rows[0] };
     console.log(results);
-    var pathforprofile = '/restaurant/' + `${uid}`;
-    if(results.attributes !== undefined){
-      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile});
-    }
-    else{
-      res.status(404).render('pages/404', {path: pathforprofile});
-    }
-  })
-});
-
-app.get('/feed', (req, res) => {
-  let uid = 1; //Should be current logged in user
-  eventsController.getByUserId(uid)
-      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
-      .catch(err => {
-        console.log(err);
-        res.status(404).render('pages/404', {path: '/feed'})
+    var pathforprofile = "/restaurant/" + `${uid}`;
+    if (results.attributes !== undefined) {
+      res.render("pages/restaurantprofile", {
+        results,
+        pageTitle: "Restaurant Profile",
+        path: pathforprofile,
       });
-
-});
-
-app.get('/GotoResReg',(req,res) => res.render('pages/RestaurantSignup'));
-
-app.get('/BacktoSignupres',(req,res)=> res.render('pages/RestaurantSignUp'));
-
-app.post('/PostRestaurant', (request,response) =>{
-  const {id,name,city,password}=request.body;
-  pool.query('INSERT INTO restaurants (id,name,city,password) VALUES($1,$2,$3,$4)',[id,name,city,password], (error,results) =>{
-    if (error){
-
-      response.render('pages/RestaurantSignuperr');
-
+    } else {
+      res.status(404).render("pages/404", { path: pathforprofile });
     }
-
-    response.render('pages/Mainpage');
-  })
+  });
 });
+app.get("/feed", (req, res) => {
+  let uid = 1; //Should be current logged in user
+  eventsController
+    .getByUserId(uid)
+    .then((answer) =>
+      res.render("pages/feed", {
+        events: answer.items,
+        pageTitle: "Your feed",
+        path: "/feed",
+      })
+    )
+    .catch((err) => {
+      console.log(err);
+      res.status(404).render("pages/404", { path: "/feed" });
+    });
+});
+app.get("/GotoResReg", checkAuthenticated, (req, res) =>
+  res.render("pages/restaurantsignup")
+);
 
-app.get('/user/:login',checkNotAuthenticated,function(req,res,next){
+app.get("/GotoUsrReg", checkAuthenticated, (req, res) =>
+  res.render("pages/registeruser")
+);
+
+app.get("/*", (req, res) =>
+  res.status(404).render("pages/404", { path: "PAGE NOT FOUND " })
+);
+
+app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
   var query = `select * from Users where login ='${login}'`;
 
@@ -224,5 +262,19 @@ app.post('/update',checkNotAuthenticated,function(req,res){
     });
   };
 });
+
+//reroute to user when you don't know who is logged in
+app.get('/user', checkNotAuthenticated, (req,res,next) => {
+  switch(req.user.type){
+    case USER:
+      res.redirect(`/user/${req.user.data.login}`);
+      break;
+    case REST:
+      res.redirect(`restaurant/${req.user.data.id}`);
+      break;
+    default:
+      console.log("Something has gone terribly wrong here");
+  }
+})
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));

@@ -7,7 +7,15 @@
         </a>
       </li>
       <li>
-        <a href="<%=path%>" class="<%= path === '/user/1' ? 'active' : '' %>">Profile</a>
+        <% if(user.type=='USER'){ %> 
+          <a href="/user/<%=user.data.login%>" class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>">
+            Profile
+          </a>
+       <% } else { %>
+        <a href="/restaurant/<%=user.data.id%>" class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
+          Profile
+        </a>
+      <% } %> 
       </li>
       <li >
         <a href="/feed" class="<%= path === '/feed' ? 'active' : '' %>"><span class="glyphicon glyphicon-home"></span> Feed</a>
@@ -15,7 +23,7 @@
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li class="navbar-right">
-        <a><span class="glyphicon glyphicon-book"></span> Logout</a>
+        <a href="/logout"><span class="glyphicon glyphicon-book"></span> Logout</a>
       </li>
     </ul>
   </div>
