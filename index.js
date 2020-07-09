@@ -80,8 +80,7 @@ app.post(
     successRedirect: "/dashboard",
     failureRedirect: "/loginuser",
     failureFlash: true,
-  })
-);
+}));
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -188,16 +187,33 @@ app.post('/PostRestaurant', (request,response) =>{
   })
 });
 
-
-app.get('/user/:login',function(req,res,next){
+app.get('/user/:login',checkNotAuthenticated,function(req,res,next){
   var login = req.params.login;
-  var sql = "SELECT * FROM Users where login = $1";
-  pool.query(sql,[login],function(err,data){
-    if(err) console.error(err);
-    res.render('pages/user',{title:"User Profile",row:data.rows});
-
-  });
+  var query = `SELECT * FROM Users where login=${login}`;
+  pool.query(query,(error,result)=>{
+    if(error)
+      res.send(error);
+    var results = {'attributes':result.rows[0]};
+    console.log("RESULTS" + results)
+    var pathforprofile = '/user' + `${login}`;
+    if(results.attributes !== undefined){
+      res.render('pages/dummy',{results,pageTitle:'User Profile',path:pathforprofile,user: req.user});
+    }
+    else{
+      res.status(404).render('pages/404',{path:pathforprofile});
+    }
+  })
 });
+
+// app.get('/user/:login',checkNotAuthenticated,function(req,res,next){
+//   var login = req.params.login;
+//   var sql = "SELECT * FROM Users where login = $1";
+//   pool.query(sql,[login],function(err,data){
+//     if(err) console.error(err);
+//     res.render('pages/user',{title:"User Profile",row:data.rows,user: req.user});
+//
+//   });
+// });
 //Update User Profile
 app.post('/update',function(req,res){
   const login = req.body.login;
