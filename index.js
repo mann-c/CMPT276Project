@@ -139,15 +139,15 @@ app.post("/reg", (req, res) => {
     }
   );
 });
-  
+
 app.get('/restaurant/:uid', (req, res) => {
   var uid = req.params.uid;
   var query = `select * from restaurants where id=${uid}`;
 
   pool.query(query, (error, result)=>{
-    if(error) 
+    if(error)
       res.send(error);
-      
+
     var results = {'attributes':result.rows[0]};
     console.log(results);
     var pathforprofile = '/restaurant/' + `${uid}`;
@@ -168,7 +168,7 @@ app.get('/feed', (req, res) => {
         console.log(err);
         res.status(404).render('pages/404', {path: '/feed'})
       });
-  
+
 });
 
 app.get('/GotoResReg',(req,res) => res.render('pages/RestaurantSignup'));
@@ -186,6 +186,39 @@ app.post('/PostRestaurant', (request,response) =>{
 
     response.render('pages/Mainpage');
   })
+});
+
+
+app.get('/user/:login',function(req,res,next){
+  var login = req.params.login;
+  var sql = "SELECT * FROM Users where login = $1";
+  pool.query(sql,[login],function(err,data){
+    if(err) console.error(err);
+    res.render('pages/user',{title:"User Profile",row:data.rows});
+
+  });
+});
+//Update User Profile
+app.post('/update',function(req,res){
+  const login = req.body.login;
+  const firstname = req.body.firstname;
+  const lastname = req.body.lastname;
+  const last = req.body.lastname;
+  const city = req.body.city;
+  const description = req.body.description;
+  const password = req.body.password;
+
+  if(req.body.function === 'update'){
+    var sql = "update users set firstname = $1, lastname=$2, city=$3, description=$4 password=$5 where login=$6";
+    var input = [firstname,lastname,city,description,password,login];
+
+    pool.query(sql, input, (err,data)=>{
+      if(err) console.error(err);
+      //if password is correct condition
+        //redirect to user profile page
+        res.redirect('/user/'+login);
+    });
+  };
 });
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
