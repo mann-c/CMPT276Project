@@ -80,8 +80,7 @@ app.post(
     successRedirect: "/dashboard",
     failureRedirect: "/loginuser",
     failureFlash: true,
-  })
-);
+  }));
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -140,7 +139,7 @@ app.post("/reg", (req, res) => {
   );
 });
 
-app.get('/restaurant/:uid', (req, res) => {
+app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   var query = `select * from restaurants where id=${uid}`;
 
@@ -152,7 +151,7 @@ app.get('/restaurant/:uid', (req, res) => {
     console.log(results);
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
-      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile});
+      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile,user: req.user});
     }
     else{
       res.status(404).render('pages/404', {path: pathforprofile});
