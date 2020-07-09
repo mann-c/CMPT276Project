@@ -180,22 +180,6 @@ app.post('/PostRestaurant', (request,response) =>{
 });
 
 
-//reroute to user when you don't know who is logged in
-app.get('/user', checkNotAuthenticated, (req,res,next) => {
-  switch(req.user.type){
-    case USER:
-      res.redirect(`/user/${req.user.data.login}`);
-      break;
-    case REST:
-      res.redirect(`restaurant/${req.user.data.id}`);
-      break;
-    default:
-      console.log("Something has gone terribly wrong here");
-  }
-});
-
-
-
 app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
   var sql = "SELECT * FROM Users where login = $1";
@@ -228,5 +212,19 @@ app.post('/update',function(req,res){
     });
   };
 });
+
+//reroute to user when you don't know who is logged in
+app.get('/user', checkNotAuthenticated, (req,res,next) => {
+  switch(req.user.type){
+    case USER:
+      res.redirect(`/user/${req.user.data.login}`);
+      break;
+    case REST:
+      res.redirect(`restaurant/${req.user.data.id}`);
+      break;
+    default:
+      console.log("Something has gone terribly wrong here");
+  }
+})
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
