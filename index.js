@@ -189,15 +189,16 @@ app.post('/PostRestaurant', (request,response) =>{
 
 app.get('/user/:login',checkNotAuthenticated,function(req,res,next){
   var login = req.params.login;
-  var query = `SELECT * FROM Users where login=${login}`;
+  var query = `SELECT * FROM Users where login='${login}'`;
   pool.query(query,(error,result)=>{
     if(error)
       res.send(error);
+      console.log(result.rows[0])
     var results = {'attributes':result.rows[0]};
     console.log("RESULTS" + results)
     var pathforprofile = '/user' + `${login}`;
     if(results.attributes !== undefined){
-      res.render('pages/dummy',{results,pageTitle:'User Profile',path:pathforprofile,user: req.user});
+      res.render('pages/dummy',{'row':results,pageTitle:'User Profile',path:pathforprofile,user: req.user});
     }
     else{
       res.status(404).render('pages/404',{path:pathforprofile});
