@@ -30,7 +30,7 @@
               id="date"
               name="date"
               min="2019-01-01"
-              value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
+              value=""
               required
             /><br /><br />
             <label for="time">TIME:</label>
@@ -38,8 +38,8 @@
               type="time"
               id="time"
               name="time"
-              min='13:00'
-              value="<%= typeof password != 'undefined' ? password : '' %>"
+              min="00:00"
+              value=""
               required
             /><br /><br />
             <input name="user" value="<%= user.data.login%>" style="visibility: hidden;" />
@@ -51,7 +51,6 @@
                 document.getElementById("REST").style.visibility = 'hidden';
             }
 
-            console.log("HERE")
             var today = new Date();
             var dd = today.getDate();
             var mm = today.getMonth()+1; //January is 0!
@@ -63,20 +62,25 @@
                 mm='0'+mm
             } 
 
-            today = yyyy+'-'+mm+'-'+dd;
-            document.getElementById("date").setAttribute("min", today);
-
-            var hour = today.getHours();
-            var min = today.getMinutes();
-            if(hour<10){
-                    hour='0'+hour
-            }
-             
-            if(min<10){
-                min='0'+min
-            }
-            time = hour+':'+min;
-            document.getElementById("time").setAttribute("min", time);
+            day = yyyy+'-'+mm+'-'+dd;
+            document.getElementById("date").setAttribute("min", day);
+            document.getElementById("date").onchange = function(evt){
+                setTimeout(()=>{
+                    if(document.getElementById("date").value == day) {
+                        var hour = today.getHours();
+                        var min = today.getMinutes();
+                        if(hour<10){
+                                hour='0'+hour
+                        }
+                        
+                        if(min<10){
+                            min='0'+min
+                        }
+                        var time = hour+':'+min;
+                        document.getElementById("time").setAttribute("min", time);
+                    }
+                }, 500);
+            }  
         </script>
     </body>
 </div>

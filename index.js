@@ -159,6 +159,21 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   })
 });
 
+app.post('/createEvent', (req, res) => {
+  var date = req.body.date;
+  var time = req.body.time;
+  var user = req.body.user;
+  var rest = req.body.restaurant;
+
+  var getPersonQuery = `insert into events values(DEFAULT,'${user}', ${rest}, '${date}', '${time}')`;
+  pool.query(getPersonQuery, (error, result)=>{
+    if(error)
+      res.end(error);
+
+    res.redirect('/feed');
+  })
+});
+
 app.get('/feed', (req, res) => {
   let uid = 1; //Should be current logged in user
   eventsController.getByUserId(uid)
