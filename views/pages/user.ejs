@@ -11,9 +11,7 @@
 <div class="container">
     <a style="float: right;">
     <!-- add link to edit page when auth works -->
-        <button>
-            <class ="btn2" type="submit" name="function" value="update" style="cursor:pointer;">Update</button>
-        </button>
+
     </a>
     <p style="font-size: large;">User Profile</p>
     <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
@@ -47,6 +45,9 @@
                   <td>Password</td>
                   <td><input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/></td>
               </tr>
+
+                <button class ="update" type="submit" name="function" value="update" style="cursor:pointer;">Update</button>
+
           </table>
       </form>
 

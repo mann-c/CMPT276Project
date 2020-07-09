@@ -18,7 +18,8 @@ if(process.env.NODE_ENV!="production"){
 const { Pool } = require('pg');
 const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
-  connectionString: constring
+    connectionString: constring
+
 });
 
 const app = express();
@@ -197,7 +198,7 @@ app.get('/user/:login',checkNotAuthenticated,function(req,res,next){
     var results = {'attributes':result.rows[0]};
     var pathforprofile = '/user' + `${login}`;
     if(results.attributes !== undefined){
-      res.render('pages/user',{'row':results, pageTitle:'User Profile',user: req.user});
+      res.render('pages/user',{'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
     }
     else{
       res.status(404).render('pages/404',{path:pathforprofile});
@@ -213,17 +214,13 @@ app.post('/update',checkNotAuthenticated,function(req,res){
   const city = req.body.city;
   const description = req.body.description;
   const password = req.body.password;
-
   if(req.body.function === 'update'){
-    var sql = `update users set firstname ='${firstname}' , lastname='${lastname}', city='${city}', description='${description}' password='${password}' where login='${login}'`;
-    console.log("SQLLLLLL" + sql)
+    var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
-    console.log("INPUTTTTT" + input)
-    pool.query(sql, input, (err,data)=>{
+    pool.query(sql,input, (err,data)=>{
       if(err) console.error(err);
         //redirect to user profile page
         res.redirect('/user/' + login);
-        res.render('pages/user',{'row':results, pageTitle:'User Profile',path:pathforprofile,user: req.user});
     });
   };
 });
