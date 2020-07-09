@@ -177,7 +177,7 @@ app.post("/regrest", (req, res) => {
   });
 });
 
-app.get("/restaurant/:uid", (req, res) => {
+app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   var query = `select * from restaurants where id=${uid}`;
 
@@ -186,19 +186,32 @@ app.get("/restaurant/:uid", (req, res) => {
 
     var results = { attributes: result.rows[0] };
     console.log(results);
-    var pathforprofile = "/restaurant/" + `${uid}`;
-    if (results.attributes !== undefined) {
-      res.render("pages/restaurantprofile", {
-        results,
-        pageTitle: "Restaurant Profile",
-        path: pathforprofile,
-      });
-    } else {
-      res.status(404).render("pages/404", { path: pathforprofile });
+    var pathforprofile = '/restaurant/' + `${uid}`;
+    if(results.attributes !== undefined){
+      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile,user: req.user});
+    }
+    else{
+      res.status(404).render('pages/404', {path: pathforprofile});
     }
   });
 });
-app.get("/feed", (req, res) => {
+
+app.post('/createEvent', (req, res) => {
+  var date = req.body.date;
+  var time = req.body.time;
+  var user = req.body.user;
+  var rest = req.body.restaurant;
+
+  var getPersonQuery = `insert into events values(DEFAULT,'${user}', ${rest}, '${date}', '${time}')`;
+  pool.query(getPersonQuery, (error, result)=>{
+    if(error)
+      res.end(error);
+
+    res.redirect('/feed');
+  })
+});
+
+app.get('/feed', (req, res) => {
   let uid = 1; //Should be current logged in user
   eventsController
     .getByUserId(uid)
