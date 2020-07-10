@@ -45,12 +45,7 @@ app.use(flash());
 
 app.get("/", (req, res) => res.render("pages/Mainpage"));
 app.get("/mainpage", (req, res) => res.render("pages/Mainpage"));
-//you can access you restaurant data, through the restaurant login page
-app.get("/rest", checkAuthenticated, (req, res) => res.render("pages/rest"));
 app.get("/registeruser", (req, res) => res.render("pages/registeruser"));
-app.get("/dashboard", checkNotAuthenticated, (req, res) =>
-  res.render("pages/dashboard", { user: req.user })
-);
 app.get("/logout", (req, res) => {
   let errors = [];
   req.logOut();
@@ -247,7 +242,7 @@ app.get('/feed', (req, res) => {
       });
 });
 
-app.get("/GotoResReg", (req, res) => res.render("pages/restaurantsignup"));
+app.get("/GotoResReg", (req, res) => res.render("pages/RestaurantSignup"));
 app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
 app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
