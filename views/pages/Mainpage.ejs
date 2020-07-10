@@ -1,48 +1,111 @@
 <!DOCTYPE html>
 <html>
-<head>
- 
-</head>
+  <head> </head>
 
-<body style="border: solid black; padding-bottom: 300px;">
-    <div style="font-size: 30px; background-color: black; color: white; padding-top: 13px ; padding-left: 25px; padding-bottom: 13px; font-weight:bold ">
-        Grababite
-      </div>
+  <body style="border: solid black; padding-bottom: 300px;">
+    <div
+      style="
+        font-size: 30px;
+        background-color: black;
+        color: white;
+        padding-top: 13px;
+        padding-left: 25px;
+        padding-bottom: 13px;
+        font-weight: bold;
+      "
+    >
+      Grababite
+    </div>
+    <ul>
+      <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
+      <%=error.msg %> <%});} %>
+    </ul>
+    <ul>
+      <% if (messages.error) { %>
+      <li><%= messages.error %></li>
+      <% } %>
+    </ul>
+    <ul>
+      <% if (messages.msg) { %>
+      <li><%= messages.msg%></li>
+      <% } %>
+    </ul>
+    <div
+      style="
+        border: solid black;
+        margin-right: 900px;
+        position: relative;
+        left: 700px;
+        top: 100px;
+        padding: 10px 40px 40px 30px;
+      "
+    >
+      <h3>Restaurant Login</h3>
+      <form action="/logrestaurant" method="post">
+        <span> ID(Numeric):</span>
+        <input
+          type="number"
+          id="username"
+          name="username"
+          value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
+          required
+        /><br />
+        <span>Password: </span
+        ><input
+          type="password"
+          id="password"
+          name="password"
+          maxlength="20"
+          required
+        />
+        <br />
+        <input name="utype" value="REST" style="visibility: hidden;" /><br />
+        <input type="submit" value="Login" />
+      </form>
 
-    <div style="border: solid black; margin-right:900px; position: relative; left: 700px; top:100px; padding: 10px 40px 40px 30px;">
-    <h3>Restaurant Login</h3>
-    <form action="ResLoggedIn" method="post">
-       <span> ID:</span> <input type="number" name="id"><br>
-       <span>Password: </span><input type="password" name="password"> <br>
-       <input type="submit" value="Login">
-    </form>
+      <h3>Dont have an Account, Register</h3>
+      <form action="GotoResReg" method="GET">
+        <input type="submit" value="Create Restaurant Profile" />
+      </form>
+    </div>
+  </body>
+  <body style="border: solid black; padding-bottom: 300px;">
+    <div
+      style="
+        border: solid black;
+        margin-right: 900px;
+        position: relative;
+        left: 200px;
+        bottom: 147px;
+        padding: 10px 40px 40px 30px;
+      "
+    >
+      <h3>User Login</h3>
+      <form class="" action="/login" method="post">
+        <span> Username:</span>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          maxlength="12"
+          required
+        /><br />
+        <span>Password: </span
+        ><input
+          type="password"
+          id="password"
+          name="password"
+          maxlength="12"
+          required
+        /><br />
+        <input name="utype" value="USER" style="visibility: hidden;" /><br />
+        <input type="submit" value="Login" />
+      </form>
 
-    <h3>Dont have an Account, Register</h3>
-    <form action="GotoResReg" method="GET">
-        <input type="submit" value="Create Restaurant Profile">
-
-    </form>
-</div>
-
-<div style="border: solid black; margin-right:900px; position: relative; left: 200px; bottom:147px; padding: 10px 40px 40px 30px;">
-    <h3>User Login</h3>
-    <form>
-       <span> Username:</span> <input type="text" ><br>
-       <span>Password: </span><input type="password"><br>
-       <input type="submit" value="Login">
-    </form>
-
-    <h3>Dont have an Account, Register</h3>
-    <form action="GotoResReg" method="GET">
-        <input type="submit" value="Create User Profile">
-
-    </form>
-</div>
-
-
-
-
-
-
-</body>
+      <h3>Dont have an Account, Register</h3>
+      <form action="GotoUsrReg" method="GET">
+        <input type="submit" value="Create USER Profile" />
+      </form>
+    </div>
+  </body>
 </html>

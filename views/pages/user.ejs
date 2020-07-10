@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+</head>
+
+<body>
+
+<%- include ('../partials/nav.ejs'), {path: path} %>
+
+<div class="container">
+    <a style="float: right;">
+    <!-- add link to edit page when auth works -->
+
+    </a>
+    <p style="font-size: large;">User Profile</p>
+    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
+    font-size: x-large;"><%=row.login%></h2>
+    <body>
+      <title><%=row.login%>Page</title>
+      <form action="/update" method="post">
+        <h1><%=row.attributes.firstname%><%=row.attributes.lastname%> Profile</h1>
+          <table border="1">
+              <tr>
+                  <td>ID</td>
+                  <td><input type="text" name="login" id="login" value="<%=row.attributes.login%>" readonly="readonly"/></td>
+              </tr>
+              <tr>
+                  <td>First Name</td>
+                  <td><input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/></td>
+              </tr>
+              <tr>
+                  <td>Last Name</td>
+                  <td><input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/></td>
+              </tr>
+              <tr>
+                  <td>City</td>
+                  <td><input type="text" name="city" id="city" value="<%=row.attributes.city%>" required/></td>
+              </tr>
+              <tr>
+                  <td>Bio</td>
+                  <td><input type="text" name="description" id="description" value="<%=row.attributes.description%>" required/></td>
+              </tr>
+              <tr>
+                  <td>Password</td>
+                  <td><input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/></td>
+              </tr>
+
+                <button class ="update" type="submit" name="function" value="update" style="cursor:pointer;">Update</button>
+
+          </table>
+      </form>
+
+      </body>
+
+</div>
+
+</body>
+</html>
