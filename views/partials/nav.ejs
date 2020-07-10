@@ -24,9 +24,12 @@
         <% } %>
       </li>
       <li>
+        <% if(user.type=='USER'){ %>
         <a href="/feed" class="<%= path === '/feed' ? 'active' : '' %>"
-          ><span class="glyphicon glyphicon-home"></span> Feed</a
-        >
+          ><span class="glyphicon glyphicon-home"></span> 
+          Feed
+          </a>
+          <% } %>
       </li>
       <li>
         <a href="/RestaurantSearch" class="<%= path === '/feed' ? 'active' : '' %>"
