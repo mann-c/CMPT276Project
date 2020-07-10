@@ -7,32 +7,84 @@
   <body>
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
-    <div class="container">
-      <a style="float: right;">
-        <!-- add link to edit page when auth works -->
+<%- include ('../partials/nav.ejs'), {path: path} %>
+
+<div class="container">
+    <!-- <a style="float: right;">
+         add link to edit page when auth works 
         <button>
           Edit
         </button>
-      </a>
-      <p style="font-size: large;">Restaurant Profile</p>
-      <h2
-        style="
-          border: solid 2pt palevioletred;
-          text-align: center;
-          border-radius: 25;
-          font-size: x-large;
-        "
-      >
-        <%=results.attributes.name%>
-      </h2>
-      <body>
-        <div style="font-size: large; color: maroon;">
-          <%=results.attributes.name%>
-        </div>
-        <div style="font-size: large; color: maroon;">
-          <%=results.attributes.city%>
-        </div>
-      </body>
-    </div>
-  </body>
+    </a> -->
+    <p style="font-size: large;">Restaurant Profile</p>
+    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
+    font-size: x-large;"><%=results.attributes.name%></h2>
+    <body>
+        <div style="font-size: large; color: maroon;"><%=results.attributes.name%></div>
+        <div style="font-size: large; color: maroon;"><%=results.attributes.city%></div>
+        <div style="font-size: large; color: maroon;"><%=results.attributes.type%></div><br><br>
+        <form action="/createEvent" method="post" id="<%= user.type %>" style="font-weight: bold;">
+            CREATE AN EVENT AT THIS RESTAURANT!!!<br>
+            <label for="date">DATE:</label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              min="2019-01-01"
+              value=""
+              required
+            /><br /><br />
+            <label for="time">TIME:</label>
+            <input
+              type="time"
+              id="time"
+              name="time"
+              min="00:00"
+              value=""
+              required
+            /><br /><br />
+            <input name="user" value="<%= user.data.login%>" style="visibility: hidden;" />
+            <input name="restaurant" value="<%= results.attributes.id%>" style="visibility: hidden;" />
+            <input type="submit" value="CREATE EVENT" />
+          </form>
+          <script type="text/javascript">
+            if(document.getElementById("REST") != null){
+                document.getElementById("REST").style.visibility = 'hidden';
+            }
+
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth()+1; //January is 0!
+            var yyyy = today.getFullYear();
+            if(dd<10){
+                    dd='0'+dd
+            } 
+            if(mm<10){
+                mm='0'+mm
+            } 
+
+            day = yyyy+'-'+mm+'-'+dd;
+            document.getElementById("date").setAttribute("min", day);
+            document.getElementById("date").onchange = function(evt){
+                setTimeout(()=>{
+                    if(document.getElementById("date").value == day) {
+                        var hour = today.getHours();
+                        var min = today.getMinutes();
+                        if(hour<10){
+                                hour='0'+hour
+                        }
+                        
+                        if(min<10){
+                            min='0'+min
+                        }
+                        var time = hour+':'+min;
+                        document.getElementById("time").setAttribute("min", time);
+                    }
+                }, 500);
+            }  
+        </script>
+    </body>
+</div>
+
+</body>
 </html>
