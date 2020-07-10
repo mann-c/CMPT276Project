@@ -1,7 +1,7 @@
 <div class="event-feed">
     <% if(events && events.length > 0) { %>
 
-        <% for (let event of events) { %> 
+        <% for (let event of events) { %>
             <div class="event-div" id=<%= `event:${event.id}` %> >
                 <p class="event-div-header">
                     <span class="feed-item-creator">
@@ -12,7 +12,7 @@
                             <a href="/user/<%= event.login %>" >@<%= event.login %></a>
                         </span>
                         <span class="event-creator-city">
-                            <%= event.usercity %> 
+                            <%= event.usercity %>
                         </span>
                     </span>
                     <span class="feed-item-date">
@@ -22,7 +22,7 @@
                 <p class="event-restaurant">
                     Eating at <b><%= event.name %></b> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
                 </p>
-                <% if(event.login!==user.data.login && user.type === 'USER' && !event.attendees.includes(user.data.login)) { %>
+                <% if(event.login!==user.data.login && user.type === 'USER' && (!event.attendees||!event.attendees.includes(user.data.login))) { %>
                     <form action="/event/join" method="POST">
                         <button type="submit" name="evid" value=<%= event.eventid %> >Join Event</button>
                     </form>
@@ -33,16 +33,16 @@
                     <ul>
                         <% for (let attender of event.attendees) { %>
                             <li><%= attender %> </li>
-                        <% } %> 
+                        <% } %>
                     </ul>
                 </details>
                 <% } %>
             </div>
-            <% } %> 
+            <% } %>
 
-    <% } else { %> 
+    <% } else { %>
         <h1>
             There are no upcoming events, why not start one?
         </h1>
-    <% } %> 
+    <% } %>
 </div>
