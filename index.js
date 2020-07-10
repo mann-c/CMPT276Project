@@ -68,7 +68,7 @@ app.get("/logout", (req, res) => {
 app.post(
   "/log",
   passport.authenticate("local", {
-    successRedirect: "/user",
+    successRedirect: "/dashboard",
     failureRedirect: "/loginuser",
     failureFlash: true,
   })
@@ -232,4 +232,16 @@ app.get('/user', checkNotAuthenticated, (req,res,next) => {
   }
 })
 
+app.post('/event/join', (req,res) => {
+  const {evid} = req.body;
+
+  const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
+  pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
+    if (error){
+      console.log("ERROR IN PG query");
+      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+    }
+    res.redirect('/feed');
+  });
+})
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));

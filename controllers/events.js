@@ -9,7 +9,8 @@ const getByUserId = async (uid, pool) => {
                           u.city AS usercity, 
                           res.*, 
                           ev.startdate, 
-                          ev.starttime 
+                          ev.starttime,
+                          ev.eventid
                         FROM events ev 
                         INNER JOIN users u ON u.login = ev.userid 
                         INNER JOIN restaurants res ON ev.restid = res.id 
@@ -33,14 +34,94 @@ const getFollowingEvents = async (uid, pool) => {
     await pool.query(getFollowingList, [uid])
         .then(res => followList=res.rows)
         .catch(err => console.log(err));
-    
-    //mod followlidt to array of string
-    followList = followList.map(rowobj => rowobj.followed);
-		console.log(followList);
+    console.log(followList);
+    followList = followList.map(rowobj => rowobj.destinationfriend);
+    console.log(followList);
     if(followList.length===0){
         return followingEvents;
     }
 
+    const getEventsByList = `SELECT
+                                u.login,
+                                u.firstname, 
+                                u.lastname, 
+                                u.city AS usercity, 
+                                res.*, 
+                                ev.startdate, 
+                                ev.starttime,
+                                ev.eventid
+                            FROM events ev 
+                            INNER JOIN users u ON u.login = ev.userid 
+                            INNER JOIN restaurants res ON ev.restid = res.id 
+                            WHERE u.login = ANY ($1)`;
+
+    await pool.query(getEventsByList, [followList])
+        .then(res => followingEvents = res.rows)
+        .catch(err => console.log(err));
+
+    return followingEvents;
+}
+
+const getByRestId = async (uid, pool) => {
+    const getEvents = `SELECT 
+                          u.login, 
+                          u.firstname, 
+                          u.lastname, 
+                          u.city AS usercity, 
+                          res.*,
+                          ev.eventid
+                          ev.startdate, 
+                          ev.starttime,
+                          ev.eventid
+                        FROM events ev 
+                        INNER JOIN users u ON u.login = ev.userid 
+                        INNER JOIN restaurants res ON ev.restid = res.id 
+                        WHERE ev.restid = $1`;
+    let events;
+    await pool.query(getEvents, [uid])
+        .then(res => events = res.rows)
+        .catch(err => console.log(err));
+
+    return events;
+}
+
+const addAttendanceInfo = async(eventslist, pool) => {
+  if(eventslist.length===0){
+    return [];
+  }
+  let eventsids = eventslist.map(obj => obj.eventid);
+
+  //batch query for performance
+  const getAttendanceList = `SELECT * FROM eventsattendance WHERE eventid = ANY ($1)`;
+    let attendanceList;
+    await pool.query(getAttendanceList, [eventsids])
+        .then(res => attendanceList=res.rows)
+        .catch(err => console.log(err));
+
+    let eventsplus = {};
+
+    attendanceList.forEach( (eventobj) => {
+      if( eventobj.eventid in eventsplus){
+        console.log(eventobj.eventid + 'is in' + eventsplus + 'with keys' + Object.keys(eventsplus));
+        eventsplus[eventobj.eventid].count++;
+        eventsplus[eventobj.eventid].attendees.push(eventobj.userid);
+      } else {
+        eventsplus[eventobj.eventid] = {
+          count: 1,
+          attendees: [eventobj.userid]
+        };
+      }
+    });
+
+    eventslist = eventslist.map( (eventobj) => {
+      return {
+        ...eventobj,
+        count: eventsplus[eventobj.eventid].count,
+        attendees: eventsplus[eventobj.eventid].attendees
+      }
+    });
+    //at this stage we have the logins of the attendess but that is not enough
+    /*
     const getEventsByList = `SELECT
                                 u.login,
                                 u.firstname, 
@@ -58,32 +139,10 @@ const getFollowingEvents = async (uid, pool) => {
         .then(res => followingEvents = res.rows)
         .catch(err => console.log(err));
 
-    return followingEvents;
-}
-
-const getByRestId = async (uid, pool) => {
-    const getEvents = `SELECT 
-                          u.login, 
-                          u.firstname, 
-                          u.lastname, 
-                          u.city AS usercity, 
-                          res.*, 
-                          ev.startdate, 
-                          ev.starttime 
-                        FROM events ev 
-                        INNER JOIN users u ON u.login = ev.userid 
-                        INNER JOIN restaurants res ON ev.restid = res.id 
-                        WHERE ev.restid = $1`;
-    let events;
-    await pool.query(getEvents, [uid])
-        .then(res => events = res.rows)
-        .catch(err => console.log(err));
-
-    return events;
-}
-
-const addAttendanceInfo = async(events, pool) => {
-
+        */
+    console.log(eventslist);
+    return eventslist;
+  //array reduce to extract login firstname, lastname of attending and count
 }
 
 exports.getFeedEvents = async (usertype, userdata, pool) => {
@@ -93,9 +152,15 @@ exports.getFeedEvents = async (usertype, userdata, pool) => {
           await getByUserId(userdata.login, pool)
             .then(userevents => events = events.concat(userevents))
             .catch(err => console.log(err));
+          console.log(events);
           await getFollowingEvents(userdata.login, pool)
             .then(followevents => events = events.concat(followevents))
             .catch(err => console.log(err));
+          console.log(events);
+          await addAttendanceInfo(events, pool)
+            .then(modified => events=modified)
+            .catch(err => console.log(err));
+          console.log(events);
           break;
         case REST:
             await getByRestId(userdata.id, pool)
