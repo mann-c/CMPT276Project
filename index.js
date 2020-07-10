@@ -22,6 +22,7 @@ const constring =
   `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
     connectionString: constring
+
 });
 
 const app = express();
@@ -65,7 +66,7 @@ app.post("/login", function (req, res, next) {
       if (err) {
         return next(err);
       }
-      return res.redirect("/login/" + user.data.username);
+      return res.redirect("/user");
     });
   })(req, res, next);
 });
@@ -235,13 +236,13 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
       res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
- 
+
 app.get('/feed', (req, res) => {
   eventsController.getFeedEvents(req.user.type, req.user.data, pool)
       .then(answer => res.render('pages/feed', {
         events: answer,
-        pageTitle: 'Your feed', 
-        path: '/feed', 
+        pageTitle: 'Your feed',
+        path: '/feed',
         user: req.user})
       )
       .catch(err => {
@@ -262,8 +263,16 @@ app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
       res.send(error);
     var results = {'attributes':result.rows[0]};
     var pathforprofile = '/user' + `${login}`;
+
     if(results.attributes !== undefined){
-      res.render('pages/user',{'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
+      var qry = `select * from friends where destinationfriend = '${login}'`;
+
+      pool.query(qry,(err,friends)=>{
+        if(err)
+          res.send(err);
+        friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
+        res.render('pages/user',{'friend':friends,'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
+      })
     }
     else{
       res.status(404).render('pages/404',{path:pathforprofile});
@@ -314,6 +323,30 @@ app.post('/event/join', (req,res) => {
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
     }
     res.redirect('/feed');
+  });
+});
+
+app.post('/user/follow', (req,res) => {
+  const {uid} = req.body;
+  const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
+  pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
+    if (error){
+      console.log("ERROR IN PG query");
+      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+    }
+    res.redirect('/user/'+ uid);
+  });
+});
+
+app.post('/user/unfollow', (req,res) => {
+  const {uid} = req.body;
+  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = '${req.user.data.login}' and destinationfriend = '${uid}' `
+  pool.query(friendQuery,(error, result) => {
+    if (error){
+      console.log("ERROR IN PG query");
+      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+    }
+    res.redirect('/user/'+ uid);
   });
 });
 
