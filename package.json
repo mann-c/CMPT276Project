@@ -1,4 +1,5 @@
 {
+  "heroku-prebuild": "npm install",
   "name": "grababite",
   "version": "1.0.0",
   "description": "Grababite a foodie social network",
