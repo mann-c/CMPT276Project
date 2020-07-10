@@ -102,7 +102,6 @@ const addAttendanceInfo = async(eventslist, pool) => {
 
     attendanceList.forEach( (eventobj) => {
       if( eventobj.eventid in eventsplus){
-        console.log(eventobj.eventid + 'is in' + eventsplus + 'with keys' + Object.keys(eventsplus));
         eventsplus[eventobj.eventid].count++;
         eventsplus[eventobj.eventid].attendees.push(eventobj.userid);
       } else {
@@ -114,32 +113,22 @@ const addAttendanceInfo = async(eventslist, pool) => {
     });
 
     eventslist = eventslist.map( (eventobj) => {
-      return {
-        ...eventobj,
-        count: eventsplus[eventobj.eventid].count,
-        attendees: eventsplus[eventobj.eventid].attendees
+      if(eventobj.eventid in eventsplus){
+        return {
+          ...eventobj,
+          count: eventsplus[eventobj.eventid].count,
+          attendees: eventsplus[eventobj.eventid].attendees
+        }
+      } else {
+        console.log("If you're reading this it's too late")
+        return {
+          ...eventobj,
+          count: 0,
+          attendees: []
+        }
       }
     });
     //at this stage we have the logins of the attendess but that is not enough
-    /*
-    const getEventsByList = `SELECT
-                                u.login,
-                                u.firstname, 
-                                u.lastname, 
-                                u.city AS usercity, 
-                                res.*, 
-                                ev.startdate, 
-                                ev.starttime 
-                            FROM events ev 
-                            INNER JOIN users u ON u.login = ev.userid 
-                            INNER JOIN restaurants res ON ev.restid = res.id 
-                            WHERE u.login IN $1`;
-
-    await pool.query(getEventsByList, [followList])
-        .then(res => followingEvents = res.rows)
-        .catch(err => console.log(err));
-
-        */
     console.log(eventslist);
     return eventslist;
   //array reduce to extract login firstname, lastname of attending and count

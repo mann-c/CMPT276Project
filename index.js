@@ -237,7 +237,7 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
     })
   })
 
-app.get('/feed', (req, res) => {
+app.get('/feed', checkNotAuthenticated, (req, res) => {
   eventsController.getFeedEvents(req.user.type, req.user.data, pool)
       .then(answer => res.render('pages/feed', {
         events: answer,
@@ -318,6 +318,19 @@ app.post('/event/join', (req,res) => {
 
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
   pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
+    if (error){
+      console.log("ERROR IN PG query");
+      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+    }
+    res.redirect('/feed');
+  });
+});
+
+app.post('/event/unjoin', (req,res) => {
+  const {evid} = req.body;
+
+  const attendQuery = `DELETE FROM eventsattendance where eventid = '${evid}' and userid = '${req.user.data.login}'`;
+  pool.query(attendQuery, (error, result) => {
     if (error){
       console.log("ERROR IN PG query");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
