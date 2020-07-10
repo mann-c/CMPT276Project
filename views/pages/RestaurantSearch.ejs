@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+      </head>
+
+<body style="border: solid black; padding-bottom: 300px;">
+    <%- include ('../partials/nav.ejs'), {path: path} %>
+
+    <div class="container" style="padding-left: 30px;">
+
+        <% results.rows.forEach(function(r) { %>
+            <%  var hypertext = "/restaurant/" + r.id; 
+                var restaurantName = "Restaurant Name: " +r.name;%> 
+            <h3 style="font-weight: bold "><%=restaurantName%></h3> <br>
+            <span >  Location:</span> <span><%= r.city%></span> <br>
+            <span> Type:</span> <span> <%=r.type%></span> <br>
+            <a href="<%= hypertext%>">
+                <button>
+                    View Profile
+                </button>
+            </a><br><br><br>
+        <% }); %>
+    </div>
+</body>
+</html>

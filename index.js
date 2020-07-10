@@ -4,23 +4,24 @@ const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
 const PORT = process.env.PORT || 5000;
-const USER = 'USER';
-const REST = 'REST';
-const eventsController = require('./controllers/events');
+const USER = "USER";
+const REST = "REST";
+const eventsController = require("./controllers/events");
 const intiliazePassport = require("./passport-config");
 intiliazePassport(passport);
 
-if(process.env.NODE_ENV!="production"){
+if (process.env.NODE_ENV != "production") {
   console.log(`Running locally in ${process.env.NODE_ENV}`);
-  const env = require('dotenv');
+  const env = require("dotenv");
   env.config();
-  if(env.error) throw env.error;
+  if (env.error) throw env.error;
 }
-
-const { Pool } = require('pg');
-const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
+const { Pool } = require("pg");
+const constring =
+  process.env.DATABASE_URL ||
+  `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
-  connectionString: constring
+    connectionString: constring
 });
 
 const app = express();
@@ -42,37 +43,51 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.get('/', (req, res) => res.render('pages/Mainpage'))
-
-app.get("/homepage", (req, res) => res.render("pages/homepage"));
-app.get("/loginuser", checkAuthenticated, (req, res) =>
-  res.render("pages/loginuser")
-);
-//you can access you restaurant data, through the restaurant login page
-app.get("/rest", checkAuthenticated, (req, res) => res.render("pages/rest"));
-app.get("/registeruser", checkAuthenticated, (req, res) =>
-  res.render("pages/registeruser")
-);
-app.get("/dashboard", checkNotAuthenticated, (req, res) =>
-  res.render("pages/dashboard", { user: req.user })
-);
+app.get("/", (req, res) => res.render("pages/Mainpage"));
+app.get("/mainpage", (req, res) => res.render("pages/Mainpage"));
+app.get("/registeruser", (req, res) => res.render("pages/registeruser"));
 app.get("/logout", (req, res) => {
   let errors = [];
   req.logOut();
   errors.push({ msg: "you have logged out" });
-  res.render("pages/loginuser", {
+  res.render("pages/Mainpage", {
     errors,
   });
 });
 
-app.post(
-  "/log",
-  passport.authenticate("local", {
-    successRedirect: "/dashboard",
-    failureRedirect: "/loginuser",
-    failureFlash: true,
-  })
-);
+app.post("/login", function (req, res, next) {
+  passport.authenticate("local", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.render("pages/Mainpage", { failureFlash: true });
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
+      return res.redirect("/login/" + user.data.username);
+    });
+  })(req, res, next);
+});
+
+app.post("/logrestaurant", function (req, res, next) {
+  passport.authenticate("local", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.render("pages/Mainpage", { failureFlash: true });
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
+      return res.redirect("/restaurant/" + user.data.id);
+    });
+  })(req, res, next);
+});
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
@@ -85,10 +100,10 @@ function checkNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/homepage");
+  res.redirect("/mainpage");
 }
 
-app.post("/reg", (req, res) => {
+app.post("/reguser", (req, res) => {
   var username = req.body.username;
   var first_name = req.body.first_name;
   var last_name = req.body.last_name;
@@ -125,34 +140,98 @@ app.post("/reg", (req, res) => {
             }
           }
         );
-        res.redirect('/loginuser'); //Login after registering
+        res.redirect("mainpage");
       }
     }
   );
 });
+app.post("/regrest", (req, res) => {
+  var id = req.body.id;
+  var name = req.body.name;
+  var city = req.body.city;
+  var password = req.body.password;
+  let errors = [];
+  let check = false;
+  let inputplaced;
+  pool.query(`SELECT * FROM restaurants WHERE id='${id}'`, (error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    console.log(result.rows.length);
+    if (result.rows.length > 0) {
+      console.log("same");
+      errors.push({ msg: "Login is already taken" });
+      console.log(errors[0]);
+      res.render("pages/RestaurantSignup", {
+        errors,
+        id,
+        name,
+        city,
+        password,
+      });
+    } else {
+      pool.query(
+        "INSERT INTO restaurants (id,name,city,password) VALUES($1,$2,$3,$4)",
+        [id, name, city, password],
+        (error, results) => {
+          if (error) {
+            res.end(error);
+          }
+        }
+      );
+      res.redirect("mainpage");
+    }
+  });
+});
 
 app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
+  console.log(uid);
+
   var query = `select * from restaurants where id=${uid}`;
 
-  pool.query(query, (error, result)=>{
-    if(error)
-      res.send(error);
-
-    var results = {'attributes':result.rows[0]};
+  pool.query(query, (error, result) => {
+    if (error) res.send(error);
+    console.log(res.rows);
+    var results = { attributes: result.rows[0] };
     console.log(results);
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
-      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile, user: req.user});
+      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile,user: req.user});
     }
     else{
-      res.status(404).render('pages/404', {path: pathforprofile});
+      res.status(404).render('pages/404', {path: pathforprofile, user: req.user});
     }
+  });
+});
+
+app.post('/createEvent', (req, res) => {
+  var date = req.body.date;
+  var time = req.body.time;
+  var user = req.body.user;
+  var rest = req.body.restaurant;
+
+  var getPersonQuery = `insert into events values(DEFAULT,'${user}', ${rest}, '${date}', '${time}')`;
+  pool.query(getPersonQuery, (error, result)=>{
+    if(error)
+      res.end(error);
+
+    res.redirect('/feed');
   })
 });
 
-app.get('/feed', checkNotAuthenticated, (req, res) => {
-  let uid = 1; //Should be current logged in user
+app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
+    pool.query('SELECT * FROM restaurants ', (error,result) =>{
+      if (error){
+        throw error;
+      }
+      var results={'rows':result.rows};
+      console.log(results)
+      res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
+    })
+  })
+ 
+app.get('/feed', (req, res) => {
   eventsController.getFeedEvents(req.user.type, req.user.data, pool)
       .then(answer => res.render('pages/feed', {
         events: answer,
@@ -164,63 +243,51 @@ app.get('/feed', checkNotAuthenticated, (req, res) => {
         console.log(err);
         res.status(404).render('pages/404', {path: '/feed'})
       });
-
 });
 
-app.get('/GotoResReg',(req,res) => res.render('pages/RestaurantSignup'));
-
-app.get('/BacktoSignupres',(req,res)=> res.render('pages/RestaurantSignUp'));
-
-app.post('/PostRestaurant', (request,response) =>{
-  const {id,name,city,password}=request.body;
-  pool.query('INSERT INTO restaurants (id,name,city,password) VALUES($1,$2,$3,$4)',[id,name,city,password], (error,results) =>{
-    if (error){
-
-      response.render('pages/RestaurantSignuperr');
-
-    }
-
-    response.render('pages/Mainpage');
-  })
-});
-
+app.get("/GotoResReg", (req, res) => res.render("pages/RestaurantSignup"));
+app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
 app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
-  var sql = "SELECT * FROM Users where login = $1";
-  pool.query(sql,[login],function(err,data){
-    if(err) console.error(err);
-    res.render('pages/user',{title:"User Profile",row:data.rows});
+  var query = `select * from Users where login ='${login}'`;
 
-  });
+  pool.query(query,(error,result)=>{
+    if(error)
+      res.send(error);
+    var results = {'attributes':result.rows[0]};
+    var pathforprofile = '/user' + `${login}`;
+    if(results.attributes !== undefined){
+      res.render('pages/user',{'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
+    }
+    else{
+      res.status(404).render('pages/404',{path:pathforprofile});
+    }
+  })
 });
 
 //Update User Profile
-app.post('/update',function(req,res){
+app.post('/update',checkNotAuthenticated,function(req,res){
   const login = req.body.login;
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
-  const last = req.body.lastname;
   const city = req.body.city;
   const description = req.body.description;
   const password = req.body.password;
-
   if(req.body.function === 'update'){
-    var sql = "update users set firstname = $1, lastname=$2, city=$3, description=$4 password=$5 where login=$6";
+    var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
-
-    pool.query(sql, input, (err,data)=>{
+    pool.query(sql,input, (err,data)=>{
       if(err) console.error(err);
-      //if password is correct condition
         //redirect to user profile page
-        res.redirect('/user/'+login);
+        res.redirect('/user/' + login);
     });
-  };
+  }
 });
 
 //reroute to user when you don't know who is logged in
-app.get('/user', checkNotAuthenticated, (req,res,next) => {
-  switch(req.user.type){
+app.get("/user", checkNotAuthenticated, (req, res, next) => {
+  switch (req.user.type) {
     case USER:
       res.redirect(`/user/${req.user.data.login}`);
       break;
@@ -230,7 +297,7 @@ app.get('/user', checkNotAuthenticated, (req,res,next) => {
     default:
       console.log("Something has gone terribly wrong here");
   }
-})
+});
 
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
@@ -243,5 +310,10 @@ app.post('/event/join', (req,res) => {
     }
     res.redirect('/feed');
   });
-})
-app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
+});
+
+app.get("/*", (req, res) =>
+  res.status(404).render("pages/404", { path: "PAGE NOT FOUND " })
+);
+
+app.listen(PORT, () => console.log(`Listening on ${PORT}`));
