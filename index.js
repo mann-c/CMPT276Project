@@ -43,14 +43,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.get("/", (req, res) => res.render("pages/Mainpage"));
-app.get("/mainpage", (req, res) => res.render("pages/Mainpage"));
+app.get("/", (req, res) => res.redirect("/mainpage"));
+app.get("/mainpage", checkAuthenticated, (req, res) => res.render("pages/Mainpage"));
 app.get("/registeruser", (req, res) => res.render("pages/registeruser"));
 app.get("/logout", (req, res) => {
   let errors = [];
   req.logOut();
   errors.push({ msg: "you have logged out" });
-  res.render("pages/Mainpage", {
+  res.redirect("/mainpage", {
     errors,
   });
 });
@@ -61,7 +61,7 @@ app.post("/login", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.render("pages/Mainpage", { failureFlash: true });
+      return res.redirect("/mainpage", { failureFlash: true });
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -78,7 +78,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.render("pages/Mainpage", { failureFlash: true });
+      return res.redirect("/mainpage", { failureFlash: true });
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -91,7 +91,14 @@ app.post("/logrestaurant", function (req, res, next) {
 
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-    return res.redirect("/feed");
+    if(req.user.type == USER) {
+      var profile = "/user/"+req.user.data.login;
+      return res.redirect(profile);
+    }
+    else {
+      var profile = "/restaurant/"+req.user.data.id;
+      return res.redirect(profile);
+    }
   }
   next();
 }
