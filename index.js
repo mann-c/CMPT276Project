@@ -206,7 +206,7 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
       res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile,user: req.user});
     }
     else{
-      res.status(404).render('pages/404', {path: pathforprofile});
+      res.status(404).render('pages/404', {path: pathforprofile, user: req.user});
     }
   });
 });
@@ -226,22 +226,27 @@ app.post('/createEvent', (req, res) => {
   })
 });
 
+app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
+    pool.query('SELECT * FROM restaurants ', (error,result) =>{
+      if (error){
+        throw error;
+      }
+      var results={'rows':result.rows};
+      console.log(results)
+      res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
+    })
+  })
+ 
 app.get('/feed', (req, res) => {
   let uid = 1; //Should be current logged in user
-  eventsController
-    .getByUserId(uid)
-    .then((answer) =>
-      res.render("pages/feed", {
-        events: answer.items,
-        pageTitle: "Your feed",
-        path: "/feed",
-      })
-    )
-    .catch((err) => {
-      console.log(err);
-      res.status(404).render("pages/404", { path: "/feed" });
-    });
+  eventsController.getByUserId(uid)
+      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
+      .catch(err => {
+        console.log(err);
+        res.status(404).render('pages/404', {path: '/feed'})
+      });
 });
+
 app.get("/GotoResReg", (req, res) => res.render("pages/restaurantsignup"));
 app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
