@@ -16,9 +16,6 @@ const { Pool } = require('pg');
 var pool;
 const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 
-pool = new Pool({
-  connectionString: constring
-});
 
 const app = express();
 
@@ -52,9 +49,8 @@ app.get('/restaurant/:uid', (req, res) => {
   })
 });
 
-<<<<<<< HEAD
  
-  .post('/ResLoggedIn', (request,response) =>{
+  app.post('/ResLoggedIn', (request,response) =>{
 
     const {id,password}=request.body;
     pool.query('SELECT * FROM restaurants WHERE id=$1 AND password=$2',[id,password], (error,result) =>{
@@ -68,7 +64,7 @@ app.get('/restaurant/:uid', (req, res) => {
 
 
 
-  .get('/RestaurantSearch',(request,response) =>{
+  app.get('/RestaurantSearch',(request,response) =>{
     pool.query('SELECT * FROM restaurants ', (error,result) =>{
       if (error){
         throw error;
@@ -79,7 +75,7 @@ app.get('/restaurant/:uid', (req, res) => {
     
   })
 
-  .post('/SelectedRestaurantfromSearch',(request,response) =>{
+  app.post('/SelectedRestaurantfromSearch',(request,response) =>{
     const {place}=request.body;
     pool.query('SELECT * FROM restaurants OFFSET $1 LIMIT 1',[place],(error,result) =>{
       if (error){
@@ -90,18 +86,8 @@ app.get('/restaurant/:uid', (req, res) => {
     })
   })
  
-=======
-app.get('/feed', (req, res) => {
-  let uid = 1; //Should be current logged in user
-  eventsController.getByUserId(uid)
-      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
-      .catch(err => {
-        console.log(err);
-        res.status(404).render('pages/404', {path: '/feed'})
-      });
->>>>>>> b0ba1a1db3ab5ed51a0050f4e62d069fb95b559f
   
-});
+
 
 app.get('/GotoResReg',(req,res) => res.render('pages/RestaurantSignup'));
 
