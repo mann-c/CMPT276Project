@@ -55,7 +55,6 @@ app.get("/logout", (req, res) => {
   });
 });
 
-
 app.post("/login", function (req, res, next) {
   passport.authenticate("local", function (err, user, info) {
     if (err) {
@@ -233,9 +232,13 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
   })
  
 app.get('/feed', (req, res) => {
-  let uid = 1; //Should be current logged in user
-  eventsController.getByUserId(uid)
-      .then(answer => res.render('pages/feed', {events: answer.items, pageTitle: 'Your feed', path: '/feed'}))
+  eventsController.getFeedEvents(req.user.type, req.user.data, pool)
+      .then(answer => res.render('pages/feed', {
+        events: answer,
+        pageTitle: 'Your feed', 
+        path: '/feed', 
+        user: req.user})
+      )
       .catch(err => {
         console.log(err);
         res.status(404).render('pages/404', {path: '/feed'})
@@ -294,6 +297,19 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
     default:
       console.log("Something has gone terribly wrong here");
   }
+});
+
+app.post('/event/join', (req,res) => {
+  const {evid} = req.body;
+
+  const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
+  pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
+    if (error){
+      console.log("ERROR IN PG query");
+      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+    }
+    res.redirect('/feed');
+  });
 });
 
 app.get("/*", (req, res) =>
