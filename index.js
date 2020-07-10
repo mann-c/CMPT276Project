@@ -43,8 +43,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-app.get("/", (req, res) => res.render("pages/mainpage"));
-app.get("/mainpage", (req, res) => res.render("pages/mainpage"));
+app.get("/", (req, res) => res.render("pages/Mainpage"));
+app.get("/mainpage", (req, res) => res.render("pages/Mainpage"));
 //you can access you restaurant data, through the restaurant login page
 app.get("/rest", checkAuthenticated, (req, res) => res.render("pages/rest"));
 app.get("/registeruser", (req, res) => res.render("pages/registeruser"));
@@ -55,7 +55,7 @@ app.get("/logout", (req, res) => {
   let errors = [];
   req.logOut();
   errors.push({ msg: "you have logged out" });
-  res.render("pages/mainpage", {
+  res.render("pages/Mainpage", {
     errors,
   });
 });
@@ -67,7 +67,7 @@ app.post("/login", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.render("pages/mainpage", { failureFlash: true });
+      return res.render("pages/Mainpage", { failureFlash: true });
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -84,7 +84,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.render("pages/mainpage", { failureFlash: true });
+      return res.render("pages/Mainpage", { failureFlash: true });
     }
     req.logIn(user, function (err) {
       if (err) {
