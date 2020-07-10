@@ -50,9 +50,7 @@ app.get("/logout", (req, res) => {
   let errors = [];
   req.logOut();
   errors.push({ msg: "you have logged out" });
-  res.redirect("/mainpage", {
-    errors,
-  });
+  res.redirect("/mainpage")
 });
 
 app.post("/login", function (req, res, next) {
