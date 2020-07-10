@@ -253,7 +253,7 @@ app.post('/update',checkNotAuthenticated,function(req,res){
   const description = req.body.description;
   const password = req.body.password;
   if(req.body.function === 'update'){
-    var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
+    var sql = 'update users set firstname =$1 ,lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
     pool.query(sql,input, (err,data)=>{
       if(err) console.error(err);
