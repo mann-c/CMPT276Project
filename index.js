@@ -106,7 +106,7 @@ function checkNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/pages/Mainpage");
+  res.redirect("/mainpage");
 }
 
 app.post("/reguser", (req, res) => {
@@ -146,7 +146,7 @@ app.post("/reguser", (req, res) => {
             }
           }
         );
-        res.redirect("pages/Mainpage");
+        res.redirect("mainpage");
       }
     }
   );
@@ -185,7 +185,7 @@ app.post("/regrest", (req, res) => {
           }
         }
       );
-      res.redirect("pages/Mainpage");
+      res.redirect("mainpage");
     }
   });
 });
