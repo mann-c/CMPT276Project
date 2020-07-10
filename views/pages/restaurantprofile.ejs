@@ -7,8 +7,6 @@
   <body>
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
-<%- include ('../partials/nav.ejs'), {path: path} %>
-
 <div class="container">
     <!-- <a style="float: right;">
          add link to edit page when auth works 
@@ -67,6 +65,9 @@
             document.getElementById("date").setAttribute("min", day);
             document.getElementById("date").onchange = function(evt){
                 setTimeout(()=>{
+                    if(document.getElementById("date").value != day){
+                        document.getElementById("time").setAttribute("min", "00:00");
+                    }
                     if(document.getElementById("date").value == day) {
                         var hour = today.getHours();
                         var min = today.getMinutes();
