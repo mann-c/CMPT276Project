@@ -194,7 +194,7 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   console.log(uid);
 
-  var query = `select * from restaurants where id=${uid}`;
+  var query = `select * from restaurants where id='${uid}'`;
 
   pool.query(query, (error, result) => {
     if (error) res.send(error);

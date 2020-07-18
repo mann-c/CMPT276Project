@@ -14,13 +14,22 @@
           Edit
         </button>
     </a> -->
+    <%
+      addressNoSpace = results.attributes.address.replace(" ", "+");
+      restName = results.attributes.name.replace(" ","+");
+      apiKey = process.env.GOOGLE_API;
+      src = "https://www.google.com/maps/embed/v1/place?key="+apiKey+"&q=" + restName + "+" + addressNoSpace; 
+    %>
     <p style="font-size: large;">Restaurant Profile</p>
     <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
     font-size: x-large;"><%=results.attributes.name%></h2>
     <body>
-        <div style="font-size: large; color: maroon;"><%=results.attributes.name%></div>
-        <div style="font-size: large; color: maroon;"><%=results.attributes.city%></div>
-        <div style="font-size: large; color: maroon;"><%=results.attributes.type%></div><br><br>
+        <img src="<%=results.attributes.imageurl%>" alt="Restaurant Image">
+        <div style="font-size: large; color: maroon;"><div>Address</div><%=results.attributes.address%></div>
+        <div style="font-size: large; color: maroon;"><div>Phone</div><%=results.attributes.phone%></div>
+        <div style="font-size: large; color: maroon;"><div>Price</div><%=results.attributes.price%></div>
+        <div style="font-size: large; color: maroon;"><div>Yelp Rating</div><%=results.attributes.rating%></div>
+        <iframe width="600" height="450" src="<%=src%>>" frameborder="0" allowfullscreen></iframe><br><br>
         <form action="/createEvent" method="post" id="<%= user.type %>" style="font-weight: bold;">
             CREATE AN EVENT AT THIS RESTAURANT!!!<br>
             <label for="date">DATE:</label>
