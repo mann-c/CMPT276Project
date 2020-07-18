@@ -14,7 +14,8 @@ const getByUserId = async (uid, pool) => {
                         FROM events ev 
                         INNER JOIN users u ON u.login = ev.userid 
                         INNER JOIN restaurants res ON ev.restid = res.id 
-                        WHERE u.login = $1`;
+                        WHERE u.login = $1 AND ev.startdate>=CURRENT_DATE
+                        ORDER BY startdate ASC, starttime ASC`;
     let events;
     await pool.query(getEvents, [uid])
         .then(res => events = res.rows)
@@ -34,9 +35,9 @@ const getFollowingEvents = async (uid, pool) => {
     await pool.query(getFollowingList, [uid])
         .then(res => followList=res.rows)
         .catch(err => console.log(err));
-    console.log(followList);
+ 
     followList = followList.map(rowobj => rowobj.destinationfriend);
-    console.log(followList);
+    
     if(followList.length===0){
         return followingEvents;
     }
@@ -53,7 +54,8 @@ const getFollowingEvents = async (uid, pool) => {
                             FROM events ev 
                             INNER JOIN users u ON u.login = ev.userid 
                             INNER JOIN restaurants res ON ev.restid = res.id 
-                            WHERE u.login = ANY ($1)`;
+                            WHERE u.login = ANY ($1) AND ev.startdate>=CURRENT_DATE
+                            ORDER BY startdate ASC, starttime ASC`;
 
     await pool.query(getEventsByList, [followList])
         .then(res => followingEvents = res.rows)
@@ -76,7 +78,8 @@ const getByRestId = async (uid, pool) => {
                         FROM events ev 
                         INNER JOIN users u ON u.login = ev.userid 
                         INNER JOIN restaurants res ON ev.restid = res.id 
-                        WHERE ev.restid = $1`;
+                        WHERE ev.restid = $1 AND ev.startdate>=CURRENT_DATE
+                        ORDER BY startdate ASC, starttime ASC`;
     let events;
     await pool.query(getEvents, [uid])
         .then(res => events = res.rows)
@@ -120,7 +123,6 @@ const addAttendanceInfo = async(eventslist, pool) => {
           attendees: eventsplus[eventobj.eventid].attendees
         }
       } else {
-        console.log("If you're reading this it's too late")
         return {
           ...eventobj,
           count: 0,
@@ -129,7 +131,6 @@ const addAttendanceInfo = async(eventslist, pool) => {
       }
     });
     //at this stage we have the logins of the attendess but that is not enough
-    console.log(eventslist);
     return eventslist;
   //array reduce to extract login firstname, lastname of attending and count
 }
@@ -141,15 +142,15 @@ exports.getFeedEvents = async (usertype, userdata, pool) => {
           await getByUserId(userdata.login, pool)
             .then(userevents => events = events.concat(userevents))
             .catch(err => console.log(err));
-          console.log(events);
+
           await getFollowingEvents(userdata.login, pool)
             .then(followevents => events = events.concat(followevents))
             .catch(err => console.log(err));
-          console.log(events);
+
           await addAttendanceInfo(events, pool)
             .then(modified => events=modified)
             .catch(err => console.log(err));
-          console.log(events);
+
           break;
         case REST:
             await getByRestId(userdata.id, pool)
@@ -157,7 +158,7 @@ exports.getFeedEvents = async (usertype, userdata, pool) => {
             .catch(err => console.log(err));
           break;
         default:
-          console.log("Something has gone terribly wrong here");
+          console.log("events.js:162 Something has gone terribly wrong here");
       }
 
     return events;
