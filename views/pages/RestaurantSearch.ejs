@@ -4,10 +4,10 @@
         <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
       </head>
 
-<body style="border: solid black; padding-bottom: 300px;">
+<body>
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
-    <div class="container" style="padding-left: 30px;">
+    <div class="container">
 
         <% results.rows.forEach(function(r) { %>
             <%  var hypertext = "/restaurant/" + r.id; 

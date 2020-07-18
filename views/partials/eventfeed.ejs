@@ -22,15 +22,17 @@
                 <p class="event-restaurant">
                     Eating at <b><%= event.name %></b> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
                 </p>
-                <% if(event.login!==user.data.login && user.type === 'USER' && !event.attendees.includes(user.data.login)) { %>
-                    <form action="/event/join" method="POST">
-                        <button type="submit" name="evid" value=<%= event.eventid %> >Join Event</button>
-                    </form>
-                <% } else if( user.type === 'USER' && event.attendees.includes(user.data.login) ) { %>
-                    <form action="/event/unjoin" method="POST">
-                        <button type="submit" name="evid" value=<%= event.eventid %> >Not Interested</button>
-                    </form>
-                <% } %> 
+                <% if(event.login!==user.data.login && user.type === 'USER') { %>
+                    <% if(!event.attendees.includes(user.data.login)) { %>
+                        <form action="/event/join" method="POST">
+                            <button type="submit" name="evid" value=<%= event.eventid %> >Join Event</button>
+                        </form>
+                    <% } else { %>
+                        <form action="/event/unjoin" method="POST">
+                            <button type="submit" name="evid" value=<%= event.eventid %> >Not Interested</button>
+                        </form>
+                    <% } %>
+                <% } %>
                 <% if(event.count>0) { %>
                 <details>
                     <summary>With <%= event.count %> other <%= event.count==1? 'person':'people' %>  </summary>
