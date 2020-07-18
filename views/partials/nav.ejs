@@ -1,40 +1,31 @@
 <nav class="navbar navbar-default navbar-static-top navbar-inverse">
   <div class="container">
-    <ul class="nav navbar-nav">
-      <li>
-        <a>
-          Grababite
-        </a>
-      </li>
-      <li>
-        <% if(user.type=='USER'){ %>
-        <a
-          href="/user/<%=user.data.login%>"
-          class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>"
-        >
+    <a class="navbar-brand" href="/feed">Grababite</a>
+    <ul class="nav navbar-nav mr-auto">
+    <% if(user.type=='USER'){ %>
+      <li class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>">
+        <a href="/user/<%=user.data.login%>">
           Profile
         </a>
-        <% } else { %>
-        <a
-          href="/restaurant/<%=user.data.id%>"
-          class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>"
-        >
+      </li>
+    <% } else { %>
+      <li class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
+        <a href="/restaurant/<%=user.data.id%>">
           Profile
         </a>
-        <% } %>
       </li>
-      <li>
-        <% if(user.type=='USER'){ %>
-        <a href="/feed" class="<%= path === '/feed' ? 'active' : '' %>"
-          ><span class="glyphicon glyphicon-home"></span> 
+    <% } %>
+      <li class="nav-link <%= path === '/feed' ? 'active' : '' %>">
+        <a href="/feed">
+          <span class="glyphicon glyphicon-home"></span> 
           Feed
-          </a>
-          <% } %>
+        </a>
       </li>
-      <li>
-        <a href="/RestaurantSearch" class="<%= path === '/feed' ? 'active' : '' %>"
-          ><span class="glyphicon glyphicon-home"></span> Restaurant List</a
-        >
+      <li class="<%= path === '/RestaurantSearch' ? 'active' : '' %>">
+        <a href="/RestaurantSearch">
+          <span class="glyphicon glyphicon-home"></span>
+          Restaurant List
+        </a>
       </li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
