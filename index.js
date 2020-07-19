@@ -382,7 +382,7 @@ app.post('/user/follower',(req,res)=>{
 
     if(err)
     res.send(err);
-    res.render('pages/followerlist',{'follow':result.rows,pageTitle:"Follower",path:'/user/follower,user:req.user})
+    res.render('pages/followerlist',{'follow':result.rows,pageTitle:"Follower",path:'/user/follower',user:req.user})
   });
 });
 
