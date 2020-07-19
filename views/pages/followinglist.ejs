@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+</head>
+
+<body>
+
+<%- include ('../partials/nav.ejs'), {path: path} %>
+  <div class="container">
+   <h2 class="pn">FOLLOWING LIST for <%=follow[0].destinationfriend%></h2>
+   <table class="table">
+      <tbody >
+        <%for(var i=0;i<follow.length;i++){%>
+        <%var json = follow[i];%>
+           <tr>
+           <td onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
+             <%=json.sourcefriend%>
+           </td>
+           </tr>
+            <%}%>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
