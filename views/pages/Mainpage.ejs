@@ -30,6 +30,11 @@
       <li><%= messages.msg%></li>
       <% } %>
     </ul>
+    <ul>
+      <% if (messages) { %>
+      <li><%= messages%></li>
+      <% } %>
+    </ul>
     <div
       style="
         border: solid black;
@@ -63,10 +68,10 @@
         <input type="submit" value="Login" />
       </form>
 
-      <h3>Dont have an Account, Register</h3>
+      <!-- <h3>Dont have an Account, Register</h3>
       <form action="GotoResReg" method="GET">
         <input type="submit" value="Create Restaurant Profile" />
-      </form>
+      </form> -->
     </div>
   </body>
   <body style="border: solid black; padding-bottom: 300px;">

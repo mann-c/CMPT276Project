@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+var cors=require("cors");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
@@ -28,7 +29,7 @@ const pool = new Pool({
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
+app.use("/",cors())
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -60,7 +61,7 @@ app.post("/login", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true }); //This does not work and crashes our app when reached
+      return res.render("pages/mainpage", {messages:"THE USERNAME OR PASSOWORD IS INCORRECT"}); //This does not work and crashes our app when reached
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -77,7 +78,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true });
+      return res.redirect("/mainpage", {messages:"THE USERNAME OR PASSOWORD IS INCORRECT"});
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -109,6 +110,17 @@ function checkNotAuthenticated(req, res, next) {
   res.redirect("/mainpage");
 }
 
+app.get("/getall",(req,res)=>{
+  pool.query(`SELECT * FROM users`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
 app.post("/reguser", (req, res) => {
   var username = req.body.username;
   var first_name = req.body.first_name;
@@ -387,3 +399,4 @@ app.get("/*", checkNotAuthenticated, (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+module.exports=app;
