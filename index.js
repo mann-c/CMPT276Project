@@ -12,9 +12,13 @@ if(process.env.NODE_ENV!="production"){
   if(env.error) throw env.error;
 }
 
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 var pool;
-const constring = process.env.DATABASE_URL || `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
+const constring = process.env.DATABASE_URL || 'postgres://$process.env.DB_USER}:${process.env.DB_PASS)@localhost/grababite';
+
+pool=new Pool({
+  connectionString: constring
+});
 
 
 const app = express();
@@ -105,6 +109,77 @@ app.post('/PostRestaurant', (request,response) =>{
     response.render('pages/Mainpage');
   })
 });
+
+
+
+
+
+
+
+
+app.get('/Searchpage',(request,response) =>{
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    } 
+    pool.query('SELECT * FROM restaurants',(error,results1) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results1.rows};
+      response.render('pages/Search-RestUser',result);
+    })
+   
+  })
+
+  app.post('/UsrSearch',(request,response) =>{
+    const {Svar}=request.body;
+   
+    pool.query('SELECT * FROM users WHERE firstName=$1 OR lastName=$1 OR city=$1',[Svar],(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants', (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search-RestUser',result)
+    })
+      
+    } )
+  })
+
+
+
+
+
+  app.post('/RestrSearch',(request,response) =>{
+    const {Svar}=request.body;
+   
+    pool.query('SELECT * FROM users',(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants WHERE name=$1 OR city=$1 OR address=$1',[Svar], (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search-RestUser',result)
+    })
+      
+    } )
+  })
+
+  
+})
+
+
+
+
 
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`));
