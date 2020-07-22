@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+
+  <style>
+  body {
+  background-color: lightblue;
+  }
+  </style>
+  <meta charset="utf8" />
+  <title>Mobile Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+  <script src=”https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js”> </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    window.onload = function () {
+      //var room = prompt('방 이름을 입력하세요.', '');
+      var room = "event gathering"
+      var socket = io.connect();
+
+      socket.emit('join', room);
+
+      socket.on('message', function (data) {
+
+        var output = '';
+        output += '<li>';
+        output += '    <h3>' + data.name + '</h3>';
+        output += '    <p>' + data.message + '</p>';
+        output += '    <p>' + data.date + '</p>';
+        output += '</li>';
+
+        $(output).prependTo('#content');
+        $('#content').listview('refresh');
+      });
+      function readURL(input) {
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            $('#blah').attr('src', e.target.result);
+          }
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      $('#button').click(function () {
+        socket.emit('message', {
+          name: $('#name').val(),
+          message: $('#message').val(),
+
+          date: new Date().toUTCString()
+        });
+      });
+
+      socket.on('image', function (data) {
+        var output = '';
+        output += '<li>';
+        output += '    <h3>' + data.name + '</h3>';
+        output += '    <img src =' + data.message + ' height = 200px width = 200px>';
+        output += '    <p>' + data.date + '</p>';
+        output += '</li>';
+
+        $(output).prependTo('#content');
+        $('#content').listview('refresh');
+      });
+
+      $(function(){
+        $('#uploadBtn').on('click', function(){
+        uploadFile();
+        });
+      });
+
+      function uploadFile(){
+        var form = $('#uploadForm')[0];
+        var formData = new FormData();
+        formData.append("image", $("input[name=test]")[0].files[0]);
+        var obj = {formData}
+        $.ajax({
+          url : '/user/image',
+          //url : 'https://thunder276.herokuapp.com/user/image',
+          type : 'POST',
+          method: "POST",
+          timeout: 0,
+          processData: false,
+          mimeType: "multipart/form-data",
+          contentType: false,
+          data: formData,
+
+          success: function (data) {
+            socket.emit('image', {
+              name: $('#name').val(),
+              message: data,
+              date: new Date().toUTCString()
+            });
+            alert("complete");
+            $("#btnSubmit").prop("disabled", false);
+          },
+          error: function (e) {
+            console.log("ERROR : ", e);
+            $("#btnSubmit").prop("disabled", false);
+            alert("fail");
+          }
+        }).done(function(data){
+          callback(data);
+        });
+        $.submit();
+      }
+
+    };
+  </script>
+</head>
+
+<body>
+
+  <div data-role="page" style="background-color:#F8F8FF;">
+    <div data-role="header" style="background-color:#D8BFD8;">
+      <h1>Grababite Chat</h1>
+    </div>
+    <div data-role="content">
+      <h3>Enter name for chat</h3>
+      <input id="name" />
+      <a data-role="button" href="#chatpage" style="background-color:#E6E6FA;">Start Chat</a>
+      <button id="chatOut" style="background-color:#E6E6FA;" onclick = "location.href='/user/<%=user.data.login%>'">Back to Profile</button>
+    </div>
+  </div>
+  <div data-role="page" id="chatpage" style="background-color:#F8F8FF;">
+    <div data-role="header" style="background-color:#D8BFD8;">
+      <h1>Grababite Chat</h1>
+    </div>
+    <div data-role="content">
+      <input id="message" />
+      <button id='button' style="background-color:#E6E6FA;">Send</button>
+      <form id="uploadForm" method="post" enctype="multipart/form-data">
+        <input type="file" name="test" id="test"/>
+        <button type="button" id="uploadBtn" style="background-color:#E6E6FA;">Upload</button>
+      </form>
+      <button id="chatOut" style="background-color:#E6E6FA;" onclick = "location.href='/user/<%=user.data.login%>'">Back to Profile</button>
+      <ul id="content" data-role="listview" data-inset="true"></ul>
+    </div>
+
+  </div>
+</body>
+
+</html>

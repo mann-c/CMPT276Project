@@ -3,6 +3,10 @@ const path = require("path");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
+const http = require('http');
+const socketIo = require('socket.io');
+const multer = require('multer');
+
 const PORT = process.env.PORT || 5000;
 const USER = "USER";
 const REST = "REST";
@@ -26,6 +30,9 @@ const pool = new Pool({
 });
 
 const app = express();
+var upload = multer({ dest: 'images/' });
+var server = http.createServer(app);
+var io = socketIo.listen(server);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -267,28 +274,18 @@ app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
 
     if(results.attributes !== undefined){
       var qry = `select * from friends where destinationfriend = '${login}'`;
-      var que = `select * from friends where sourcefriend = '${login}' `
 
-      pool.query(que,(erro,follow)=>{
-        if(erro)
-        res.send(erro);
-
-        //var lists = {'list':follow.rows}
         pool.query(qry,(err,friends)=>{
           if(err)
             res.send(err);
           friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
-          res.render('pages/user',{'list':follow.rows,'friend':friends,'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
-        })
+          res.render('pages/user',{'friend':friends,'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
       })
     }
-
     else{
       res.status(404).render('pages/404',{path:pathforprofile});
     }
-
   })
-
 });
 
 //Update User Profile
@@ -305,6 +302,7 @@ app.post('/update',checkNotAuthenticated,function(req,res){
     pool.query(sql,input, (err,data)=>{
       if(err) console.error(err);
         //redirect to user profile page
+
         res.redirect('/user/' + login);
     });
   }
@@ -375,32 +373,72 @@ app.post('/user/unfollow', (req,res) => {
   });
 });
 
-app.post('/user/follower',(req,res)=>{
+app.post('/user/following',(req,res)=>{
   const {uid} = req.body;
   var qry = `select * from friends where sourcefriend = '${uid}'`
   pool.query(qry,(err,result)=>{
-
     if(err)
     res.send(err);
-    res.render('pages/followerlist',{'follow':result.rows,pageTitle:"Follower",path:'/user/follower',user:req.user})
+
+    res.render('pages/follow',{'followingcount':result.rowCount,'following':result.rows,pageTitle:"Following",path:'/user/following',user:req.user})
   });
 });
 
-app.post('/user/following',(req,res)=>{
+app.post('/user/follower',(req,res)=>{
   const {uid} = req.body;
   var qry = `select * from friends where destinationfriend = '${uid}'`
   pool.query(qry,(err,result)=>{
     if(err)
     res.send(err);
 
-    res.render('pages/followinglist',{'follow':result.rows,pageTitle:"Following",path:'/user/following',user:req.user})
+    res.render('pages/follow',{'followercount':result.rowCount,'follower':result.rows,pageTitle:"Follower",path:'/user/follower',user:req.user})
   });
+});
+
+app.post('/user/chat',(req, res) => {
+  const {uid} = req.body;
+  var qry = `SELECT * FROM USERS WHERE login = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+      res.send(err);
+    res.render('pages/chat', {user:req.user,pageTitle:"Chat",path:'/user/chat',user:req.user});
+  });
+});
+
+io.sockets.on('connection', (socket) => {
+  // message
+  var roomName = null;
+
+  socket.on('join', (data) => {
+    roomName = data;
+    socket.join(data);
+  })
+
+  socket.on('message', (data) => {
+    io.sockets.in(roomName).emit('message', data);
+    console.log(data);
+  });
+
+  socket.on('image', (data)=>{
+    io.sockets.in(roomName).emit('image', data);
+    console.log(data);
+  })
+
+});
+
+app.post('/user/image', upload.single("image"), function(req, res, next) {
+  try {
+    console.log(req.file)
+    var data = req.file;
+    res.send(data.location);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
 });
 
 app.get("/*", (req, res) =>
   res.status(404).render("pages/404", { path: "PAGE NOT FOUND " })
 );
 
-
-
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+server.listen(PORT, () => console.log(`Listening on ${PORT}`));
