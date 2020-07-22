@@ -61,7 +61,7 @@ app.post("/login", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.render("pages/mainpage", {messages:"THE USERNAME OR PASSOWORD IS INCORRECT"}); //This does not work and crashes our app when reached
+      return res.render("pages/mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"}); //This does not work and crashes our app when reached
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -78,7 +78,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", {messages:"THE USERNAME OR PASSOWORD IS INCORRECT"});
+      return res.redirect("/mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"});
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -110,7 +110,7 @@ function checkNotAuthenticated(req, res, next) {
   res.redirect("/mainpage");
 }
 
-app.get("/getall",(req,res)=>{
+app.get("/testgetall",(req,res)=>{
   pool.query(`SELECT * FROM users`,(error, result) => {
     if (error) {
       res.end(error);
