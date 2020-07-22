@@ -41,17 +41,16 @@ function initialize(passport) {
       );
     } else {
       pool.query(
-        `SELECT * FROM restaurants WHERE id = $1`,
+        `SELECT * FROM restaurantusers WHERE id = $1`,
         [username],
         (err, results) => {
           if (err) {
             throw err;
           }
           console.log(results.rows);
-
+          
           if (results.rows.length > 0) {
             const user = { data: results.rows[0], type: req.body.utype };
-
             //passes password check
             if (password === results.rows[0].password) {
               console.log("here");

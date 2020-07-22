@@ -54,7 +54,7 @@ app.get("/logout", (req, res) => {
   errors.push({ msg: "you have logged out" });
   res.redirect("/mainpage")
 });
-
+app.get("/restaurantlogin", checkAuthenticated, (req, res) => res.render("pages/Restaurantloginpage"));
 app.post("/login", function (req, res, next) {
   passport.authenticate("local", function (err, user, info) {
     if (err) {
@@ -78,7 +78,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"});
+      return res.render("pages/Restaurantloginpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"});
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -199,7 +199,7 @@ app.post("/regrest", (req, res) => {
           }
         }
       );
-      res.redirect("mainpage");
+      res.redirect("restaurantlogin");
     }
   });
 });
