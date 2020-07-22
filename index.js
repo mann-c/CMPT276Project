@@ -3,6 +3,7 @@ const path = require("path");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
+const socketIO = require("socket.io");
 const PORT = process.env.PORT || 5000;
 const USER = "USER";
 const REST = "REST";
@@ -334,27 +335,26 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
 
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
-
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
   pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: join event");
-      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+      res.status(406).json({error: 'FAILURE'});
     }
-    res.redirect('/feed');
+    io.emit('updateevent', 'JOIN', evid, req.user.data);
   });
 });
 
 app.post('/event/unjoin', (req,res) => {
   const {evid} = req.body;
-
+  console.log('unjoin requested')
   const attendQuery = `DELETE FROM eventsattendance where eventid = $1 and userid = $2`;
   pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: unjoin event");
-      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+      res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
     }
-    res.redirect('/feed');
+    io.emit('updateevent', 'UNJOIN', evid, req.user.data);
   });
 });
 
@@ -386,4 +386,11 @@ app.get("/*", checkNotAuthenticated, (req, res) => {
   res.status(404).render("pages/404", { path: req.originalUrl, user: req.user });
 });
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+const server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+const io = socketIO(server);
+
+io.on('connection', (socket) => {
+  console.log('Client connected');
+  socket.on('disconnect', () => console.log('Client disconnected'));
+});
