@@ -20,7 +20,7 @@ if (process.env.NODE_ENV != "production") {
 const { Pool } = require("pg");
 const constring =
   process.env.DATABASE_URL ||
-  `postgres://postgres:@localhost/grababite`;
+  `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
 const pool = new Pool({
     connectionString: constring
 
