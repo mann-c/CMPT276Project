@@ -232,7 +232,17 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
     }
   });
 });
-
+app.get("/test_get_all_create_events",(req,res)=>{
+  pool.query(`SELECT * FROM events`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
 app.post('/createEvent', (req, res) => {
   var user = req.body.user;
   var rest = req.body.restaurant;
@@ -344,6 +354,18 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
   }
 });
 
+app.get("/test_get_all_create_event_join",(req,res)=>{
+  pool.query(`SELECT * FROM eventsattendance`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
 
@@ -370,8 +392,21 @@ app.post('/event/unjoin', (req,res) => {
   });
 });
 
+app.get("/test_get_all_create_follow",(req,res)=>{
+  pool.query(`SELECT * FROM friends`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
+  console.log(req);
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
   pool.query(friendQuery, [req.user.data.login, uid], (error, result) => {
     if (error){
