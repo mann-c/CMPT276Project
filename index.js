@@ -60,7 +60,7 @@ app.post("/login", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true }); //This does not work and crashes our app when reached
+      return res.redirect("/mainpage"); //This does not work and crashes our app when reached
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -382,8 +382,82 @@ app.post('/user/unfollow', (req,res) => {
   });
 });
 
+
+app.get('/Searchpage',(request,response) =>{
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    } 
+    pool.query('SELECT * FROM restaurants',(error,results1) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results1.rows};
+      response.render('pages/Search-RestUser',result);
+    })
+   
+  })
+
+  app.post('/UsrSearch',(request,response) =>{
+    const {Svar}=request.body;
+    const Tvar="%" + Svar + "%";
+   
+    pool.query('SELECT * FROM users WHERE (firstName LIKE $1) OR (lastName LIKE $1) OR (city LIKE $1) OR (description LIKE $1)',[Tvar],(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants', (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search-RestUser',result)
+    })
+      
+    } )
+  })
+
+
+
+
+  app.post('/RestrSearch',(request,response) =>{
+    const {Svar}=request.body;
+    const Tvar="%" + Svar + "%";
+   
+    pool.query('SELECT * FROM users',(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants WHERE (name LIKE $1) OR (city LIKE $1) OR (address LIKE $1) OR (description LIKE $1)',[Tvar], (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search-RestUser',result)
+    })
+      
+    } )
+  })
+
+  
+})
+
+
+
+
+
+
+
+
 app.get("/*", checkNotAuthenticated, (req, res) => {
   res.status(404).render("pages/404", { path: req.originalUrl, user: req.user });
 });
+
+
+
+
+
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+</head>
+
+<body >
+    
+    
+    <div style="font-size: 30px; background-color: black; color: white; padding-top: 13px ; padding-left: 25px; padding-bottom: 13px; font-weight:bold">
+        Grababite
+    </div>
+
+    <div id="UserSearchside">
+    <h2>Search For Users</h2>
+
+    <p style="color:rgb(59, 57, 57)">Search User by Name or City</p>
+
+    <form action="UsrSearch" method="post">
+        <input type="text" name="Svar" required>
+        <input type="submit" value="Enter">
+    </form>
+
+    <form action="Searchpage" method="GET">
+        <input type="submit" value="Show all Users">
+    </form>
+
+    <%if (rows.length==0) {%>
+        <p>No results found</p>
+    <%} %>
+    <%if (rows.length!=0){ %>
+       
+        <% rows.forEach(function(r) { %>
+            <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+            <p><span style="font-weight: bold;">First Name: </span> <%= r.firstname %>   </p>
+            <p><span style="font-weight:bold">Last Name:</span><%=r.lastname %></p>
+            <p><span style="font-weight: bold;"><%=r.firstname%>'s City of Residence:</span><%=r.city%></p>
+            <p><span style="font-weight:bold">Description of <%=r.firstname%>:</span> <%=r.description%></p>
+            <% var UserPg="/user/" + r.login%>
+            <a href="<%=UserPg%>">
+                <button>
+                    Explore
+                </button>
+
+            </a>
+        </div>
+        <% }); %>
+    
+    <% }%>
+
+    </div>
+
+    <div id="RestaurantSearchside">
+    <h2> Search for Restaurants</h2>
+    <p style="color:rgb(59, 57, 57)">Search by Restaurant Name, Address, or city</p>
+
+    <form action="RestrSearch" method="post">
+        <input type="text" name="Svar"  style="width: 200px;" required>
+        <input type="submit" value="Search">
+    </form>
+
+    <form action="Searchpage" method="GET">
+        <input type="submit" value="Show all Restaurants">
+    </form>
+
+    <%if (rows2.length==0) { %>
+        <p style="color: red;">No Results Found</p>
+     <% } %>
+     
+
+    <% if (rows2.length!=0) {%>
+
+        <% rows2.forEach(function(r) { %>
+            <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+            <p><span style="font-weight: bold;">Restaurant Name:</span><%=r.name%></p>
+            <p><span style="font-weight: bold;">Address:</span><%=r.address%></p>
+            <p><span style="font-weight: bold;">City:</span><%=r.city%></p>
+            <p><span style="font-weight: bold;">Phone:</span><%=r.phone%></p>
+            <p><span style="font-weight: bold;">Rating:</span><%=r.rating%></p>
+            <p><span style="font-weight: bold;">Description:</span><%=r.description%></p>
+            <%var RestPg="/restaurant/" + r.id%>
+            <a href="<%=RestPg%>">
+                <button>
+                    Explore
+                </button>
+            </a>
+        </div>
+        <% }); %>
+    <% }%>
+
+    </div>
+
+    <style media="screen">
+        #RestaurantSearchside{
+            position: absolute;
+            left:800px;
+            top:80px;
+            width:300px;
+            
+        }
+        #UserSearchside{
+            position: absolute;
+            top:80px;
+            left:30px;
+            width:300px;
+        }
+    </style>
+
+</body>
+</html>
