@@ -14,6 +14,7 @@ intiliazePassport(passport);
 if (process.env.NODE_ENV != "production") {
   console.log(`Running locally in ${process.env.NODE_ENV}`);
   const env = require("dotenv");
+
   env.config();
   if (env.error) throw env.error;
 }
@@ -395,7 +396,7 @@ app.post('/user/unfollow', (req,res) => {
 });
 
 
-app.get('/Searchpage',(request,response) =>{
+app.get('/Search',checkNotAuthenticated,(request,response) =>{
   pool.query('SELECT * FROM users',(error,results) =>{
     if (error){
       throw error;
@@ -405,15 +406,15 @@ app.get('/Searchpage',(request,response) =>{
         throw error;
       }
       var result={'rows':results.rows,'rows2':results1.rows};
-      response.render('pages/Search-RestUser',result);
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
     })
    
   })
 
-  app.post('/UsrSearch',(request,response) =>{
+
+  app.post('/user/UsrSearch',(request,response) =>{
     const {Svar}=request.body;
     const Tvar="%" + Svar + "%";
-   
     pool.query('SELECT * FROM users WHERE (firstName LIKE $1) OR (lastName LIKE $1) OR (city LIKE $1) OR (description LIKE $1)',[Tvar],(error,results) =>{
       if (error){
         throw error;
@@ -424,11 +425,35 @@ app.get('/Searchpage',(request,response) =>{
         throw error;
       }
       var result={'rows':results.rows,'rows2':results2.rows};
-      response.render('pages/Search-RestUser',result)
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
     })
       
     } )
   })
+
+
+
+  app.post('/UsrSearch',(request,response) =>{
+    const {Svar}=request.body;
+    const Tvar="%" + Svar + "%";
+   console.log("Entered");
+    pool.query('SELECT * FROM users WHERE (firstName LIKE $1) OR (lastName LIKE $1) OR (city LIKE $1) OR (description LIKE $1)',[Tvar],(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants', (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
+    })
+      
+    } )
+  })
+
+
 
 
 
@@ -447,7 +472,7 @@ app.get('/Searchpage',(request,response) =>{
         throw error;
       }
       var result={'rows':results.rows,'rows2':results2.rows};
-      response.render('pages/Search-RestUser',result)
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
     })
       
     } )

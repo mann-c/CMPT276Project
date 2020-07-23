@@ -27,12 +27,22 @@
           Restaurant List
         </a>
       </li>
-      <li class="<%= path === '/Search-RestUser' ? 'active' : '' %>">
-        <a href= "/Search-RestUser">
-          Restaurant/User List
+
+      <li class="<%= path === '/Search' ? 'active' : '' %>"> 
+        <a href="/Search">
+          <span class="glyphicon glyphicon-home"></span>
+          User/Restaurant Search
         </a>
-      </li>
         
+      </li>
+
+      <li class="<%= path === '/Search' ? 'active' : '' %>">
+        <form action="UsrSearch" method="post">
+          <input type="text" name="Svar" required>
+          <input type="submit" value="Enter">
+      </form>
+      </li>
+
     </ul>
     <ul class="nav navbar-nav navbar-right">
       <li class="navbar-right">
