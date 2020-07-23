@@ -60,14 +60,14 @@ app.get("/logout", (req, res) => {
   errors.push({ msg: "you have logged out" });
   res.redirect("/mainpage")
 });
-
+app.get("/restaurantlogin", checkAuthenticated, (req, res) => res.render("pages/Restaurantloginpage"));
 app.post("/login", function (req, res, next) {
   passport.authenticate("local", function (err, user, info) {
     if (err) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true });
+      return res.render("pages/mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"}); //This does not work and crashes our app when reached
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -84,7 +84,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true });
+      return res.render("pages/Restaurantloginpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"});
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -115,7 +115,17 @@ function checkNotAuthenticated(req, res, next) {
   }
   res.redirect("/mainpage");
 }
-
+app.get("/testgetall",(req,res)=>{
+  pool.query(`SELECT * FROM users`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
 app.post("/reguser", (req, res) => {
   var username = req.body.username;
   var first_name = req.body.first_name;
@@ -126,7 +136,8 @@ app.post("/reguser", (req, res) => {
   let check = false;
   let inputplaced;
   pool.query(
-    `SELECT * FROM users WHERE login='${username}'`,
+    `SELECT * FROM users WHERE login= $1`,
+    [username],
     (error, result) => {
       if (error) {
         res.end(error);
@@ -146,7 +157,8 @@ app.post("/reguser", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES('${username}','${first_name}','${last_name}','${city}','','${password}')`,
+          `INSERT INTO users VALUES($1,$2,$3,$4,$5)`,//Empty string between $4, $5 is the empty description
+          [username, first_name, last_name, city, password]
           (error, result) => {
             if (error) {
               res.end(error);
@@ -192,7 +204,7 @@ app.post("/regrest", (req, res) => {
           }
         }
       );
-      res.redirect("mainpage");
+      res.redirect("restaurantlogin");
     }
   });
 });
@@ -201,16 +213,24 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   console.log(uid);
 
-  var query = `select * from restaurants where id=${uid}`;
+  var query = `select * from restaurants where id= $1`;
 
-  pool.query(query, (error, result) => {
+  pool.query(query, [uid],(error, result) => {
     if (error) res.send(error);
     console.log(res.rows);
     var results = { attributes: result.rows[0] };
     console.log(results);
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
-      res.render('pages/restaurantprofile', {results, pageTitle: 'Restaurant Profile', path: pathforprofile,user: req.user});
+      res.render(
+      'pages/restaurantprofile',
+        {
+          results,
+          pageTitle: `Grababite • ${results.attributes.name}`,
+          path: pathforprofile,
+          user: req.user
+        }
+      );
     }
     else{
       res.status(404).render('pages/404', {path: pathforprofile, user: req.user});
@@ -224,8 +244,8 @@ app.post('/createEvent', (req, res) => {
   var user = req.body.user;
   var rest = req.body.restaurant;
 
-  var getPersonQuery = `insert into events values(DEFAULT,'${user}', ${rest}, '${date}', '${time}')`;
-  pool.query(getPersonQuery, (error, result)=>{
+  var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4)`;
+  pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
     if(error)
       res.end(error);
 
@@ -248,7 +268,7 @@ app.get('/feed', checkNotAuthenticated, (req, res) => {
   eventsController.getFeedEvents(req.user.type, req.user.data, pool)
       .then(answer => res.render('pages/feed', {
         events: answer,
-        pageTitle: 'Your feed',
+        pageTitle: 'Grababite • Feed',
         path: '/feed',
         user: req.user})
       )
@@ -264,22 +284,31 @@ app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
 app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
-  var query = `select * from Users where login ='${login}'`;
+  var query = `select * from Users where login = $1`;
 
-  pool.query(query,(error,result)=>{
+  pool.query(query,[login],(error,result)=>{
     if(error)
       res.send(error);
     var results = {'attributes':result.rows[0]};
     var pathforprofile = '/user' + `${login}`;
 
     if(results.attributes !== undefined){
-      var qry = `select * from friends where destinationfriend = '${login}'`;
+      var qry = `select * from friends where destinationfriend = $1`;
 
-        pool.query(qry,(err,friends)=>{
+        pool.query(qry,[login],(err,friends)=>{
           if(err)
             res.send(err);
           friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
-          res.render('pages/user',{'friend':friends,'row':results, pageTitle:'User Profile',path:'/update',user: req.user});
+          res.render(
+          'pages/user',
+          {
+            friend:friends,
+            row:results,
+            pageTitle: `Grababite • User • ${results.attributes.firstname} ${results.attributes.lastname}`,
+            path: pathforprofile,
+            user: req.user
+          }
+        );
       })
     }
     else{
@@ -299,10 +328,9 @@ app.post('/update',checkNotAuthenticated,function(req,res){
   if(req.body.function === 'update'){
     var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
-    pool.query(sql,input, (err,data)=>{
+    pool.query(sql, input, (err,data)=>{
       if(err) console.error(err);
         //redirect to user profile page
-
         res.redirect('/user/' + login);
     });
   }
@@ -328,7 +356,7 @@ app.post('/event/join', (req,res) => {
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
   pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
     if (error){
-      console.log("ERROR IN PG query");
+      console.log("ERROR IN PG query: join event");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
     }
     res.redirect('/feed');
@@ -338,10 +366,10 @@ app.post('/event/join', (req,res) => {
 app.post('/event/unjoin', (req,res) => {
   const {evid} = req.body;
 
-  const attendQuery = `DELETE FROM eventsattendance where eventid = '${evid}' and userid = '${req.user.data.login}'`;
-  pool.query(attendQuery, (error, result) => {
+  const attendQuery = `DELETE FROM eventsattendance where eventid = $1 and userid = $2`;
+  pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
     if (error){
-      console.log("ERROR IN PG query");
+      console.log("ERROR IN PG query: unjoin event");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
     }
     res.redirect('/feed');
@@ -350,11 +378,10 @@ app.post('/event/unjoin', (req,res) => {
 
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
-  console.log("UID"+uid)
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
   pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
     if (error){
-      console.log("ERROR IN PG query");
+      console.log("ERROR IN PG query: follow user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
     }
     res.redirect('/user/'+ uid);
@@ -363,10 +390,10 @@ app.post('/user/follow', (req,res) => {
 
 app.post('/user/unfollow', (req,res) => {
   const {uid} = req.body;
-  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = '${req.user.data.login}' and destinationfriend = '${uid}' `
+  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2 `
   pool.query(friendQuery,(error, result) => {
     if (error){
-      console.log("ERROR IN PG query");
+      console.log("ERROR IN PG query: unfollower user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
     };
     res.redirect('/user/'+ uid);
@@ -438,7 +465,8 @@ app.post('/user/image', upload.single("image"), function(req, res, next) {
 });
 
 app.get("/*", (req, res) =>
-  res.status(404).render("pages/404", { path: "PAGE NOT FOUND " })
+  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
 );
 
 server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+module.exports=app;
