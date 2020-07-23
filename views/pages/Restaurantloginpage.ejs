@@ -18,7 +18,7 @@
     </div>
     <ul>
       <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
-      <%=errors.msg %> <%});} %>
+      <%=error.msg %> <%});} %>
     </ul>
     <ul>
       <% if (messages.error) { %>
@@ -31,39 +31,29 @@
       <% } %>
     </ul>
     <ul>
-       <% if (messages==="THE USERNAME OR PASSWORD IS INCORRECT") { %>
-      <li><%= messages%></li>
-      <% } %>
+        <% if (messages==="THE USERNAME OR PASSWORD IS INCORRECT") { %>
+            <li><%= messages%></li>
+            <% } %>
     </ul>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br> 
-    <br>
-    <br>
-    <br>
-    <br>
-  </body>
-  <body style="border: solid black; padding-bottom: 300px;">
     <div
       style="
         border: solid black;
         margin-right: 900px;
         position: relative;
-        left: 200px;
-        bottom: 147px;
+        left: 700px;
+        top: 100px;
         padding: 10px 40px 40px 30px;
       "
     >
-      <h3>User Login</h3>
-      <form class="" action="/login" method="post">
-        <span> Username:</span>
+      <h3>Restaurant Login</h3>
+      <p>PLEASE ASK GRABABITE FOR YOUR RESTAURANT INFORMATION TO LOGIN IN</p>
+      <form action="/logrestaurant" method="post">
+        <span> ID(Numeric):</span>
         <input
-          type="text"
+          type="number"
           id="username"
           name="username"
-          maxlength="12"
+          value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
           required
         /><br />
         <span>Password: </span
@@ -71,18 +61,14 @@
           type="password"
           id="password"
           name="password"
-          maxlength="12"
+          maxlength="20"
           required
-        /><br />
-        <input name="utype" value="USER" style="visibility: hidden;" /><br />
+        />
+        <br />
+        <input name="utype" value="REST" style="visibility: hidden;" /><br />
         <input type="submit" value="Login" />
-      </form>
-
-      <h3>Dont have an Account, Register</h3>
-      <form action="GotoUsrReg" method="GET">
-        <input type="submit" value="Create USER Profile" />
       </form>
     </div>
   </body>
-  <a href="/restaurantlogin"> LOGIN IN AS RESTAURANT OWNER</a> 
+  
 </html>
