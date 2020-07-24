@@ -46,11 +46,11 @@
       "
     >
       <h3>Restaurant Login</h3>
-      <p>PLEASE ASK GRABABITE FOR YOUR RESTAURANT INFORMATION TO LOGIN IN</p>
+      
       <form action="/logrestaurant" method="post">
-        <span> ID(Numeric):</span>
+        <span> ID:</span>
         <input
-          type="number"
+          type="text"
           id="username"
           name="username"
           value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
@@ -68,6 +68,12 @@
         <input name="utype" value="REST" style="visibility: hidden;" /><br />
         <input type="submit" value="Login" />
       </form>
+      <p>PLEASE ASK GRABABITE IN ORDER TO REGISTER AS RESTAURANT USER</p>
+      <p>FOR TESTING ONLY-> 
+        username: Jam
+        password: password1
+        username: WaterCafe
+        password: password1</p>
     </div>
   </body>
   
