@@ -228,11 +228,11 @@ app.post('/createEvent', (req, res) => {
   var date = req.body.date;
   var time = req.body.time;
 
-  var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4)`;
+  var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4) RETURNING *`;
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
     if(error)
       res.end(error);
-
+    socketPushEvent(result.rows[0]);
     res.redirect('/feed');
   })
 });
@@ -340,8 +340,10 @@ app.post('/event/join', (req,res) => {
     if (error){
       console.log("ERROR IN PG query: join event");
       res.status(406).json({error: 'FAILURE'});
+    } else {
+      socketUpdateEvent('JOIN', evid, {login: req.user.data.login})
+      res.status(201).json({message: 'SUCCESS'});
     }
-    io.emit('updateevent', 'JOIN', evid, req.user.data);
   });
 });
 
@@ -353,8 +355,10 @@ app.post('/event/unjoin', (req,res) => {
     if (error){
       console.log("ERROR IN PG query: unjoin event");
       res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
+    } else {
+      socketUpdateEvent('UNJOIN', evid, {login: req.user.data.login})
+      res.status(201).json({message: 'SUCCESS'});
     }
-    io.emit('updateevent', 'UNJOIN', evid, req.user.data);
   });
 });
 
@@ -394,3 +398,11 @@ io.on('connection', (socket) => {
   console.log('Client connected');
   socket.on('disconnect', () => console.log('Client disconnected'));
 });
+
+function socketUpdateEvent(type, evid, userData){
+  io.sockets.emit('updateevent', type, evid, userData);
+}
+
+function socketPushEvent(event){
+  io.sockets.emit('pushevent', event);
+}
