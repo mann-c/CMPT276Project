@@ -157,7 +157,7 @@ app.post("/reguser", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,$5)`,//Empty string between $4, $5 is the empty description
+          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5)`,//Empty string between $4, $5 is the empty description
           [username, first_name, last_name, city, password],
           (error, result) => {
             if (error) {
