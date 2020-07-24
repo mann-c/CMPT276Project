@@ -412,32 +412,13 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
   })
 
 
-  app.post('/user/UsrSearch',(request,response) =>{
-    const {Svar}=request.body;
-    const Tvar="%" + Svar + "%";
-    pool.query('SELECT * FROM users WHERE (firstName LIKE $1) OR (lastName LIKE $1) OR (city LIKE $1) OR (description LIKE $1)',[Tvar],(error,results) =>{
-      if (error){
-        throw error;
-      }
-    
-    pool.query('SELECT * FROM restaurants', (error,results2) =>{
-      if (error){
-        throw error;
-      }
-      var result={'rows':results.rows,'rows2':results2.rows};
-      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
-    })
-      
-    } )
-  })
-
+ 
 
 
   app.post('/UsrSearch',(request,response) =>{
     const {Svar}=request.body;
     const Tvar="%" + Svar + "%";
-   console.log("Entered");
-    pool.query('SELECT * FROM users WHERE (firstName LIKE $1) OR (lastName LIKE $1) OR (city LIKE $1) OR (description LIKE $1)',[Tvar],(error,results) =>{
+    pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
       if (error){
         throw error;
       }
@@ -467,7 +448,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
         throw error;
       }
     
-    pool.query('SELECT * FROM restaurants WHERE (name LIKE $1) OR (city LIKE $1) OR (address LIKE $1) OR (description LIKE $1)',[Tvar], (error,results2) =>{
+    pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
       if (error){
         throw error;
       }
