@@ -67,7 +67,7 @@ app.post("/login", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.render("pages/mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"}); //This does not work and crashes our app when reached
+      return res.render("pages/Mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"}); //This does not work and crashes our app when reached
     }
     req.logIn(user, function (err) {
       if (err) {
