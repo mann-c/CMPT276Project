@@ -14,6 +14,7 @@ intiliazePassport(passport);
 if (process.env.NODE_ENV != "production") {
   console.log(`Running locally in ${process.env.NODE_ENV}`);
   const env = require("dotenv");
+
   env.config();
   if (env.error) throw env.error;
 }
@@ -394,9 +395,88 @@ app.post('/user/unfollow', (req,res) => {
   });
 });
 
+
+app.get('/Search',checkNotAuthenticated,(request,response) =>{
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    } 
+    pool.query('SELECT * FROM restaurants',(error,results1) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results1.rows};
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
+    })
+   
+  })
+
+
+ 
+
+
+  app.post('/UsrSearch',(request,response) =>{
+    const {Svar}=request.body;
+    const Tvar="%" + Svar + "%";
+    pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants', (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
+    })
+      
+    } )
+  })
+
+
+
+
+
+
+  app.post('/RestrSearch',(request,response) =>{
+    const {Svar}=request.body;
+    const Tvar="%" + Svar + "%";
+   
+    pool.query('SELECT * FROM users',(error,results) =>{
+      if (error){
+        throw error;
+      }
+    
+    pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
+    })
+      
+    } )
+  })
+
+  
+})
+
+
+
+
+
+
+
+
 app.get("/*", checkNotAuthenticated, (req, res) => {
   res.status(404).render("pages/404", { path: req.originalUrl, user: req.user });
 });
+
+
+
+
+
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 module.exports=app;
