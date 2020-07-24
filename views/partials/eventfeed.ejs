@@ -1,8 +1,172 @@
 <div class="event-feed">
-    <% if(events && events.length > 0) { %>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+        let socketdata;
 
+        socket.on('updateevent', (updateType, eventID, userData) => { //We need eventid, user details
+            switch(updateType) {    //apologies for my hackiness
+                case 'JOIN':
+                    //Button Changes
+                    let joinButton = document.getElementById(`${eventID}-join`);
+                    if(joinButton && userData.login=="<%= user.data.login %>"){    //If there is no button they are the owner or a restaurant
+                        joinButton.innerText = 'Not interested';                     //Change the button text
+                        joinButton.setAttribute('onclick', `unjoinEvent(${eventID})`)//Change the action 
+                        joinButton.id = `${eventID}-unjoin`                         //Change the id
+                        joinButton.removeAttribute('disabled');
+                    }
+                    //Attendance Count Changes
+                    let attendanceCount = document.getElementById(`${eventID}-attendance-count`);
+                    let attendanceList;                                             //Init here so either statements can change it
+                    if(attendanceCount==null) {  //Then there is no list
+                        let attendanceDetails = document.createElement('details');
+                        attendanceDetails.id = `${eventID}-attendance-details`;
+                        let attSum = document.createElement('summary');
+                        attSum.innerHTML = `With <span id=${eventID}-attendance-count>1</span>`;
+                        attendanceDetails.appendChild(attSum);
+                        attendanceList = document.createElement('ul');
+                        attendanceList.id = `${eventID}-attendance-list`;
+                        attendanceList.classList.add("attendance-list");
+                        attendanceDetails.appendChild(attendanceList);
+                        document.getElementById(eventID).appendChild(attendanceDetails);//Add details to the div
+                    } else {
+                        let newCount = parseInt(attendanceCount.innerText) + 1;
+                        attendanceCount.innerText = newCount;
+                        //Attendance List Changes, we are just filling login for now
+                        attendanceList = document.getElementById(`${eventID}-attendance-list`);
+                    }
+                    let newAttender = document.createElement('li');
+                    newAttender.innerText = userData.login;
+                    attendanceList.appendChild(newAttender);
+                    break;
+                case 'UNJOIN':
+                    //Button Changes
+                    let unjoinButton = document.getElementById(`${eventID}-unjoin`);                //Must be there
+                    if(unjoinButton && userData.login=="<%= user.data.login %>"){
+                        unjoinButton.innerText = 'Join Event';                                          //Change the button text
+                        unjoinButton.setAttribute('onclick', `joinEvent(${eventID})`);               //Change the action 
+                        unjoinButton.id = `${eventID}-join`;                                            //Change the id D:
+                        unjoinButton.removeAttribute('disabled');
+                    }
+                    //Attendance Count Changes
+                    let ujattendanceCount = document.getElementById(`${eventID}-attendance-count`);   //must be there for this request to be made
+                    let newCount = parseInt(ujattendanceCount.innerText) - 1;
+                    if(newCount == 0){
+                        /*document.getElementById(`${eventID}-attendance-list`)
+                            .innerHTML = "<ul></ul>";
+                        document.getElementById(`${eventID}-attendance-details`)
+                            .removeChild(document.getElementById(`${eventID}-attendance-list`))*/
+                        document.getElementById(eventID)
+                            .removeChild(document.getElementById(`${eventID}-attendance-details`));
+                    } else {
+                        ujattendanceCount.innerText = newCount;
+                        //Attendance List Changes, we are just filling login for now
+                        let ujattendanceList = document.getElementById(`${eventID}-attendance-list`);
+                        //thanks to: https://stackoverflow.com/a/24775765
+                        NodeList.prototype.forEach = Array.prototype.forEach
+                        let children = ujattendanceList.childNodes;
+                        let toRemove;
+                        children.forEach(function(child){
+                            if(child.innerText==userData.login){
+                                toRemove = child;
+                            }
+                        });
+                        if(toRemove){
+                            ujattendanceList.removeChild(toRemove);
+                        }
+                    }
+                    break;       
+            }  
+        });
+
+        //Add event 
+        socket.on('pushevent', (event) => { //We need eventid, user details
+            let newToast = document.createElement('div');
+                newToast.classList.add('toast');
+                newToast.setAttribute('role', 'alert');
+                let toastHeader = document.createElement('div');
+                toastHeader.classList.add('toast-header');
+                    let username = document.createElement('strong');
+                    username.innerText = event.userid;
+                    /*let close = document.createElement('button');
+                    close.setAttribute('type', 'button');
+                    close.setAttribute('data-dismiss', 'toast');
+                    close.setAttribute('aria-label', 'Close');
+                    close.classList.add('ml-2', 'mb-1', 'close');
+                    close.innerHTML = '<span aria-hidden="true">&times;</span>';*/
+                toastHeader.appendChild(username);
+                //toastHeader.appendChild(close);
+                let toastBody = document.createElement('body');
+                toastBody.classList.add('toast-body');
+                    let text = document.createElement('span');
+                    text.innerText = `Created a new event`
+                    let eventButton = document.createElement('button');
+                    eventButton.innerText = 'Go to event';
+                    eventButton.setAttribute('onclick', `refreshPage(${event.eventid})`);
+                toastBody.appendChild(text);
+                toastBody.appendChild(eventButton);
+            newToast.appendChild(toastHeader);
+            newToast.appendChild(toastBody);
+            document.getElementById('toastmaster').appendChild(newToast);
+        });
+        //Remove event
+        socket.on('popevent', (socketin) => { //We need eventid, user details
+
+            
+            socketdata = document.getElementById('socketdata');
+            socketdata.innerHTML = 'Socket data' + socketin;
+            
+        });
+    </script>
+    <script>
+        //Button actions -> fetch API
+        function joinEvent(evid) {
+            document.getElementById(`${evid}-join`).setAttribute('disabled', 'true');  //Disable button
+            let data = {evid: evid};
+            fetch('/event/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                    .then( (data) => {
+                        if(data.error){
+                            console.log('Join event failed D:');
+                        }
+                    })
+                    .catch(err => console.error(err));
+        }
+        function unjoinEvent(evid) {
+            let data = {evid: evid};
+            fetch('/event/unjoin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then( (data) => {
+                    if(data.error){
+                        console.log('Unjoin event failed D:');
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+        function refreshPage(event) {
+            //window.location.hash = `#${event}`;
+            window.location.href = `#${event}`;
+            window.location.reload();
+        }
+    </script>
+    <!--For the toasts-->
+    <div id="toastmaster" aria-live="polite" aria-atomic="true"></div>
+
+    <% if(events && events.length > 0) { %>
         <% for (let event of events) { %>
-            <div class="event-div" id=<%= `event:${event.id}` %> >
+            <div class="event-div" id=<%= event.eventid %> >
                 <p class="event-div-header">
                     <span class="feed-item-creator">
                         <span class="event-creator">
@@ -24,27 +188,28 @@
                 </p>
                 <% if(event.login!==user.data.login && user.type === 'USER') { %>
                     <% if(!event.attendees.includes(user.data.login)) { %>
-                        <form action="/event/join" method="POST">
-                            <button type="submit" name="evid" value=<%= event.eventid %> >Join Event</button>
-                        </form>
+                        <button id=<%= `${event.eventid}-join` %> name="evid" onclick="<%=`joinEvent(${event.eventid})`%>">
+                            Join Event
+                        </button>
                     <% } else { %>
-                        <form action="/event/unjoin" method="POST">
-                            <button type="submit" name="evid" value=<%= event.eventid %> >Not Interested</button>
-                        </form>
+                        <button id=<%= `${event.eventid}-unjoin` %> name="evid" onclick="<%=`unjoinEvent(${event.eventid})`%>">
+                            Not Interested
+                        </button>
                     <% } %>
                 <% } %>
+                
                 <% if(event.count>0) { %>
-                <details>
-                    <summary>With <%= event.count %> other <%= event.count==1? 'person':'people' %>  </summary>
-                    <ul>
+                <details id=<%= `${event.eventid}-attendance-details` %>>
+                    <summary>With <span id=<%= `${event.eventid}-attendance-count` %>><%= event.count %></span></summary>
+                    <ul id=<%= `${event.eventid}-attendance-list` %> class="attendance-list">
                         <% for (let attender of event.attendees) { %>
-                            <li><%= attender %> </li>
+                            <li><%= attender %></li>
                         <% } %>
                     </ul>
                 </details>
                 <% } %>
             </div>
-            <% } %>
+        <% } %>
 
     <% } else { %>
         <h1>

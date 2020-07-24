@@ -3,9 +3,9 @@ const path = require("path");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
-const http = require('http');
-const socketIo = require('socket.io');
-const multer = require('multer');
+const http = require("http");
+const socketIo = require("socket.io");
+const multer = require("multer");
 
 const PORT = process.env.PORT || 5000;
 const USER = "USER";
@@ -254,13 +254,11 @@ app.post('/createEvent', (req, res) => {
   var user = req.body.user;
   var rest = req.body.restaurant;
 
-  var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4)`;
+  var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4) RETURNING *`;
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
-    if(error){
-      console.log("Could not create event");
-      
-    }
-
+    if(error)
+      res.end(error);
+    socketPushEvent(result.rows[0]);
     res.redirect('/feed');
   })
 });
@@ -378,27 +376,30 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
 
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
-
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
   pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: join event");
-      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+      res.status(406).json({error: 'FAILURE'});
+    } else {
+      socketUpdateEvent('JOIN', evid, {login: req.user.data.login})
+      res.status(201).json({message: 'SUCCESS'});
     }
-    res.redirect('/feed');
   });
 });
 
 app.post('/event/unjoin', (req,res) => {
   const {evid} = req.body;
-
+  console.log('unjoin requested')
   const attendQuery = `DELETE FROM eventsattendance where eventid = $1 and userid = $2`;
   pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: unjoin event");
-      //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
+      res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
+    } else {
+      socketUpdateEvent('UNJOIN', evid, {login: req.user.data.login})
+      res.status(201).json({message: 'SUCCESS'});
     }
-    res.redirect('/feed');
   });
 });
 
@@ -553,4 +554,13 @@ app.get("/*", (req, res) =>
 );
 
 server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+function socketUpdateEvent(type, evid, userData){
+  io.sockets.emit('updateevent', type, evid, userData);
+}
+
+function socketPushEvent(event){
+  io.sockets.emit('pushevent', event);
+}
+
 module.exports=server;
