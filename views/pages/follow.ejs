@@ -21,7 +21,8 @@
           <%for(var i=0;i<following.length;i++){%>
           <%var json = following[i];%>
              <tr>
-             <td onclick = "location.href='/user/<%=json.destinationfriend%>'" style="cursor:pointer;">
+             <td>
+               <button onclick = "location.href='/user/<%=json.destinationfriend%>'" style="cursor:pointer;">
                <%=json.destinationfriend%>
              </td>
              </tr>
@@ -43,7 +44,8 @@
           <%for(var i=0;i<follower.length;i++){%>
           <%var json = follower[i];%>
              <tr>
-             <td onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
+             <td>
+               <button onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
                <%=json.sourcefriend%>
              </td>
              </tr>

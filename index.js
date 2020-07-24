@@ -391,7 +391,7 @@ app.post('/user/follow', (req,res) => {
 app.post('/user/unfollow', (req,res) => {
   const {uid} = req.body;
   const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2 `
-  pool.query(friendQuery,(error, result) => {
+  pool.query(friendQuery,[req.user.data.login,uid],(error, result) => {
     if (error){
       console.log("ERROR IN PG query: unfollower user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
