@@ -251,8 +251,10 @@ app.post('/createEvent', (req, res) => {
 
   var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4)`;
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
-    if(error)
-      res.end(error);
+    if(error){
+      console.log("Could not create event");
+      
+    }
 
     res.redirect('/feed');
   })
@@ -321,8 +323,22 @@ app.get('/user/:login', checkNotAuthenticated, function(req,res,next){ //No hand
   })
 });
 
+app.post("/testgetupdate",function(req,res){
+  var username= req.body.username;
+  pool.query(`SELECT * FROM users WHERE login = $1`,
+  [username],(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
 //Update User Profile
-app.post('/update',checkNotAuthenticated,function(req,res){
+app.post('/update',function(req,res){
   const login = req.body.login;
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
