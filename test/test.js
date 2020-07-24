@@ -49,30 +49,30 @@ chai.request('http://localhost:5000').get('/');
         });
     });
 
-            it("user should not be logged in", function(done){
-                chai.request(server).post('/login').send({username:"j", password:"1", utype:"USER"})
-                    .end(function(error,res){
-                        var val=res.text.indexOf("INCORRECT")
-                        if(val>0){val=true;}
-                        val.should.equal(true);
-                    done();
-                  });
-                
+    it("user should not be logged in", function(done){
+        chai.request(server).post('/login').send({username:"j", password:"1", utype:"USER"})
+            .end(function(error,res){
+                var val=res.text.indexOf("INCORRECT")
+                if(val>0){val=true;}
+                val.should.equal(true);
+            done();
             });
+        
+    });
 
-            it("user should be logged in", function(done){
-                chai.request(server).post('/login').send({username:"j", password:"j", utype:"USER"})
-                    .end(function(error,res){
-                        var val=res.text.indexOf("INCORRECT")
-                        if(val>0){val=true;}
-                        else{
-                            val=false;
-                        }
-                        val.should.equal(false);
-                    done();
-                  });
-                
+    it("user should be logged in", function(done){
+        chai.request(server).post('/login').send({username:"j", password:"j", utype:"USER"})
+            .end(function(error,res){
+                var val=res.text.indexOf("INCORRECT")
+                if(val>0){val=true;}
+                else{
+                    val=false;
+                }
+                val.should.equal(false);
+            done();
             });
+        
+    });
    
 
  });
@@ -82,8 +82,11 @@ describe("Events", function(){
         chai.request(server).get('/test_get_all_create_events').end(function(error,res){
             var numberofusers= res.body[0].rows.length;
             
-                chai.request(server).post('/createEvent').send({"user":"j", "restaurant":"1", "date":"2020-07-06", "time":"18:29"})
+                chai.request(server).post('/createEvent').send({"user":"j", "restaurant":"1", "date":"2020-07-05", "time":"18:29"})
                 .end(function(error,res){
+                    console.log(error);
+                    console.log(res);
+                    
                         chai.request(server).get('/test_get_all_create_events')
                         .end(function(error,res){
                             
@@ -149,68 +152,3 @@ describe("Updates", function(){
     });
 });
 
-// describe("Follow/Unfollow", function(){
-//     it("Follow should add a row in table", function(done){
-//         chai.request(server).get('/test_get_all_create_follow').end(function(error,res){
-//             var numberofusers= res.body[0].rows.length;
-//             chai.request(server).post('/user/follow').send( { uid: 'j' ,
-//                user: {
-//                     data: {
-//                         login: '34',
-//                         firstname: 'fwrf',
-//                         lastname: 'fwef',
-//                         city: 'efwe',
-//                         description: '',
-//                         password: '34'
-//                     }
-//                 }
-//             })
-//                 .end(function(error,res){
-//                         chai.request(server).get('/test_get_all_create_follow')
-//                         .end(function(error,res){
-//                             //console.log(res.body[0]);
-//                             var numberofusers2= res.body[0].rows.length;
-//                             (numberofusers2-numberofusers).should.equal(1);
-                           
-//                         });
-                    
-//                     done();
-//                 });
-//         });
-//     });
-    // it("Follow should delete a row in table", function(done){
-    //     chai.request(server).get('/test_get_all_create_follow').end(function(error,res){
-    //         var numberofusers= res.body[0].rows.length;
-    //         chai.request(server).post('/user/unfollow').send({
-    //             login: '34',
-    //             firstname: 'fwrf',
-    //             lastname: 'fwef',
-    //             city: 'efwe',
-    //             description: '',
-    //             password: '34'
-    //           },
-    //           { user: {
-    //                 data: {
-    //                     login: 'j',
-    //                     firstname: 'Jaskaran',
-    //                     lastname: 'Dhanoa',
-    //                     city: 'Delta',
-    //                     description: '',
-    //                     password: 'j'
-    //                 }
-    //             }
-    //         })
-    //             .end(function(error,res){
-    //                     chai.request(server).get('/test_get_all_create_follow')
-    //                     .end(function(error,res){
-    //                         //console.log(res.body[0]);
-    //                         var numberofusers2= res.body[0].rows.length;
-    //                         (numberofusers -numberofusers2).should.equal(1);
-                           
-    //                     });
-                    
-    //                 done();
-    //             });
-    //     });
-    // });
-//});

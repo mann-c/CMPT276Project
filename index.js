@@ -370,18 +370,6 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
   }
 });
 
-app.get("/test_get_all_create_event_join",(req,res)=>{
-  pool.query(`SELECT * FROM eventsattendance`,(error, result) => {
-    if (error) {
-      res.end(error);
-    }
-    var results = { rows: result.rows };
-    var us=[];
-    us.push(results)
-    res.json(us);
-  });
-});
-
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
 
@@ -408,17 +396,6 @@ app.post('/event/unjoin', (req,res) => {
   });
 });
 
-app.get("/test_get_all_create_follow",(req,res)=>{
-  pool.query(`SELECT * FROM friends`,(error, result) => {
-    if (error) {
-      res.end(error);
-    }
-    var results = { rows: result.rows };
-    var us=[];
-    us.push(results)
-    res.json(us);
-  });
-});
 
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
