@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-var cors=require("cors");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
@@ -18,7 +17,6 @@ intiliazePassport(passport);
 if (process.env.NODE_ENV != "production") {
   console.log(`Running locally in ${process.env.NODE_ENV}`);
   const env = require("dotenv");
-
   env.config();
   if (env.error) throw env.error;
 }
@@ -37,7 +35,7 @@ var server = http.createServer(app);
 var io = socketIo.listen(server);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use("/",cors())
+
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -117,7 +115,6 @@ function checkNotAuthenticated(req, res, next) {
   }
   res.redirect("/mainpage");
 }
-
 app.get("/testgetall",(req,res)=>{
   pool.query(`SELECT * FROM users`,(error, result) => {
     if (error) {
@@ -160,7 +157,7 @@ app.post("/reguser", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5)`, //Empty string between $4, $5 is the empty description
+          `INSERT INTO users VALUES($1,$2,$3,$4,$5)`,//Empty string between $4, $5 is the empty description
           [username, first_name, last_name, city, password],
           (error, result) => {
             if (error) {
@@ -263,7 +260,7 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
       }
       var results={'rows':result.rows};
       console.log(results)
-      res.render('pages/RestaurantSearch',{results, pageTitle: 'Grababite • Restaurants', path: "/RestaurantSearch", user: req.user});
+      res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
 
@@ -471,7 +468,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
   pool.query('SELECT * FROM users',(error,results) =>{
     if (error){
       throw error;
-    } 
+    }
     pool.query('SELECT * FROM restaurants',(error,results1) =>{
       if (error){
         throw error;
@@ -479,8 +476,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
       var result={'rows':results.rows,'rows2':results1.rows};
       response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
     })
-   
-  })
+  });
 
   app.post('/UsrSearch',(request,response) =>{
     const {Svar}=request.body;
@@ -489,7 +485,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
       if (error){
         throw error;
       }
-    
+
     pool.query('SELECT * FROM restaurants', (error,results2) =>{
       if (error){
         throw error;
@@ -497,36 +493,36 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
       var result={'rows':results.rows,'rows2':results2.rows};
       response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
     })
-      
+
     } )
   })
 
   app.post('/RestrSearch',(request,response) =>{
-    const {Svar}=request.body;
-    const Tvar="%" + Svar + "%";
-   
-    pool.query('SELECT * FROM users',(error,results) =>{
-      if (error){
-        throw error;
-      }
-    
-    pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
-      if (error){
-        throw error;
-      }
-      var result={'rows':results.rows,'rows2':results2.rows};
-      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
-    })
-      
-    } )
+  const {Svar}=request.body;
+  const Tvar="%" + Svar + "%";
+
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    }
+
+  pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
+    if (error){
+      throw error;
+    }
+    var result={'rows':results.rows,'rows2':results2.rows};
+    response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
   })
 
-  
+  } )
 })
 
-app.get("/*", checkNotAuthenticated, (req, res) => {
-  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user });
-});
 
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
-module.exports=app;
+})
+
+app.get("/*", (req, res) =>
+  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
+);
+
+server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+module.exports=server;
