@@ -467,12 +467,6 @@ app.post('/user/image', upload.single("image"), function(req, res, next) {
   }
 });
 
-app.get("/*", (req, res) =>
-  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
-);
-
-server.listen(PORT, () => console.log(`Listening on ${PORT}`));
-
 app.get('/Search',checkNotAuthenticated,(request,response) =>{
   pool.query('SELECT * FROM users',(error,results) =>{
     if (error){
