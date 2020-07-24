@@ -237,7 +237,17 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
     }
   });
 });
-
+app.get("/test_get_all_create_events",(req,res)=>{
+  pool.query(`SELECT * FROM events`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
 app.post('/createEvent', (req, res) => {
   var date = req.body.date;
   var time = req.body.time;
@@ -246,8 +256,10 @@ app.post('/createEvent', (req, res) => {
 
   var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4)`;
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
-    if(error)
-      res.end(error);
+    if(error){
+      console.log("Could not create event");
+      
+    }
 
     res.redirect('/feed');
   })
@@ -317,8 +329,22 @@ app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   })
 });
 
+app.post("/testgetupdate",function(req,res){
+  var username= req.body.username;
+  pool.query(`SELECT * FROM users WHERE login = $1`,
+  [username],(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
 //Update User Profile
-app.post('/update',checkNotAuthenticated,function(req,res){
+app.post('/update',function(req,res){
   const login = req.body.login;
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
@@ -376,8 +402,10 @@ app.post('/event/unjoin', (req,res) => {
   });
 });
 
+
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
+  console.log(req);
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
   pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
     if (error){
