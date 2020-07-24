@@ -10,7 +10,6 @@ chai.request('http://localhost:5000').get('/');
     it("Should get all users and check if the same username is input in and not change", function(done){
         chai.request(server).get('/testgetall').end(function(error,res){
             var numberofusers= res.body[0].rows.length;
-            //console.log(res.body[0].rows.length);
                 chai.request(server).post('/reguser').send({"username":"j", "first_name":"ddc", "last_name":"cdcd", "city":"cdcsd", "password":"cdc"})
                 .end(function(error,res){
                         chai.request(server).get('/testgetall')
@@ -32,8 +31,8 @@ chai.request('http://localhost:5000').get('/');
     it("Should get all users and check if a new username is input in and add new user", function(done){
         chai.request(server).get('/testgetall').end(function(error,res){
             var numberofusers= res.body[0].rows.length;
-            //console.log(res.body[0].rows.length);
-                chai.request(server).post('/reguser').send({"username":"changer1", "first_name":"ddc", "last_name":"cdcd", "city":"cdcsd", "password":"cdc"})
+            
+                chai.request(server).post('/reguser').send({"username":"changer21", "first_name":"ddc", "last_name":"cdcd", "city":"cdcsd", "password":"cdc"})
                 .end(function(error,res){
                         chai.request(server).get('/testgetall')
                         .end(function(error,res){
@@ -82,13 +81,12 @@ describe("Events", function(){
     it("Should get all events and see if an event is added ", function(done){
         chai.request(server).get('/test_get_all_create_events').end(function(error,res){
             var numberofusers= res.body[0].rows.length;
-            //console.log(res.body[0].rows.length);
+            
                 chai.request(server).post('/createEvent').send({"user":"j", "restaurant":"1", "date":"2020-07-06", "time":"18:29"})
                 .end(function(error,res){
                         chai.request(server).get('/test_get_all_create_events')
                         .end(function(error,res){
-                            //console.log(error);
-                            //console.log(res.body[0]);
+                            
                             var numberofusers2= res.body[0].rows.length;
                             (numberofusers2-numberofusers).should.equal(1);
                            
@@ -105,13 +103,12 @@ describe("Events", function(){
         chai.request(server).get('/test_get_all_create_events').end(function(error,res){
             var numberofusers= res.body[0].rows.length;
             var errortrue=false;
-            //console.log(res.body[0].rows.length);
+            
                 chai.request(server).post('/createEvent').send({"user":"j", "restaurant":"dsdc", "date":"2020-08-06", "time":"19:35"})
                 .end(function(error,res){
-                    console.log(error);
                     
                     if(error===null){
-                        console.log("eneters");
+                        
                         errortrue=true;
                     }
               
@@ -135,11 +132,11 @@ describe("Updates", function(){
         chai.request(server).post("/testgetupdate").send({"username":"change1"})
                 .end(function(error,res){
                     var first_name1=res.body[0].rows[0].firstname;
-                    chai.request(server).post('/update').send({"login":"change1", "firstname":"newname23422", "lastname":"cdcd", "city":"cdcsd","description":" " ,"password":"cdc","function":"update"})
+                    chai.request(server).post('/update').send({"login":"change1", "firstname":"newna422", "lastname":"cdcd", "city":"cdcsd","description":" " ,"password":"cdc","function":"update"})
                     .end(function(error,res){
                         chai.request(server).post("/testgetupdate").send({"username":"change1"})
                         .end(function(error,res){
-                            console.log(res.body[0].rows);
+                            
                             var first_name2=res.body[0].rows[0].firstname;
                             first_name2.should.not.equal(first_name1);
                             
