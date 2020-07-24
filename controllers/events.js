@@ -74,7 +74,7 @@ const getByRestId = async (uid, pool) => {
                           ev.eventid
                           ev.startdate, 
                           ev.starttime,
-                          ev.eventid
+                          ev.restid
                         FROM events ev 
                         INNER JOIN users u ON u.login = ev.userid 
                         INNER JOIN restaurants res ON ev.restid = res.id 
