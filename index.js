@@ -1,9 +1,12 @@
 const express = require("express");
 const path = require("path");
-var cors=require("cors");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
+const http = require('http');
+const socketIo = require('socket.io');
+const multer = require('multer');
+
 const PORT = process.env.PORT || 5000;
 const USER = "USER";
 const REST = "REST";
@@ -14,7 +17,6 @@ intiliazePassport(passport);
 if (process.env.NODE_ENV != "production") {
   console.log(`Running locally in ${process.env.NODE_ENV}`);
   const env = require("dotenv");
-
   env.config();
   if (env.error) throw env.error;
 }
@@ -28,9 +30,12 @@ const pool = new Pool({
 });
 
 const app = express();
+var upload = multer({ dest: 'images/' });
+var server = http.createServer(app);
+var io = socketIo.listen(server);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use("/",cors())
+
 app.use(express.static(path.join(__dirname, "public")));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -110,7 +115,6 @@ function checkNotAuthenticated(req, res, next) {
   }
   res.redirect("/mainpage");
 }
-
 app.get("/testgetall",(req,res)=>{
   pool.query(`SELECT * FROM users`,(error, result) => {
     if (error) {
@@ -132,7 +136,7 @@ app.post("/reguser", (req, res) => {
   let check = false;
   let inputplaced;
   pool.query(
-    `SELECT * FROM users WHERE login = $1`,
+    `SELECT * FROM users WHERE login= $1`,
     [username],
     (error, result) => {
       if (error) {
@@ -153,7 +157,7 @@ app.post("/reguser", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5)`, //Empty string between $4, $5 is the empty description
+          `INSERT INTO users VALUES($1,$2,$3,$4,$5)`,//Empty string between $4, $5 is the empty description
           [username, first_name, last_name, city, password],
           (error, result) => {
             if (error) {
@@ -209,9 +213,9 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   console.log(uid);
 
-  var query = `select * from restaurants where id=$1`;
+  var query = `select * from restaurants where id= $1`;
 
-  pool.query(query, [uid], (error, result) => {
+  pool.query(query, [uid],(error, result) => {
     if (error) res.send(error);
     console.log(res.rows);
     var results = { attributes: result.rows[0] };
@@ -219,7 +223,7 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
       res.render(
-        'pages/restaurantprofile', 
+      'pages/restaurantprofile',
         {
           results,
           pageTitle: `Grababite • ${results.attributes.name}`,
@@ -235,10 +239,10 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
 });
 
 app.post('/createEvent', (req, res) => {
-  var user = req.body.user;
-  var rest = req.body.restaurant;
   var date = req.body.date;
   var time = req.body.time;
+  var user = req.body.user;
+  var rest = req.body.restaurant;
 
   var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4)`;
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
@@ -256,7 +260,7 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
       }
       var results={'rows':result.rows};
       console.log(results)
-      res.render('pages/RestaurantSearch',{results, pageTitle: 'Grababite • Restaurants', path: "/RestaurantSearch", user: req.user});
+      res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
 
@@ -277,37 +281,38 @@ app.get('/feed', checkNotAuthenticated, (req, res) => {
 app.get("/GotoResReg", (req, res) => res.render("pages/RestaurantSignup"));
 app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
-app.get('/user/:login', checkNotAuthenticated, function(req,res,next){ //No handling for non-existent user
+
+app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
   var query = `select * from Users where login = $1`;
 
-  pool.query(query, [login], (error,result)=>{
+  pool.query(query,[login],(error,result)=>{
     if(error)
       res.send(error);
-    var results = {attributes: result.rows[0]};
-    var pathforprofile = '/user/' + `${login}`;
+    var results = {'attributes':result.rows[0]};
+    var pathforprofile = '/user' + `${login}`;
 
     if(results.attributes !== undefined){
       var qry = `select * from friends where destinationfriend = $1`;
 
-      pool.query(qry, [login], (err,friends)=>{
-        if(err)
-          res.send(err);
-        friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
-        res.render(
+        pool.query(qry,[login],(err,friends)=>{
+          if(err)
+            res.send(err);
+          friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
+          res.render(
           'pages/user',
           {
-            friend: friends,
-            row: results, 
-            pageTitle: `Grababite • User • ${results.attributes.firstname} ${results.attributes.lastname}`, 
-            path: pathforprofile, 
+            friend:friends,
+            row:results,
+            pageTitle: `Grababite • User • ${results.attributes.firstname} ${results.attributes.lastname}`,
+            path: pathforprofile,
             user: req.user
           }
         );
       })
     }
     else{
-      res.status(404).render('pages/404', {path: pathforprofile});
+      res.status(404).render('pages/404',{path:pathforprofile});
     }
   })
 });
@@ -321,7 +326,7 @@ app.post('/update',checkNotAuthenticated,function(req,res){
   const description = req.body.description;
   const password = req.body.password;
   if(req.body.function === 'update'){
-    var sql = 'update users set firstname = $1, lastname=$2, city=$3, description=$4, password=$5 where login=$6';
+    var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
     pool.query(sql, input, (err,data)=>{
       if(err) console.error(err);
@@ -349,7 +354,7 @@ app.post('/event/join', (req,res) => {
   const {evid} = req.body;
 
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
-  pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
+  pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: join event");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
@@ -374,7 +379,7 @@ app.post('/event/unjoin', (req,res) => {
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
-  pool.query(friendQuery, [req.user.data.login, uid], (error, result) => {
+  pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: follow user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
@@ -385,22 +390,85 @@ app.post('/user/follow', (req,res) => {
 
 app.post('/user/unfollow', (req,res) => {
   const {uid} = req.body;
-  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2`
-  pool.query(friendQuery, [req.user.data.login, uid], (error, result) => {
+  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2 `
+  pool.query(friendQuery,[req.user.data.login,uid],(error, result) => {
     if (error){
-      console.log("ERROR IN PG query: unfollow user");
+      console.log("ERROR IN PG query: unfollower user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
-    }
+    };
     res.redirect('/user/'+ uid);
   });
 });
 
+app.post('/user/following',(req,res)=>{
+  const {uid} = req.body;
+  var qry = `select * from friends where sourcefriend = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+    res.send(err);
+
+    res.render('pages/follow',{'followingcount':result.rowCount,'following':result.rows,pageTitle:"Following",path:'/user/following',user:req.user})
+  });
+});
+
+app.post('/user/follower',(req,res)=>{
+  const {uid} = req.body;
+  var qry = `select * from friends where destinationfriend = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+    res.send(err);
+
+    res.render('pages/follow',{'followercount':result.rowCount,'follower':result.rows,pageTitle:"Follower",path:'/user/follower',user:req.user})
+  });
+});
+
+app.post('/user/chat',(req, res) => {
+  const {uid} = req.body;
+  var qry = `SELECT * FROM USERS WHERE login = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+      res.send(err);
+    res.render('pages/chat', {user:req.user,pageTitle:"Chat",path:'/user/chat',user:req.user});
+  });
+});
+
+io.sockets.on('connection', (socket) => {
+  // message
+  var roomName = null;
+
+  socket.on('join', (data) => {
+    roomName = data;
+    socket.join(data);
+  })
+
+  socket.on('message', (data) => {
+    io.sockets.in(roomName).emit('message', data);
+    console.log(data);
+  });
+
+  socket.on('image', (data)=>{
+    io.sockets.in(roomName).emit('image', data);
+    console.log(data);
+  })
+
+});
+
+app.post('/user/image', upload.single("image"), function(req, res, next) {
+  try {
+    console.log(req.file)
+    var data = req.file;
+    res.send(data.location);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 app.get('/Search',checkNotAuthenticated,(request,response) =>{
   pool.query('SELECT * FROM users',(error,results) =>{
     if (error){
       throw error;
-    } 
+    }
     pool.query('SELECT * FROM restaurants',(error,results1) =>{
       if (error){
         throw error;
@@ -408,12 +476,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
       var result={'rows':results.rows,'rows2':results1.rows};
       response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
     })
-   
-  })
-
-
- 
-
+  });
 
   app.post('/UsrSearch',(request,response) =>{
     const {Svar}=request.body;
@@ -422,7 +485,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
       if (error){
         throw error;
       }
-    
+
     pool.query('SELECT * FROM restaurants', (error,results2) =>{
       if (error){
         throw error;
@@ -430,53 +493,36 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
       var result={'rows':results.rows,'rows2':results2.rows};
       response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
     })
-      
+
     } )
   })
-
-
-
-
-
 
   app.post('/RestrSearch',(request,response) =>{
-    const {Svar}=request.body;
-    const Tvar="%" + Svar + "%";
-   
-    pool.query('SELECT * FROM users',(error,results) =>{
-      if (error){
-        throw error;
-      }
-    
-    pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
-      if (error){
-        throw error;
-      }
-      var result={'rows':results.rows,'rows2':results2.rows};
-      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
-    })
-      
-    } )
+  const {Svar}=request.body;
+  const Tvar="%" + Svar + "%";
+
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    }
+
+  pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
+    if (error){
+      throw error;
+    }
+    var result={'rows':results.rows,'rows2':results2.rows};
+    response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
   })
 
-  
+  } )
 })
 
 
+})
 
+app.get("/*", (req, res) =>
+  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
+);
 
-
-
-
-
-app.get("/*", checkNotAuthenticated, (req, res) => {
-  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user });
-});
-
-
-
-
-
-
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
-module.exports=app;
+server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+module.exports=server;

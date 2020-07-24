@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+
 </head>
 
 <body>
@@ -9,67 +10,66 @@
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
 <div class="container">
-    <a style="float: right;">
-    <!-- add link to edit page when auth works -->
-
-    </a>
+    <a style="float: right;"></a>
     <p style="font-size: large;">User Profile</p>
-    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
-    font-size: x-large;"><%=row.login%></h2>
+    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;font-size: x-large;"><%=row.login%></h2>
     <body>
       <title><%=row.login%>Page</title>
-      <% if( user.type === 'USER' && user.data.login===row.attributes.login ){ %>
-      <form action="/update" method="post">
-        <h1><%=row.attributes.firstname%><%=row.attributes.lastname%> Profile</h1>
-          <table border="1">
-              <tr>
-                  <td>ID</td>
-                  <td><input type="text" name="login" id="login" value="<%=row.attributes.login%>" readonly="readonly"/></td>
-              </tr>
-              <tr>
-                  <td>First Name</td>
-                  <td><input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/></td>
-              </tr>
-              <tr>
-                  <td>Last Name</td>
-                  <td><input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/></td>
-              </tr>
-              <tr>
-                  <td>City</td>
-                  <td><input type="text" name="city" id="city" value="<%=row.attributes.city%>" required/></td>
-              </tr>
-              <tr>
-                  <td>Bio</td>
-                  <td><input type="text" name="description" id="description" value="<%=row.attributes.description%>" required/></td>
-              </tr>
-              <tr>
-                  <td>Password</td>
-                  <td><input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/></td>
-              </tr>
+      <% if( user.type === 'USER'){ %>
+        <table>
+          <tr>
+            <form action="/user/following" method="post">
+              <button type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right;"> FOLLOWING </button>
+            </form>
+            <form action="/user/follower" method="post">
+              <button type="submit" name="uid" value="<%=row.attributes.login%>"style="float: right;"> FOLLOWER </button>
+            </form>
+          </tr>
+        </table>
 
-                <button class ="update" type="submit" name="function" value="update" style="cursor:pointer;">Update</button>
-
-          </table>
-      </form>
+        <% if (user.data.login===row.attributes.login){%>
+          <div class="container">
+            <h1><%=row.attributes.firstname%><%=row.attributes.lastname%> Profile</h1>
+            <div class="datail">
+              <div class="detail text-xs-center">
+                  <br>
+                  <div class="detail-block">
+                    <h4 class="detail-title">User Details</h4>
+                    <p class="detail-text">
+                      <form action="/update" method="post">
+                        <strong>ID</strong>:<input type="text" name="login" id="login" value="<%=row.attributes.login%>" readonly="readonly"/><br>
+                        <strong>Firstname</strong>:<input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/><br>
+                        <strong>Lastname</strong>:<input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/><br>
+                        <strong>City</strong>:<input type="text" name="city" id="city" value="<%=row.attributes.city%>" required/><br>
+                        <strong>Bio</strong>:<input type="text" name="description" id="description" value="<%=row.attributes.description%>" required/><br>
+                        <strong>Password</strong>:<input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/><br>
+                        <button class ="update" type="submit" name="function" value="update" style="cursor:pointer;">UPDATE</button>
+                      </form>
+                    </p>
+                </div>
+              </div>
+           </div>
+          <form action = "/user/chat" method="post">
+            <button type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right;cursor:pointer;">CHAT</button>
+          </form>
       <% } else {  %>
           <h1> <%=row.attributes.firstname%> <%=row.attributes.lastname%> </h1>
           <h3> @<%=row.attributes.login%>📍<%=row.attributes.city%>  </h3>
           <p> <%=row.attributes.description%> </p>
 
-          <% if (user.type === 'USER' && !friend.includes(user.data.login)){ %>
-            <form action="/user/follow" method="post">
-              <button type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
+            <% if (user.type === 'USER' && !friend.includes(user.data.login)){ %>
+              <form action="/user/follow" method="post">
+                <button type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
+              </form>
+
+            <% } else if(user.type === 'USER') {  %>
+            <form action="/user/unfollow" method="post">
+              <button type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
             </form>
+            <% } %>
 
-          <% } else if(user.type === 'USER') {  %>
-          <form action="/user/unfollow" method="post">
-            <button type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
-          </form>
-          <% } %>
-       <% } %>
-
-      </body>
-
+        <% } %>
+    <% } %>
 </div>
 
 </body>
