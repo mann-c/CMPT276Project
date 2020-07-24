@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+</head>
+
+<body>
+
+<%- include ('../partials/nav.ejs'), {path: path} %>
+<% if (pageTitle === "Following"){%>
+  <% if (followingcount === 0){%>
+    <h3>THERE IS NO FOLLOWING</h3>
+    <% } else {%>
+    <div class="container">
+     <h2 class="pn">FOLLOWING</h2>
+     <p class="fl"><%=followingcount%> Followings</p>
+     <table class="table">
+        <tbody >
+          <%for(var i=0;i<following.length;i++){%>
+          <%var json = following[i];%>
+             <tr>
+             <td>
+               <button onclick = "location.href='/user/<%=json.destinationfriend%>'" style="cursor:pointer;">
+               <%=json.destinationfriend%>
+             </td>
+             </tr>
+              <%}%>
+        </tbody>
+      </table>
+    </div>
+  <%} %>
+
+<%} else if(pageTitle === "Follower") {%>
+  <% if (followercount === 0){%>
+    <h3>THERE IS NO FOLLOWER</h3>
+  <%} else {%>
+    <div class="container">
+     <h2 class="pn">FOLLOWER</h2>
+     <p class="fl"><%=followercount%> Followers</p>
+     <table class="table">
+        <tbody >
+          <%for(var i=0;i<follower.length;i++){%>
+          <%var json = follower[i];%>
+             <tr>
+             <td>
+               <button onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
+               <%=json.sourcefriend%>
+             </td>
+             </tr>
+              <%}%>
+        </tbody>
+      </table>
+    </div>
+  <%}%>
+<%}%>
+</body>
+</html>

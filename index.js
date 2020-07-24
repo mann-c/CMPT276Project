@@ -3,7 +3,10 @@ const path = require("path");
 const passport = require("passport");
 const flash = require("express-flash");
 const session = require("express-session");
-const socketIO = require("socket.io");
+const http = require("http");
+const socketIo = require("socket.io");
+const multer = require("multer");
+
 const PORT = process.env.PORT || 5000;
 const USER = "USER";
 const REST = "REST";
@@ -27,6 +30,9 @@ const pool = new Pool({
 });
 
 const app = express();
+var upload = multer({ dest: 'images/' });
+var server = http.createServer(app);
+var io = socketIo.listen(server);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -54,14 +60,14 @@ app.get("/logout", (req, res) => {
   errors.push({ msg: "you have logged out" });
   res.redirect("/mainpage")
 });
-
+app.get("/restaurantlogin", checkAuthenticated, (req, res) => res.render("pages/Restaurantloginpage"));
 app.post("/login", function (req, res, next) {
   passport.authenticate("local", function (err, user, info) {
     if (err) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true }); //This does not work and crashes our app when reached
+      return res.render("pages/mainpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"}); //This does not work and crashes our app when reached
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -78,7 +84,7 @@ app.post("/logrestaurant", function (req, res, next) {
       return next(err);
     }
     if (!user) {
-      return res.redirect("/mainpage", { failureFlash: true });
+      return res.render("pages/Restaurantloginpage", {messages:"THE USERNAME OR PASSWORD IS INCORRECT"});
     }
     req.logIn(user, function (err) {
       if (err) {
@@ -109,7 +115,17 @@ function checkNotAuthenticated(req, res, next) {
   }
   res.redirect("/mainpage");
 }
-
+app.get("/testgetall",(req,res)=>{
+  pool.query(`SELECT * FROM users`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
 app.post("/reguser", (req, res) => {
   var username = req.body.username;
   var first_name = req.body.first_name;
@@ -120,7 +136,7 @@ app.post("/reguser", (req, res) => {
   let check = false;
   let inputplaced;
   pool.query(
-    `SELECT * FROM users WHERE login = $1`,
+    `SELECT * FROM users WHERE login= $1`,
     [username],
     (error, result) => {
       if (error) {
@@ -141,7 +157,7 @@ app.post("/reguser", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5)`, //Empty string between $4, $5 is the empty description
+          `INSERT INTO users VALUES($1,$2,$3,$4,$5)`,//Empty string between $4, $5 is the empty description
           [username, first_name, last_name, city, password],
           (error, result) => {
             if (error) {
@@ -188,7 +204,7 @@ app.post("/regrest", (req, res) => {
           }
         }
       );
-      res.redirect("mainpage");
+      res.redirect("restaurantlogin");
     }
   });
 });
@@ -197,9 +213,9 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   console.log(uid);
 
-  var query = `select * from restaurants where id=$1`;
+  var query = `select * from restaurants where id= $1`;
 
-  pool.query(query, [uid], (error, result) => {
+  pool.query(query, [uid],(error, result) => {
     if (error) res.send(error);
     console.log(res.rows);
     var results = { attributes: result.rows[0] };
@@ -207,7 +223,7 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
       res.render(
-        'pages/restaurantprofile', 
+      'pages/restaurantprofile',
         {
           results,
           pageTitle: `Grababite • ${results.attributes.name}`,
@@ -221,12 +237,22 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
     }
   });
 });
-
+app.get("/test_get_all_create_events",(req,res)=>{
+  pool.query(`SELECT * FROM events`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
 app.post('/createEvent', (req, res) => {
-  var user = req.body.user;
-  var rest = req.body.restaurant;
   var date = req.body.date;
   var time = req.body.time;
+  var user = req.body.user;
+  var rest = req.body.restaurant;
 
   var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4) RETURNING *`;
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
@@ -244,7 +270,7 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
       }
       var results={'rows':result.rows};
       console.log(results)
-      res.render('pages/RestaurantSearch',{results, pageTitle: 'Grababite • Restaurants', path: "/RestaurantSearch", user: req.user});
+      res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
 
@@ -265,43 +291,58 @@ app.get('/feed', checkNotAuthenticated, (req, res) => {
 app.get("/GotoResReg", (req, res) => res.render("pages/RestaurantSignup"));
 app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
-app.get('/user/:login', checkNotAuthenticated, function(req,res,next){ //No handling for non-existent user
+
+app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
   var login = req.params.login;
   var query = `select * from Users where login = $1`;
 
-  pool.query(query, [login], (error,result)=>{
+  pool.query(query,[login],(error,result)=>{
     if(error)
       res.send(error);
-    var results = {attributes: result.rows[0]};
-    var pathforprofile = '/user/' + `${login}`;
+    var results = {'attributes':result.rows[0]};
+    var pathforprofile = '/user' + `${login}`;
 
     if(results.attributes !== undefined){
       var qry = `select * from friends where destinationfriend = $1`;
 
-      pool.query(qry, [login], (err,friends)=>{
-        if(err)
-          res.send(err);
-        friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
-        res.render(
+        pool.query(qry,[login],(err,friends)=>{
+          if(err)
+            res.send(err);
+          friends = friends.rows.map((friend_obj)=>friend_obj.sourcefriend);
+          res.render(
           'pages/user',
           {
-            friend: friends,
-            row: results, 
-            pageTitle: `Grababite • User • ${results.attributes.firstname} ${results.attributes.lastname}`, 
-            path: pathforprofile, 
+            friend:friends,
+            row:results,
+            pageTitle: `Grababite • User • ${results.attributes.firstname} ${results.attributes.lastname}`,
+            path: pathforprofile,
             user: req.user
           }
         );
       })
     }
     else{
-      res.status(404).render('pages/404', {path: pathforprofile});
+      res.status(404).render('pages/404',{path:pathforprofile});
     }
   })
 });
 
+app.post("/testgetupdate",function(req,res){
+  var username= req.body.username;
+  pool.query(`SELECT * FROM users WHERE login = $1`,
+  [username],(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
 //Update User Profile
-app.post('/update',checkNotAuthenticated,function(req,res){
+app.post('/update',function(req,res){
   const login = req.body.login;
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
@@ -309,7 +350,7 @@ app.post('/update',checkNotAuthenticated,function(req,res){
   const description = req.body.description;
   const password = req.body.password;
   if(req.body.function === 'update'){
-    var sql = 'update users set firstname = $1, lastname=$2, city=$3, description=$4, password=$5 where login=$6';
+    var sql = 'update users set firstname =$1 , lastname=$2,city=$3, description=$4, password=$5 where login=$6';
     var input = [firstname,lastname,city,description,password,login];
     pool.query(sql, input, (err,data)=>{
       if(err) console.error(err);
@@ -336,7 +377,7 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
-  pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
+  pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: join event");
       res.status(406).json({error: 'FAILURE'});
@@ -362,10 +403,12 @@ app.post('/event/unjoin', (req,res) => {
   });
 });
 
+
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
+  console.log(req);
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
-  pool.query(friendQuery, [req.user.data.login, uid], (error, result) => {
+  pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: follow user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
@@ -376,28 +419,141 @@ app.post('/user/follow', (req,res) => {
 
 app.post('/user/unfollow', (req,res) => {
   const {uid} = req.body;
-  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2`
-  pool.query(friendQuery, [req.user.data.login, uid], (error, result) => {
+  const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2 `
+  pool.query(friendQuery,[req.user.data.login,uid],(error, result) => {
     if (error){
-      console.log("ERROR IN PG query: unfollow user");
+      console.log("ERROR IN PG query: unfollower user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
-    }
+    };
     res.redirect('/user/'+ uid);
   });
 });
 
-app.get("/*", checkNotAuthenticated, (req, res) => {
-  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user });
+app.post('/user/following',(req,res)=>{
+  const {uid} = req.body;
+  var qry = `select * from friends where sourcefriend = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+    res.send(err);
+
+    res.render('pages/follow',{'followingcount':result.rowCount,'following':result.rows,pageTitle:"Following",path:'/user/following',user:req.user})
+  });
 });
 
-const server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+app.post('/user/follower',(req,res)=>{
+  const {uid} = req.body;
+  var qry = `select * from friends where destinationfriend = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+    res.send(err);
 
-const io = socketIO(server);
-
-io.on('connection', (socket) => {
-  console.log('Client connected');
-  socket.on('disconnect', () => console.log('Client disconnected'));
+    res.render('pages/follow',{'followercount':result.rowCount,'follower':result.rows,pageTitle:"Follower",path:'/user/follower',user:req.user})
+  });
 });
+
+app.post('/user/chat',(req, res) => {
+  const {uid} = req.body;
+  var qry = `SELECT * FROM USERS WHERE login = '${uid}'`
+  pool.query(qry,(err,result)=>{
+    if(err)
+      res.send(err);
+    res.render('pages/chat', {user:req.user,pageTitle:"Chat",path:'/user/chat',user:req.user});
+  });
+});
+
+io.sockets.on('connection', (socket) => {
+  // message
+  var roomName = null;
+
+  socket.on('join', (data) => {
+    roomName = data;
+    socket.join(data);
+  })
+
+  socket.on('message', (data) => {
+    io.sockets.in(roomName).emit('message', data);
+    console.log(data);
+  });
+
+  socket.on('image', (data)=>{
+    io.sockets.in(roomName).emit('image', data);
+    console.log(data);
+  })
+
+});
+
+app.post('/user/image', upload.single("image"), function(req, res, next) {
+  try {
+    console.log(req.file)
+    var data = req.file;
+    res.send(data.location);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+app.get('/Search',checkNotAuthenticated,(request,response) =>{
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    }
+    pool.query('SELECT * FROM restaurants',(error,results1) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results1.rows};
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
+    })
+  });
+
+  app.post('/UsrSearch',(request,response) =>{
+    const {Svar}=request.body;
+    const Tvar="%" + Svar + "%";
+    pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
+      if (error){
+        throw error;
+      }
+
+    pool.query('SELECT * FROM restaurants', (error,results2) =>{
+      if (error){
+        throw error;
+      }
+      var result={'rows':results.rows,'rows2':results2.rows};
+      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
+    })
+
+    } )
+  })
+
+  app.post('/RestrSearch',(request,response) =>{
+  const {Svar}=request.body;
+  const Tvar="%" + Svar + "%";
+
+  pool.query('SELECT * FROM users',(error,results) =>{
+    if (error){
+      throw error;
+    }
+
+  pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
+    if (error){
+      throw error;
+    }
+    var result={'rows':results.rows,'rows2':results2.rows};
+    response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
+  })
+
+  } )
+})
+
+
+})
+
+app.get("/*", (req, res) =>
+  res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
+);
+
+server.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 function socketUpdateEvent(type, evid, userData){
   io.sockets.emit('updateevent', type, evid, userData);
@@ -406,3 +562,5 @@ function socketUpdateEvent(type, evid, userData){
 function socketPushEvent(event){
   io.sockets.emit('pushevent', event);
 }
+
+module.exports=server;
