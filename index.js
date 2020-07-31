@@ -211,15 +211,15 @@ app.post("/regrest", (req, res) => {
 
 app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
-  console.log(uid);
+  //console.log(uid);
 
   var query = `select * from restaurants where id= $1`;
 
   pool.query(query, [uid],(error, result) => {
     if (error) res.send(error);
-    console.log(res.rows);
+    //console.log(res.rows);
     var results = { attributes: result.rows[0] };
-    console.log(results);
+    //console.log(results);
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
       res.render(
@@ -275,6 +275,8 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
   })
 
 app.get('/feed', checkNotAuthenticated, (req, res) => {
+  console.log(req.user.type);
+  
   eventsController.getFeedEvents(req.user.type, req.user.data, pool)
       .then(answer => res.render('pages/feed', {
         events: answer,
