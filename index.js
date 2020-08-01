@@ -10,6 +10,7 @@ const multer = require("multer");
 const PORT = process.env.PORT || 5000;
 const USER = "USER";
 const REST = "REST";
+const feedSubscribers = {}; //Key-value pairing
 const eventsController = require("./controllers/events");
 const intiliazePassport = require("./passport-config");
 intiliazePassport(passport);
@@ -21,6 +22,7 @@ if (process.env.NODE_ENV != "production") {
   if (env.error) throw env.error;
 }
 const { Pool } = require("pg");
+const { send } = require("process");
 const constring =
   process.env.DATABASE_URL ||
   `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@localhost/grababite`;
@@ -289,7 +291,14 @@ app.get('/feed', checkNotAuthenticated, (req, res) => {
         res.status(404).render('pages/404', {path: '/feed'})
       });
 });
-
+//Test route for testing only remove it
+app.get("/testsession", (req, res) => {
+  console.log(Object.keys(req.session));
+  console.log(req.session);
+  console.log(req.sessionID);
+  if(req.session.passport)
+    console.log(req.session.passport.user.data);
+});
 app.get("/GotoResReg", (req, res) => res.render("pages/RestaurantSignup"));
 app.get("/GotoUsrReg", (req, res) => res.render("pages/registeruser"));
 
@@ -378,13 +387,41 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
 
 app.post('/event/join', (req,res) => {
   const {evid} = req.body;
-  const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`
-  pool.query(attendQuery, [evid,req.user.data.login], (error, result) => {
+
+  //User login is inserted into attendance table
+  const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`;
+  pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: join event");
       res.status(406).json({error: 'FAILURE'});
+    } // Else move on
+  });
+
+  //We check the event record for the owner and restaurant, so we can notify them
+  const eventQuery = `SELECT ev.*, res.name FROM events ev
+                      INNER JOIN restaurants res ON ev.restid = res.id 
+                      WHERE eventid = $1`;
+  pool.query(eventQuery, [evid], (error, result) => {
+    if(error){
+      console.log("ERROR IN NESTED PG query: join event")
+      res.status(406).json({error: 'FAILURE'});
     } else {
-      socketUpdateEvent('JOIN', evid, {login: req.user.data.login})
+      //Updates the view for restaurant and creator
+      socketUpdateEvent(
+        'JOIN',
+        evid,
+        {login: req.user.data.login},
+        [result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
+      );
+      //Notifies the creator of the event
+      socketNotifyUpdate(
+        'JOIN',
+        result.rows[0],                                                       //All event info
+        {
+          login: req.user.data.login,                                         //Login of who joined
+          name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+        }
+      );
       res.status(201).json({message: 'SUCCESS'});
     }
   });
@@ -398,8 +435,34 @@ app.post('/event/unjoin', (req,res) => {
     if (error){
       console.log("ERROR IN PG query: unjoin event");
       res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
+    } 
+  });
+
+  //We check the event record for the owner and restaurant, so we can notify them
+  const eventQuery = `SELECT ev.*, res.name FROM events ev
+                      INNER JOIN restaurants res ON ev.restid = res.id 
+                      WHERE eventid = $1`;
+  pool.query(eventQuery, [evid], (error, result) => {
+    if(error){
+      console.log("ERROR IN NESTED PG query: join event")
+      res.status(406).json({error: 'FAILURE'});
     } else {
-      socketUpdateEvent('UNJOIN', evid, {login: req.user.data.login})
+      //Updates the view for restaurant and creator
+      socketUpdateEvent(
+        'UNJOIN',
+        evid,
+        {login: req.user.data.login},
+        [result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
+      );
+      //Notifies the creator of the event
+      socketNotifyUpdate(
+        'UNJOIN',
+        result.rows[0],                                                       //All event info
+        {
+          login: req.user.data.login,                                         //Login of who joined
+          name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+        }
+      );
       res.status(201).json({message: 'SUCCESS'});
     }
   });
@@ -482,6 +545,12 @@ io.sockets.on('connection', (socket) => {
     console.log(data);
   })
 
+  socket.on('subscribe', (userlogin) => {
+    console.log("Connection(unsecured) by user: " + userlogin);
+    feedSubscribers[`${userlogin}`] = socket.id                                   //Map sockets to users
+    console.log(feedSubscribers);
+  })
+
 });
 
 app.post('/user/image', upload.single("image"), function(req, res, next) {
@@ -551,14 +620,39 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
 
 })
 
-app.get("/*", (req, res) =>
+app.get("/*", (req, res) => {
   res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
-);
+});
 
 server.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
-function socketUpdateEvent(type, evid, userData){
-  io.sockets.emit('updateevent', type, evid, userData);
+function socketUpdateEvent(type, evid, userData, sendArray){
+  if(sendArray){
+    sendArray.map( targetLogin => {
+      if(feedSubscribers.hasOwnProperty(targetLogin)){
+        console.log("Updating " + targetLogin);
+        io.to(feedSubscribers[targetLogin]).emit('updateevent', type, evid, userData);
+      }
+    });
+  }
+  //So this worked.
+    //Now we need to determine in the get requests who needs to get the requests by login
+    //Then we can emit only to those specific users, who are connected :)
+    //E.g. creating a new event alerts the restaurant owner, and your followers
+    //Joining an event updates on restaurant, creator, and followers of the creator (other attendees
+    //  are in the subset of followers of the event creator)
+    //How do we efficiently determine who the followers of the creator are? We query 1. the friend list
+    //  for all the followers of the event creator 2. the restaurant. Both these primary keys,
+    //  the event creator and event restaurant can be found in the event table by the event id passed in.
+    //  then when we have this list of all ids to notify we parse the feedSubscriber
+}
+
+//Sends notification for updates to events (attendance for now) to owner (for now)
+function socketNotifyUpdate(type, eventData, userData){
+  if(feedSubscribers.hasOwnProperty(eventData.userid)){                       //If user connected, notify!
+    console.log("Sending to " + eventData.userid);
+    io.to(feedSubscribers[eventData.userid]).emit('updateattendance', type, eventData, userData);
+  }
 }
 
 function socketPushEvent(event){

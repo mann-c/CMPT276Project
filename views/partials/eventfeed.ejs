@@ -1,8 +1,13 @@
 <div class="event-feed">
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        let socket = io();
-        let socketdata;
+        let socket = io.connect();
+        //Socket init
+        socket.emit('subscribe', '<%= user.type=="USER"? user.data.login: user.data.id %>');
+
+        socket.on('testing', (msg) => {
+            console.log(msg);
+        })
 
         socket.on('updateevent', (updateType, eventID, userData) => { //We need eventid, user details
             switch(updateType) {    //apologies for my hackiness
@@ -112,11 +117,45 @@
         //Remove event
         socket.on('popevent', (socketin) => { //We need eventid, user details
 
-            
-            socketdata = document.getElementById('socketdata');
-            socketdata.innerHTML = 'Socket data' + socketin;
+            //Send notification for removed event
             
         });
+
+        socket.on('updateattendance', (type, eventData, userData) => {
+            switch(type) {    //apologies for my hackiness
+                case 'JOIN':
+                    console.log("Starting toast for updateattendance");
+                    let newToast = document.createElement('div');
+                        newToast.classList.add('toast');
+                        newToast.setAttribute('role', 'alert');
+                        let toastHeader = document.createElement('div');
+                            toastHeader.classList.add('toast-header');
+                            let username = document.createElement('strong');
+                                username.innerText = userData.login;
+                                /*let close = document.createElement('button');
+                                close.setAttribute('type', 'button');
+                                close.setAttribute('data-dismiss', 'toast');
+                                close.setAttribute('aria-label', 'Close');
+                                close.classList.add('ml-2', 'mb-1', 'close');
+                                close.innerHTML = '<span aria-hidden="true">&times;</span>';*/
+                        toastHeader.appendChild(username);
+                            //toastHeader.appendChild(close);
+                        let toastBody = document.createElement('body');
+                            toastBody.classList.add('toast-body');
+                            let text = document.createElement('span');
+                                text.innerText = `Is coming to your event at 
+                                                  ${eventData.name} on ${eventData.startdate}`
+                            toastBody.appendChild(text);
+                        newToast.appendChild(toastHeader);
+                        newToast.appendChild(toastBody);
+                    document.getElementById('toastmaster').appendChild(newToast);
+                    console.log("Ending toast for updateattendance");
+                    break;
+                case 'UNJOIN':
+                    //Similar to above
+                    break;       
+            }
+        })
     </script>
     <script>
         //Button actions -> fetch API
