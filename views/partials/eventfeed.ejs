@@ -126,6 +126,7 @@
                 case 'JOIN':
                     console.log("Starting toast for updateattendance");
                     let newToast = document.createElement('div');
+                        newToast.id = `toast-${eventData.eventid}-${userData.login}`;
                         newToast.classList.add('toast');
                         newToast.setAttribute('role', 'alert');
                         let toastHeader = document.createElement('div');
@@ -143,8 +144,9 @@
                         let toastBody = document.createElement('body');
                             toastBody.classList.add('toast-body');
                             let text = document.createElement('span');
+                                text.id = `toast-${eventData.eventid}-${userData.login}-text`;
                                 text.innerText = `Is coming to your event at 
-                                                  ${eventData.name} on ${eventData.startdate}`
+                                                  ${eventData.name} on ${eventData.startdate}`;
                             toastBody.appendChild(text);
                         newToast.appendChild(toastHeader);
                         newToast.appendChild(toastBody);
@@ -152,7 +154,13 @@
                     console.log("Ending toast for updateattendance");
                     break;
                 case 'UNJOIN':
-                    //Similar to above
+                    //this is not enough we need to create a new toast replacement is just one case
+                    //should be like the update event thing :( also add auto dismiss for notifs
+                    let ttext = document.getElementById(`toast-${eventData.eventid}-${userData.login}-text`);
+                    if(ttext){
+                        ttext.innerText = `Is no longer coming to your event at 
+                                           ${eventData.name} on ${eventData.startdate}`;
+                    }
                     break;       
             }
         })
@@ -204,55 +212,39 @@
     <div id="toastmaster" aria-live="polite" aria-atomic="true"></div>
 
     <% if(events && events.length > 0) { %>
-        <% for (let event of events) { %>
-            <div class="event-div" id=<%= event.eventid %> >
-                <p class="event-div-header">
-                    <span class="feed-item-creator">
-                        <span class="event-creator">
-                            <%= event.firstname %> <%= event.lastname %>
-                        </span>
-                        <span class="event-creator-profile">
-                            <a href="/user/<%= event.login %>" >@<%= event.login %></a>
-                        </span>
-                        <span class="event-creator-city">
-                            <%= event.usercity %>
-                        </span>
-                    </span>
-                    <span class="feed-item-date">
-                        <%= event.startdate.toString().substring(0,15) %>
-                    </span>
-                </p>
-                <p class="event-restaurant">
-                    Eating at <b><%= event.name %></b> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
-                </p>
-                <% if(event.login!==user.data.login && user.type === 'USER') { %>
-                    <% if(!event.attendees.includes(user.data.login)) { %>
-                        <button id=<%= `${event.eventid}-join` %> name="evid" onclick="<%=`joinEvent(${event.eventid})`%>">
-                            Join Event
-                        </button>
-                    <% } else { %>
-                        <button id=<%= `${event.eventid}-unjoin` %> name="evid" onclick="<%=`unjoinEvent(${event.eventid})`%>">
-                            Not Interested
-                        </button>
-                    <% } %>
-                <% } %>
-                
-                <% if(event.count>0) { %>
-                <details id=<%= `${event.eventid}-attendance-details` %>>
-                    <summary>With <span id=<%= `${event.eventid}-attendance-count` %>><%= event.count %></span></summary>
-                    <ul id=<%= `${event.eventid}-attendance-list` %> class="attendance-list">
-                        <% for (let attender of event.attendees) { %>
-                            <li><%= attender %></li>
-                        <% } %>
-                    </ul>
-                </details>
-                <% } %>
+
+        <% if (user.type === 'USER') { %>
+            <div class="container">
+                <div class="row justify-content-md-center">
+                <h2 class="col-4">Your upcoming events</h2>
+                <button class="btn btn-primary col-2" type="button" data-toggle="collapse" data-target="#userEvents" aria-expanded="false" aria-controls="userEvents">Collapse</button>
+                </div>
             </div>
+            <div class="collapse show" id="userEvents">
+                <% for (let event of events) { %>
+                    <% if (event.login===user.data.login || event.attendees.includes(user.data.login)) { %>
+                        <%- include ('./feeditem.ejs', {event, user}) %>
+                    <% } %>
+                <% } %> 
+            </div>
+            <hr>
+        <% } %>
+        <h2>Events that might interest you</h2>
+        <% for (let event of events) { %>
+            <% if (user.type==='USER' && event.login!==user.data.login && !event.attendees.includes(user.data.login)) { %>
+                <%- include ('./feeditem.ejs', {event, user}) %>
+            <% } else if (user.type === 'REST') { %>
+                <%- include ('./feeditem.ejs', {event, user}) %>
+            <% } %>
         <% } %>
 
     <% } else { %>
         <h1>
-            There are no upcoming events, why not start one?
+            <% if (user.type === 'USER') { %>
+                There are no upcoming events, why not start one?
+            <% } else { %>
+                There are no upcoming events at your restaurant
+            <% } %>
         </h1>
     <% } %>
 </div>

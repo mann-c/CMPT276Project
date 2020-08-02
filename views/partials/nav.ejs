@@ -1,48 +1,52 @@
-<nav class="navbar navbar-default navbar-static-top navbar-inverse">
-  <div class="container">
-    <a class="navbar-brand" href="/feed">Grababite</a>
-    <ul class="nav navbar-nav mr-auto">
-    <% if(user.type=='USER'){ %>
-      <li class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>">
-        <a href="/user/<%=user.data.login%>">
-          Profile
-        </a>
-      </li>
-    <% } else { %>
-      <li class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
-        <a href="/restaurant/<%=user.data.id%>">
-          Profile
-        </a>
-      </li>
-    <% } %>
-      <li class="nav-link <%= path === '/feed' ? 'active' : '' %>">
-        <a href="/feed">
+<nav class="navbar navbar-expand-sm sticky-top navbar-dark bg-dark">
+  <a class="navbar-brand" href="/feed">Grababite</a>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarLinks" aria-controls="navbarLinks" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarLinks">
+    <ul class="navbar-nav">
+      <% if(user.type=='USER'){ %>
+        <li class="nav-item <%= path===`/user/${user.data.login}` ? 'active' : '' %>">
+          <a href="/user/<%=user.data.login%>" class="nav-link">
+            Profile
+          </a>
+        </li>
+      <% } else { %>
+        <li class="nav-item <%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
+          <a href="/restaurant/<%=user.data.id%>" class="nav-link">
+            Profile
+          </a>
+        </li>
+      <% } %>
+      <li class="nav-item <%= path === '/feed' ? 'active' : '' %>">
+        <a href="/feed" class="nav-link">
           <span class="glyphicon glyphicon-home"></span> 
           Feed
         </a>
       </li>
-      <!-- <li class="<%= path === '/RestaurantSearch' ? 'active' : '' %>">
+      <!-- <li class="<%= //path === '/RestaurantSearch' ? 'active' : '' %>">
         <a href="/RestaurantSearch">
           <span class="glyphicon glyphicon-home"></span>
           Restaurant List
         </a>
       </li> -->
 
-      <li class="<%= path === '/Search' ? 'active' : '' %>"> 
-        <a href="/Search">
+      <li class="nav-item <%= path === '/Search' ? 'active' : '' %>"> 
+        <a href="/Search"class="nav-link" >
           <span class="glyphicon glyphicon-home"></span>
-          User/Restaurant Search
+          Search
         </a>
         
       </li>
 
-
+      
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li class="navbar-right">
-        <a href="/logout"
-          ><span class="glyphicon glyphicon-book"></span> Logout</a
-        >
+      <li class="nav-item">
+        <a href="/logout" class="nav-link">
+          <span class="glyphicon glyphicon-book"></span> Logout
+        </a>
       </li>
     </ul>
   </div>

@@ -311,7 +311,7 @@ app.get('/user/:login', checkNotAuthenticated, function(req,res,next){
     if(error)
       res.send(error);
     var results = {'attributes':result.rows[0]};
-    var pathforprofile = '/user' + `${login}`;
+    var pathforprofile = `/user/${login}`;
 
     if(results.attributes !== undefined){
       var qry = `select * from friends where destinationfriend = $1`;
