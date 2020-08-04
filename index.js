@@ -451,47 +451,68 @@ app.post('/user/follower',(req,res)=>{
   });
 });
 
-app.post('/user/chat',(req, res) => {
-  const {uid} = req.body;
-  var qry = `SELECT * FROM USERS WHERE login = '${uid}'`
-  pool.query(qry,(err,result)=>{
-    if(err)
-      res.send(err);
-    res.render('pages/chat', {user:req.user,pageTitle:"Chat",path:'/user/chat',user:req.user});
-  });
-});
-
-io.sockets.on('connection', (socket) => {
-  // message
-  var roomName = null;
-
-  socket.on('join', (data) => {
-    roomName = data;
-    socket.join(data);
+// app.post('/user/chat',(req, res) => {
+//   const {uid} = req.body;
+//   var qry = `SELECT * FROM USERS WHERE login = '${uid}'`
+//   pool.query(qry,(err,result)=>{
+//     if(err)
+//       res.send(err);
+//     res.render('pages/chat', {user:req.user,pageTitle:"Chat",path:'/user/chat',user:req.user});
+//   });
+// });
+//
+// io.sockets.on('connection', (socket) => {
+//   // message
+//   var roomName = null;
+//
+//   socket.on('join', (data) => {
+//     roomName = data;
+//     socket.join(data);
+//   })
+//
+//   socket.on('message', (data) => {
+//     io.sockets.in(roomName).emit('message', data);
+//     console.log(data);
+//   });
+//
+//   socket.on('image', (data)=>{
+//     io.sockets.in(roomName).emit('image', data);
+//     console.log(data);
+//   })
+//
+// });
+//
+// app.post('/user/image', upload.single("image"), function(req, res, next) {
+//   try {
+//     console.log(req.file)
+//     var data = req.file;
+//     res.send(data.location);
+//   } catch (error) {
+//     console.error(error);
+//     next(error);
+//   }
+// });
+app.get('/chat', checkNotAuthenticated, (req,res) =>{
+    res.render('pages/chat',{pageTitle: 'Grababite • Chat', path: "/chat", user: req.user})
   })
-
-  socket.on('message', (data) => {
-    io.sockets.in(roomName).emit('message', data);
-    console.log(data);
-  });
-
-  socket.on('image', (data)=>{
-    io.sockets.in(roomName).emit('image', data);
-    console.log(data);
+const users = {}
+io.sockets.on('connection', socket => {
+  socket.on('new-user', name => {
+    users[socket.id] = name
+    socket.broadcast.emit('user-connected', name)
   })
+  socket.on('send-chat-message', message => {
+    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
+  })
+  socket.on("typing",message=>{
+    socket.broadcast.emit("typing",message)
+  })
+  socket.on('disconnect', () => {
+    socket.broadcast.emit('user-disconnected', users[socket.id])
+    delete users[socket.id]
+  })
+})
 
-});
-
-app.post('/user/image', upload.single("image"), function(req, res, next) {
-  try {
-    console.log(req.file)
-    var data = req.file;
-    res.send(data.location);
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
 
 app.get('/Search',checkNotAuthenticated,(request,response) =>{
   pool.query('SELECT * FROM users',(error,results) =>{

@@ -17,7 +17,7 @@
     <% } %>
       <li class="nav-link <%= path === '/feed' ? 'active' : '' %>">
         <a href="/feed">
-          <span class="glyphicon glyphicon-home"></span> 
+          <span class="glyphicon glyphicon-home"></span>
           Feed
         </a>
       </li>
@@ -28,12 +28,17 @@
         </a>
       </li> -->
 
-      <li class="<%= path === '/Search' ? 'active' : '' %>"> 
+      <li class="<%= path === '/Search' ? 'active' : '' %>">
         <a href="/Search">
           <span class="glyphicon glyphicon-home"></span>
           User/Restaurant Search
         </a>
-        
+      </li>
+      <li class="<%= path === '/chat' ? 'active' : '' %>">
+        <a href="/chat">
+          <span class="glyphicon glyphicon-home"></span>
+          Chat
+        </a>
       </li>
 
 
