@@ -116,19 +116,19 @@
     notificationItem.append(notificationBody);
     //Add to list
     if($('#notification-div').children().length>0){
-      console.log("Creating another event")
+      //console.log("Creating another event")
       let notificationList = $('#notification-div').children('.notification-list');
       notificationList.prepend(notificationItem);
     } else {
       console.log($('#notification-div').html())
       console.log($('#notification-div').children())
 
-      console.log("Creating first event ever");
+      //console.log("Creating first event ever");
       let notificationList = $('<ul>').addClass('notification-list');
       notificationList.append(notificationItem);
       $('#notification-div').empty().append(notificationList);
     }
-    
+    //Remove, replace and show popover
     $("#navpop").popover('dispose');
     $("#navpop").popover({
       'title' : 'Notifications', 
