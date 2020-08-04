@@ -726,16 +726,6 @@ function socketUpdateEvent(type, evid, userData, sendArray){
       }
     });
   }
-  //So this worked.
-    //Now we need to determine in the get requests who needs to get the requests by login
-    //Then we can emit only to those specific users, who are connected :)
-    //E.g. creating a new event alerts the restaurant owner, and your followers
-    //Joining an event updates on restaurant, creator, and followers of the creator (other attendees
-    //  are in the subset of followers of the event creator)
-    //How do we efficiently determine who the followers of the creator are? We query 1. the friend list
-    //  for all the followers of the event creator 2. the restaurant. Both these primary keys,
-    //  the event creator and event restaurant can be found in the event table by the event id passed in.
-    //  then when we have this list of all ids to notify we parse the feedSubscriber
 }
 
 //Sends notification for updates to events (attendance for now) to owner (for now)
