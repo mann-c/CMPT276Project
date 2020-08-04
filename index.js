@@ -213,15 +213,13 @@ app.post("/regrest", (req, res) => {
 
 app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
-  //console.log(uid);
 
   var query = `select * from restaurants where id = $1`;
 
   pool.query(query, [uid],(error, result) => {
     if (error) res.send(error);
-    //console.log(res.rows);
-    var results = { attributes: result.rows[0] };
-    //console.log(results);
+      var results = { attributes: result.rows[0] };
+
     var pathforprofile = '/restaurant/' + `${uid}`;
     if(results.attributes !== undefined){
       res.render(
@@ -260,8 +258,31 @@ app.post('/createEvent', (req, res) => {
   pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
     if(error)
       res.end(error);
-    socketPushEvent(result.rows[0]);
-    res.redirect('/feed');
+    //We get the restaurant name for the socket message
+    const restaurantQuery = `SELECT * FROM restaurants WHERE id = $1`;
+    pool.query(restaurantQuery, [rest], (resterror, restresult) => {
+      if(resterror){
+        console.log("ERROR IN NESTED(1) PG query: create event")
+        res.status(406).json({error: 'FAILURE'});
+      } else {
+        //Notifies the followers of the event
+        const followerQuery = `SELECT * FROM friends WHERE destinationfriend = $1`;
+        pool.query(followerQuery, [user], (innererror, innerresult) => {
+          if(innererror){
+            console.log("ERROR IN NESTED(2) PG query: create event")
+            res.status(406).json({error: 'FAILURE'});
+          } else {
+            //Notifies the followers of the event
+            let followers = innerresult.rows.map(row => row.sourcefriend);
+            socketNotifyCreate(
+              {...result.rows[0],...restresult.rows[0]},                                                       // Created Event info
+              followers
+            );
+          }
+        });
+      }
+      res.redirect(`/feed#${result.rows[0].eventid}`);
+    });
   })
 });
 
@@ -271,13 +292,11 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
         throw error;
       }
       var results={'rows':result.rows};
-      console.log(results)
       res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
 
 app.get('/feed', checkNotAuthenticated, (req, res) => {
-  console.log(req.user.type);
   
   eventsController.getFeedEvents(req.user.type, req.user.data, pool)
       .then(answer => res.render('pages/feed', {
@@ -443,7 +462,6 @@ app.post('/event/join', (req,res) => {
 
 app.post('/event/unjoin', (req,res) => {
   const {evid} = req.body;
-  console.log('unjoin requested')
   const attendQuery = `DELETE FROM eventsattendance where eventid = $1 and userid = $2`;
   pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
     if (error){
@@ -461,7 +479,6 @@ app.post('/event/unjoin', (req,res) => {
     } else {
       let idList = [];
       //Updates the view for attendees
-      console.log(presult);
       if(presult.rowCount)
         idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
       
@@ -512,7 +529,6 @@ app.post('/event/delete', (req,res) => {
     }
     deletedEventAttendees = result.rows;
 
-    console.log("Delete attendes", deletedEventAttendees);
     //Delete event after
     const deleteEventQuery = `DELETE FROM events WHERE eventid = $1 RETURNING *`;
     pool.query(deleteEventQuery, [evid], (outererror, outerresult) => {
@@ -521,37 +537,45 @@ app.post('/event/delete', (req,res) => {
         res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
       }
       deletedEvent = outerresult.rows[0];
-      console.log(deletedEvent);
-      console.log(Object.keys(deletedEvent));
-          //Updates the view for attendees
-          let idList = deletedEventAttendees.map(row => row.userid);               //Array of objects -> Array of ids
-          console.log(idList);
-          //We get the restaurant name for the socket message
-          const eventQuery = `SELECT * FROM restaurants WHERE id = $1`;
-          pool.query(eventQuery, [deletedEvent.restid], (innererror, innerresult) => {
-            if(innererror){
-              console.log("ERROR IN NESTED(2) PG query: delete event")
-              res.status(406).json({error: 'FAILURE'});
-            } else {
-              //One more call back for all the followers :D
-              //Updates the view for restaurant and creator
-              console.log(idList);
-              console.log(outerresult.rows[0].userid, outerresult.rows[0].restid);
-              //Update the views
-              socketUpdateEvent(
-                'DELETE',
-                evid,
-                {login: req.user.data.login},
-                [...idList, outerresult.rows[0].userid, outerresult.rows[0].restid] //Array of who to update for
-              );
-              //Notifies the creator of the event
-              socketNotifyDelete(
-                deletedEvent,                                                       // Deleted Event info
-                [...idList, outerresult.rows[0].restid]
-              );
-              res.status(201).json({message: 'SUCCESS'});
-            }
-          });
+        //Updates the view for attendees
+        let idList = deletedEventAttendees.map(row => row.userid);               //Array of objects -> Array of ids
+        //We get the restaurant name for the socket message
+        const eventQuery = `SELECT * FROM restaurants WHERE id = $1`;
+        pool.query(eventQuery, [deletedEvent.restid], (innererror, innerresult) => {
+          if(innererror){
+            console.log("ERROR IN NESTED(1) PG query: delete event")
+            res.status(406).json({error: 'FAILURE'});
+          } else {
+            //Notifies the followers of the event
+            const followerQuery = `SELECT * FROM friends WHERE destinationfriend = $1`;
+            pool.query(followerQuery, [req.user.data.login], (followerror, followresult) => {
+              if(followerror){
+                console.log("ERROR IN NESTED(2) PG query: create event")
+                res.status(406).json({error: 'FAILURE'});
+              } else {
+                //Notifies the followers of the event
+                let followers = followresult.rows.map(row => {
+                  if(!idList.includes(row.sourcefriend))        //If they are a follower not attending
+                    return row.sourcefriend;
+                });
+
+                //Update the views
+                socketUpdateEvent(
+                  'DELETE',
+                  evid,
+                  {login: req.user.data.login},
+                  [...followers,...idList, outerresult.rows[0].userid, outerresult.rows[0].restid] //Array of who to update for
+                );
+                //Notifies the deletion of the event
+                socketNotifyDelete(
+                  {...deletedEvent, ...innerresult.rows[0]},                                                       // Deleted Event info
+                  [...idList, outerresult.rows[0].restid]
+                );
+                res.status(201).json({message: 'SUCCESS'});
+              }
+            });
+          }
+        });
     });
   });
   
@@ -560,7 +584,6 @@ app.post('/event/delete', (req,res) => {
 
 app.post('/user/follow', (req,res) => {
   const {uid} = req.body;
-  console.log(req);
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
   pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
     if (error){
@@ -635,11 +658,21 @@ io.sockets.on('connection', (socket) => {
   })
 
   socket.on('subscribe', (userlogin) => {
-    console.log("Connection(unsecured) by user: " + userlogin);
+    //console.log("Connection by user: " + userlogin);
     feedSubscribers[`${userlogin}`] = socket.id                                   //Map sockets to users
-    console.log(feedSubscribers);
   })
 
+  socket.on('disconnect', () => {
+    //loop through subscribers for disconnect
+    for (let prop in feedSubscribers){
+      if (feedSubscribers.hasOwnProperty(prop)){
+        if (feedSubscribers.prop == socket.id){
+          delete feedSubscribers.prop;
+          break;
+        }
+      }
+    }
+  })
 });
 
 app.post('/user/image', upload.single("image"), function(req, res, next) {
@@ -716,12 +749,9 @@ app.get("/*", (req, res) => {
 server.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 function socketUpdateEvent(type, evid, userData, sendArray){
-  console.log("Processing " + type);
-  console.log("Send array: " + sendArray);
   if(sendArray){
     sendArray.map( targetLogin => {
       if(feedSubscribers.hasOwnProperty(targetLogin)){
-        console.log("Updating " + targetLogin);
         io.to(feedSubscribers[targetLogin]).emit('updateevent', type, evid, userData);
       }
     });
@@ -731,7 +761,6 @@ function socketUpdateEvent(type, evid, userData, sendArray){
 //Sends notification for updates to events (attendance for now) to owner (for now)
 function socketNotifyUpdate(type, eventData, userData){
   if(feedSubscribers.hasOwnProperty(eventData.userid)){                       //If user connected, notify!
-    console.log("Sending to " + eventData.userid);
     io.to(feedSubscribers[eventData.userid]).emit('updateattendance', type, eventData, userData);
   }
 }
@@ -739,14 +768,19 @@ function socketNotifyDelete(eventData, sendArray){
   if(sendArray){
     sendArray.map( targetLogin => {
       if(feedSubscribers.hasOwnProperty(targetLogin)){
-        console.log("Updating " + targetLogin);//delete later
         io.to(feedSubscribers[targetLogin]).emit('popevent', eventData);
       }
     });
   }
 }
-function socketPushEvent(event){
-  io.sockets.emit('pushevent', event);
+function socketNotifyCreate(eventData, sendArray){
+  if(sendArray){
+    sendArray.map( targetLogin => {
+      if(feedSubscribers.hasOwnProperty(targetLogin)){
+        io.to(feedSubscribers[targetLogin]).emit('pushevent', eventData);
+      }
+    });
+  }
 }
 
 module.exports=server;

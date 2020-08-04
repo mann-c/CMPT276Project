@@ -79,8 +79,8 @@
     pushNotification(eventData.userid, " created a new event at ", eventData);
   });
   //Remove event
-  socket.on('popevent', (event) => { //We need eventid, user details
-    pushNotification(event.userid, " removed their event at ", event);   
+  socket.on('popevent', (eventData) => { //We need eventid, user details
+    pushNotification(eventData.userid, " removed their event at ", eventData);   
   });
 
   socket.on('updateattendance', (type, eventData, userData) => {
@@ -88,43 +88,8 @@
           case 'JOIN':
             console.log(eventData);
               pushNotification(userData.login, " is coming to your event at ", eventData);
-              /*let newToast = document.createElement('div');
-                  newToast.id = `toast-${eventData.eventid}-${userData.login}`;
-                  newToast.classList.add('toast');
-                  newToast.setAttribute('role', 'alert');
-                  let toastHeader = document.createElement('div');
-                      toastHeader.classList.add('toast-header');
-                      let username = document.createElement('strong');
-                          username.innerText = userData.login;
-                          let close = document.createElement('button');
-                              close.setAttribute('type', 'button');
-                              close.setAttribute('data-dismiss', 'toast');
-                              close.setAttribute('aria-label', 'Close');
-                              close.classList.add('ml-2', 'mb-1', 'close');
-                              close.innerHTML = '<span aria-hidden="true">&times;</span>';
-                  toastHeader.appendChild(username);
-                  toastHeader.appendChild(close);
-                  let toastBody = document.createElement('body');
-                      toastBody.classList.add('toast-body');
-                      let text = document.createElement('span');
-                          text.id = `toast-${eventData.eventid}-${userData.login}-text`;
-                          text.innerText = `Is coming to your event at 
-                                            ${eventData.name} on ${eventData.startdate}`;
-                      toastBody.appendChild(text);
-                  newToast.appendChild(toastHeader);
-                  newToast.appendChild(toastBody);
-              document.getElementById('toastmaster').appendChild(newToast);
-              $(`.toast-${eventData.eventid}-${userData.login}`).toast('show')
-              console.log("Ending toast for updateattendance");*/
               break;
           case 'UNJOIN':
-              //this is not enough we need to create a new toast replacement is just one case
-              //should be like the update event thing :( also add auto dismiss for notifs
-              /*let ttext = document.getElementById(`toast-${eventData.eventid}-${userData.login}-text`);
-              if(ttext){
-                  ttext.innerText = `Is no longer coming to your event at 
-                                      ${eventData.name} on ${eventData.startdate}`;
-              }*/
               pushNotification(userData.login, " is no longer coming to ", eventData);
               break;       
       }
@@ -143,8 +108,10 @@
     let notificationSubject = $('<a>');
       notificationSubject.addClass('notification-list-event');
       console.log("pushNotification >>",Object.keys(subject), subject.name);
-      notificationSubject.text(`${subject.name} on ${subject.startdate.toString()} ${subject.starttime.substring(0,5)}`);
+      notificationSubject.text(`${subject.name}`);
       notificationSubject.attr('href', `/feed#${subject.eventid}`);
+      if("<%= path%>" === "/feed")
+        notificationSubject.attr('onclick', `refreshPage(${subject.eventid})`)
     notificationBody.append(notificationActor, notificationText, notificationSubject);
     notificationItem.append(notificationBody);
     //Add to list
