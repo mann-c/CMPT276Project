@@ -65,21 +65,6 @@ const getFollowingEvents = async (uid, pool) => {
 }
 
 const getByRestId = async (uid, pool) => {
-    console.log("Query is:");
-    console.log(`SELECT 
-    u.login, 
-    u.firstname, 
-    u.lastname, 
-    u.city AS usercity, 
-    res.*,
-    ev.eventid,
-    ev.startdate, 
-    ev.starttime
-  FROM events ev 
-  INNER JOIN users u ON u.login = ev.userid 
-  INNER JOIN restaurants res ON ev.restid = res.id 
-  WHERE ev.restid = '${uid}' AND ev.startdate>=CURRENT_DATE
-  ORDER BY startdate ASC, starttime ASC`);
     const getEvents = `SELECT 
                           u.login, 
                           u.firstname, 

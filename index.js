@@ -276,7 +276,7 @@ app.post('/createEvent', (req, res) => {
             let followers = innerresult.rows.map(row => row.sourcefriend);
             socketNotifyCreate(
               {...result.rows[0],...restresult.rows[0]},                                                       // Created Event info
-              followers
+              [...followers, restresult.rows[0].id]
             );
           }
         });
