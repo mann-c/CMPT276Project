@@ -4,6 +4,7 @@
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarLinks" aria-controls="navbarLinks" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
+
   <div class="collapse navbar-collapse" id="navbarLinks">
     <ul class="navbar-nav">
       <% if(user.type=='USER'){ %>
@@ -37,17 +38,138 @@
           <span class="glyphicon glyphicon-home"></span>
           Search
         </a>
-        
-      </li>
-
-      
-    </ul>
-    <ul class="nav navbar-nav navbar-right">
-      <li class="nav-item">
-        <a href="/logout" class="nav-link">
-          <span class="glyphicon glyphicon-book"></span> Logout
-        </a>
       </li>
     </ul>
   </div>
+  <div class="row">
+      <a id="navpop" role="button" class="btn btn-secondary nav-link text-light col ml-2" data-container="nav" data-toggle="popover" data-placement="bottom">
+        <span class="longtext">Notifications </span>🔔<span class="badge badge-secondary"></span>
+      </a>
+      <a href="/logout" role=button class="col nav-link btn btn-danger ml-2">
+        <span class="glyphicon glyphicon-book"></span> Logout
+      </a>
+  </div>
+
+  <div id="notification-div" class="container-sm mh-50 overflow-auto" style="display:none; background: #000;">
+    Nothing to see here
+  </div>
+  <script>
+    $("#navpop").popover({
+      'container': 'body',
+      'title' : 'Notifications', 
+      'html' : true,
+      'placement' : 'bottom',
+      'content' : $('#notification-div').html()
+    });
+  </script>
 </nav>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io.connect();
+  //Socket init
+  socket.emit('subscribe', '<%= user.type=="USER"? user.data.login: user.data.id %>');
+
+  socket.on('testing', (msg) => {
+      console.log(msg);
+  });
+
+  //Add event 
+  socket.on('pushevent', (eventData) => { //We need eventid, user details
+    //Create element
+    pushNotification(eventData.userid, " created a new event at ", eventData);
+  });
+  //Remove event
+  socket.on('popevent', (event) => { //We need eventid, user details
+    pushNotification(event.userid, " removed their event at ", event);   
+  });
+
+  socket.on('updateattendance', (type, eventData, userData) => {
+      switch(type) {    //apologies for my hackiness
+          case 'JOIN':
+            console.log(eventData);
+              pushNotification(userData.login, " is coming to your event at ", eventData);
+              /*let newToast = document.createElement('div');
+                  newToast.id = `toast-${eventData.eventid}-${userData.login}`;
+                  newToast.classList.add('toast');
+                  newToast.setAttribute('role', 'alert');
+                  let toastHeader = document.createElement('div');
+                      toastHeader.classList.add('toast-header');
+                      let username = document.createElement('strong');
+                          username.innerText = userData.login;
+                          let close = document.createElement('button');
+                              close.setAttribute('type', 'button');
+                              close.setAttribute('data-dismiss', 'toast');
+                              close.setAttribute('aria-label', 'Close');
+                              close.classList.add('ml-2', 'mb-1', 'close');
+                              close.innerHTML = '<span aria-hidden="true">&times;</span>';
+                  toastHeader.appendChild(username);
+                  toastHeader.appendChild(close);
+                  let toastBody = document.createElement('body');
+                      toastBody.classList.add('toast-body');
+                      let text = document.createElement('span');
+                          text.id = `toast-${eventData.eventid}-${userData.login}-text`;
+                          text.innerText = `Is coming to your event at 
+                                            ${eventData.name} on ${eventData.startdate}`;
+                      toastBody.appendChild(text);
+                  newToast.appendChild(toastHeader);
+                  newToast.appendChild(toastBody);
+              document.getElementById('toastmaster').appendChild(newToast);
+              $(`.toast-${eventData.eventid}-${userData.login}`).toast('show')
+              console.log("Ending toast for updateattendance");*/
+              break;
+          case 'UNJOIN':
+              //this is not enough we need to create a new toast replacement is just one case
+              //should be like the update event thing :( also add auto dismiss for notifs
+              /*let ttext = document.getElementById(`toast-${eventData.eventid}-${userData.login}-text`);
+              if(ttext){
+                  ttext.innerText = `Is no longer coming to your event at 
+                                      ${eventData.name} on ${eventData.startdate}`;
+              }*/
+              pushNotification(userData.login, " is no longer coming to ", eventData);
+              break;       
+      }
+  })
+  pushNotification = (actor, action, subject) =>{
+    let notificationItem = $('<li>');
+      notificationItem.addClass('notification-list-item');
+    let notificationBody = $('<p>');
+      notificationBody.addClass('notification-list body')
+    let notificationActor = $('<b>');
+      notificationActor.addClass('notification-list-title');
+      notificationActor.text(actor)
+    let notificationText = $('<span>');
+      notificationText.addClass('notification-list-text');
+      notificationText.text(action)
+    let notificationSubject = $('<a>');
+      notificationSubject.addClass('notification-list-event');
+      console.log("pushNotification >>",Object.keys(subject), subject.name);
+      notificationSubject.text(`${subject.name} on ${subject.startdate.toString()} ${subject.starttime.substring(0,5)}`);
+      notificationSubject.attr('href', `/feed#${subject.eventid}`);
+    notificationBody.append(notificationActor, notificationText, notificationSubject);
+    notificationItem.append(notificationBody);
+    //Add to list
+    if($('#notification-div').children().length>0){
+      console.log("Creating another event")
+      let notificationList = $('#notification-div').children('.notification-list');
+      notificationList.prepend(notificationItem);
+    } else {
+      console.log($('#notification-div').html())
+      console.log($('#notification-div').children())
+
+      console.log("Creating first event ever");
+      let notificationList = $('<ul>').addClass('notification-list');
+      notificationList.append(notificationItem);
+      $('#notification-div').empty().append(notificationList);
+    }
+    
+    $("#navpop").popover('dispose');
+    $("#navpop").popover({
+      'title' : 'Notifications', 
+      'html' : true,
+      'placement' : 'bottom',
+      'content' : $('#notification-div').html()
+    });
+    $("#navpop").popover('show');
+    console.log($('#notification-div').children())
+  }
+</script>

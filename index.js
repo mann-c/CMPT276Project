@@ -215,7 +215,7 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
   var uid = req.params.uid;
   //console.log(uid);
 
-  var query = `select * from restaurants where id= $1`;
+  var query = `select * from restaurants where id = $1`;
 
   pool.query(query, [uid],(error, result) => {
     if (error) res.send(error);
@@ -397,32 +397,46 @@ app.post('/event/join', (req,res) => {
     } // Else move on
   });
 
-  //We check the event record for the owner and restaurant, so we can notify them
-  const eventQuery = `SELECT ev.*, res.name FROM events ev
-                      INNER JOIN restaurants res ON ev.restid = res.id 
-                      WHERE eventid = $1`;
-  pool.query(eventQuery, [evid], (error, result) => {
-    if(error){
+  //We update the page for all attendees, including newly joined
+  const attendeeQuery = `SELECT * FROM eventsattendance WHERE eventid = $1`;
+  pool.query(attendeeQuery, [evid], (perror, presult) => {
+    if(perror){
       console.log("ERROR IN NESTED PG query: join event")
       res.status(406).json({error: 'FAILURE'});
     } else {
-      //Updates the view for restaurant and creator
-      socketUpdateEvent(
-        'JOIN',
-        evid,
-        {login: req.user.data.login},
-        [result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
-      );
-      //Notifies the creator of the event
-      socketNotifyUpdate(
-        'JOIN',
-        result.rows[0],                                                       //All event info
-        {
-          login: req.user.data.login,                                         //Login of who joined
-          name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+      //Updates the view for attendees
+      let idList = []
+      if(presult.rowCount)
+        idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
+      
+      //We check the event record for the owner and restaurant, so we can notify them
+      const eventQuery = `SELECT ev.*, res.name FROM events ev
+                          INNER JOIN restaurants res ON ev.restid = res.id 
+                          WHERE eventid = $1`;
+      pool.query(eventQuery, [evid], (error, result) => {
+        if(error){
+          console.log("ERROR IN NESTED PG query: join event")
+          res.status(406).json({error: 'FAILURE'});
+        } else {
+          //Updates the view for restaurant and creator
+          socketUpdateEvent(
+            'JOIN',
+            evid,
+            {login: req.user.data.login},
+            [...idList, result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
+          );
+          //Notifies the creator of the event
+          socketNotifyUpdate(
+            'JOIN',
+            result.rows[0],                                                       //All event info
+            {
+              login: req.user.data.login,                                         //Login of who joined
+              name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+            }
+          );
+          res.status(201).json({message: 'SUCCESS'});
         }
-      );
-      res.status(201).json({message: 'SUCCESS'});
+      });
     }
   });
 });
@@ -438,34 +452,109 @@ app.post('/event/unjoin', (req,res) => {
     } 
   });
 
-  //We check the event record for the owner and restaurant, so we can notify them
-  const eventQuery = `SELECT ev.*, res.name FROM events ev
-                      INNER JOIN restaurants res ON ev.restid = res.id 
-                      WHERE eventid = $1`;
-  pool.query(eventQuery, [evid], (error, result) => {
-    if(error){
+  //We update the page for all attendees, excluding the one who left
+  const attendeeQuery = `SELECT * FROM eventsattendance WHERE eventid = $1`;
+  pool.query(attendeeQuery, [evid], (perror, presult) => {
+    if(perror){
       console.log("ERROR IN NESTED PG query: join event")
-      res.status(406).json({error: 'FAILURE'});
+      res.status(406).json({perror: 'FAILURE'});
     } else {
-      //Updates the view for restaurant and creator
-      socketUpdateEvent(
-        'UNJOIN',
-        evid,
-        {login: req.user.data.login},
-        [result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
-      );
-      //Notifies the creator of the event
-      socketNotifyUpdate(
-        'UNJOIN',
-        result.rows[0],                                                       //All event info
-        {
-          login: req.user.data.login,                                         //Login of who joined
-          name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+      let idList = [];
+      //Updates the view for attendees
+      console.log(presult);
+      if(presult.rowCount)
+        idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
+      
+      //We check the event record for the owner and restaurant, so we can notify them
+      const eventQuery = `SELECT ev.*, res.name FROM events ev
+                          INNER JOIN restaurants res ON ev.restid = res.id 
+                          WHERE eventid = $1`;
+      pool.query(eventQuery, [evid], (error, result) => {
+        if(error){
+          console.log("ERROR IN NESTED PG query: unjoin event")
+          res.status(406).json({error: 'FAILURE'});
+        } else {
+          //Updates the view for restaurant and creator
+          socketUpdateEvent(
+            'UNJOIN',
+            evid,
+            {login: req.user.data.login},
+            [...idList, result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
+          );
+          //Notifies the creator of the event
+          socketNotifyUpdate(
+            'UNJOIN',
+            result.rows[0],                                                       //All event info
+            {
+              login: req.user.data.login,                                         //Login of who joined
+              name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+            }
+          );
+          res.status(201).json({message: 'SUCCESS'});
         }
-      );
-      res.status(201).json({message: 'SUCCESS'});
+      });
     }
   });
+
+});
+
+app.post('/event/delete', (req,res) => {
+  const {evid} = req.body;
+  let deletedEvent;
+  let deletedEventAttendees;
+  console.log('delete requested for event ' + evid);
+  //Deleting foreign key references in attendance
+  const deleteAttendanceQuery = `DELETE FROM eventsattendance WHERE eventid = $1 RETURNING *`;
+  pool.query(deleteAttendanceQuery, [evid], (error, result) => {
+    if (error ){
+      console.log("ERROR IN PG query: delete event");
+      res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
+    }
+    deletedEventAttendees = result.rows;
+
+    console.log("Delete attendes", deletedEventAttendees);
+    //Delete event after
+    const deleteEventQuery = `DELETE FROM events WHERE eventid = $1 RETURNING *`;
+    pool.query(deleteEventQuery, [evid], (outererror, outerresult) => {
+      if (outererror){
+        console.log("ERROR IN PG query: delete event");
+        res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
+      }
+      deletedEvent = outerresult.rows[0];
+      console.log(deletedEvent);
+      console.log(Object.keys(deletedEvent));
+          //Updates the view for attendees
+          let idList = deletedEventAttendees.map(row => row.userid);               //Array of objects -> Array of ids
+          console.log(idList);
+          //We get the restaurant name for the socket message
+          const eventQuery = `SELECT * FROM restaurants WHERE id = $1`;
+          pool.query(eventQuery, [deletedEvent.restid], (innererror, innerresult) => {
+            if(innererror){
+              console.log("ERROR IN NESTED(2) PG query: delete event")
+              res.status(406).json({error: 'FAILURE'});
+            } else {
+              //One more call back for all the followers :D
+              //Updates the view for restaurant and creator
+              console.log(idList);
+              console.log(outerresult.rows[0].userid, outerresult.rows[0].restid);
+              //Update the views
+              socketUpdateEvent(
+                'DELETE',
+                evid,
+                {login: req.user.data.login},
+                [...idList, outerresult.rows[0].userid, outerresult.rows[0].restid] //Array of who to update for
+              );
+              //Notifies the creator of the event
+              socketNotifyDelete(
+                deletedEvent,                                                       // Deleted Event info
+                [...idList, outerresult.rows[0].restid]
+              );
+              res.status(201).json({message: 'SUCCESS'});
+            }
+          });
+    });
+  });
+  
 });
 
 
@@ -627,6 +716,8 @@ app.get("/*", (req, res) => {
 server.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 function socketUpdateEvent(type, evid, userData, sendArray){
+  console.log("Processing " + type);
+  console.log("Send array: " + sendArray);
   if(sendArray){
     sendArray.map( targetLogin => {
       if(feedSubscribers.hasOwnProperty(targetLogin)){
@@ -654,7 +745,16 @@ function socketNotifyUpdate(type, eventData, userData){
     io.to(feedSubscribers[eventData.userid]).emit('updateattendance', type, eventData, userData);
   }
 }
-
+function socketNotifyDelete(eventData, sendArray){
+  if(sendArray){
+    sendArray.map( targetLogin => {
+      if(feedSubscribers.hasOwnProperty(targetLogin)){
+        console.log("Updating " + targetLogin);//delete later
+        io.to(feedSubscribers[targetLogin]).emit('popevent', eventData);
+      }
+    });
+  }
+}
 function socketPushEvent(event){
   io.sockets.emit('pushevent', event);
 }

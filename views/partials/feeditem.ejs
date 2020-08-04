@@ -18,7 +18,7 @@
     <p class="event-restaurant">
         Eating at <b><%= event.name %></b> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
     </p>
-    <% if(event.login!==user.data.login && user.type === 'USER') { %>
+    <% if(user.type === 'USER' && event.login!==user.data.login) { %>
         <% if(!event.attendees.includes(user.data.login)) { %>
             <button id=<%= `${event.eventid}-join` %> name="evid" onclick="<%=`joinEvent(${event.eventid})`%>">
                 Join Event
@@ -28,8 +28,11 @@
                 Not Interested
             </button>
         <% } %>
+    <% } else if(user.type === 'USER' && event.login===user.data.login) { %>
+        <button id=<%= `${event.eventid}-delete` %> name="evid" onclick="<%=`deleteEvent(${event.eventid})`%>">
+            Cancel Event
+        </button>
     <% } %>
-    
     <% if(event.count>0) { %>
     <details id=<%= `${event.eventid}-attendance-details` %>>
         <summary>With <span id=<%= `${event.eventid}-attendance-count` %>><%= event.count %></span></summary>

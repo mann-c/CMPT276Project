@@ -1,14 +1,9 @@
 <div class="event-feed">
-    <script src="/socket.io/socket.io.js"></script>
+    
     <script>
-        let socket = io.connect();
-        //Socket init
-        socket.emit('subscribe', '<%= user.type=="USER"? user.data.login: user.data.id %>');
+        //get socket from papa nav
 
-        socket.on('testing', (msg) => {
-            console.log(msg);
-        })
-
+        //Updates the numberinos on the page, fragile to change
         socket.on('updateevent', (updateType, eventID, userData) => { //We need eventid, user details
             switch(updateType) {    //apologies for my hackiness
                 case 'JOIN':
@@ -55,14 +50,17 @@
                     }
                     //Attendance Count Changes
                     let ujattendanceCount = document.getElementById(`${eventID}-attendance-count`);   //must be there for this request to be made
-                    let newCount = parseInt(ujattendanceCount.innerText) - 1;
-                    if(newCount == 0){
+                    let newCount = !ujattendanceCount? -1 : parseInt(ujattendanceCount.innerText) - 1;
+                    if(newCount <= 0){
                         /*document.getElementById(`${eventID}-attendance-list`)
                             .innerHTML = "<ul></ul>";
                         document.getElementById(`${eventID}-attendance-details`)
                             .removeChild(document.getElementById(`${eventID}-attendance-list`))*/
-                        document.getElementById(eventID)
+                        if(document.getElementById(`${eventID}-attendance-details`)){
+                            document.getElementById(eventID)
                             .removeChild(document.getElementById(`${eventID}-attendance-details`));
+                        }
+                        
                     } else {
                         ujattendanceCount.innerText = newCount;
                         //Attendance List Changes, we are just filling login for now
@@ -80,90 +78,15 @@
                             ujattendanceList.removeChild(toRemove);
                         }
                     }
-                    break;       
+                    break;
+                case 'DELETE':
+                    console.log(`event ${eventID} deleted`)
+                    let eventToDelete = document.getElementById(eventID);
+                    if(eventToDelete)
+                        eventToDelete.parentNode.removeChild(eventToDelete);
+                    break;
             }  
         });
-
-        //Add event 
-        socket.on('pushevent', (event) => { //We need eventid, user details
-            let newToast = document.createElement('div');
-                newToast.classList.add('toast');
-                newToast.setAttribute('role', 'alert');
-                let toastHeader = document.createElement('div');
-                toastHeader.classList.add('toast-header');
-                    let username = document.createElement('strong');
-                    username.innerText = event.userid;
-                    /*let close = document.createElement('button');
-                    close.setAttribute('type', 'button');
-                    close.setAttribute('data-dismiss', 'toast');
-                    close.setAttribute('aria-label', 'Close');
-                    close.classList.add('ml-2', 'mb-1', 'close');
-                    close.innerHTML = '<span aria-hidden="true">&times;</span>';*/
-                toastHeader.appendChild(username);
-                //toastHeader.appendChild(close);
-                let toastBody = document.createElement('body');
-                toastBody.classList.add('toast-body');
-                    let text = document.createElement('span');
-                    text.innerText = `Created a new event`
-                    let eventButton = document.createElement('button');
-                    eventButton.innerText = 'Go to event';
-                    eventButton.setAttribute('onclick', `refreshPage(${event.eventid})`);
-                toastBody.appendChild(text);
-                toastBody.appendChild(eventButton);
-            newToast.appendChild(toastHeader);
-            newToast.appendChild(toastBody);
-            document.getElementById('toastmaster').appendChild(newToast);
-        });
-        //Remove event
-        socket.on('popevent', (socketin) => { //We need eventid, user details
-
-            //Send notification for removed event
-            
-        });
-
-        socket.on('updateattendance', (type, eventData, userData) => {
-            switch(type) {    //apologies for my hackiness
-                case 'JOIN':
-                    console.log("Starting toast for updateattendance");
-                    let newToast = document.createElement('div');
-                        newToast.id = `toast-${eventData.eventid}-${userData.login}`;
-                        newToast.classList.add('toast');
-                        newToast.setAttribute('role', 'alert');
-                        let toastHeader = document.createElement('div');
-                            toastHeader.classList.add('toast-header');
-                            let username = document.createElement('strong');
-                                username.innerText = userData.login;
-                                /*let close = document.createElement('button');
-                                close.setAttribute('type', 'button');
-                                close.setAttribute('data-dismiss', 'toast');
-                                close.setAttribute('aria-label', 'Close');
-                                close.classList.add('ml-2', 'mb-1', 'close');
-                                close.innerHTML = '<span aria-hidden="true">&times;</span>';*/
-                        toastHeader.appendChild(username);
-                            //toastHeader.appendChild(close);
-                        let toastBody = document.createElement('body');
-                            toastBody.classList.add('toast-body');
-                            let text = document.createElement('span');
-                                text.id = `toast-${eventData.eventid}-${userData.login}-text`;
-                                text.innerText = `Is coming to your event at 
-                                                  ${eventData.name} on ${eventData.startdate}`;
-                            toastBody.appendChild(text);
-                        newToast.appendChild(toastHeader);
-                        newToast.appendChild(toastBody);
-                    document.getElementById('toastmaster').appendChild(newToast);
-                    console.log("Ending toast for updateattendance");
-                    break;
-                case 'UNJOIN':
-                    //this is not enough we need to create a new toast replacement is just one case
-                    //should be like the update event thing :( also add auto dismiss for notifs
-                    let ttext = document.getElementById(`toast-${eventData.eventid}-${userData.login}-text`);
-                    if(ttext){
-                        ttext.innerText = `Is no longer coming to your event at 
-                                           ${eventData.name} on ${eventData.startdate}`;
-                    }
-                    break;       
-            }
-        })
     </script>
     <script>
         //Button actions -> fetch API
@@ -202,14 +125,37 @@
                 })
                 .catch(err => console.error(err));
         }
+        function deleteEvent(evid) {
+            let attendance = parseInt(document.getElementById(`${evid}-attendance-count`));
+            let checkOk = confirm(`Are you sure you want to cancel this event?${
+                attendance?` There are ${attendance} people counting on you`: ''
+            }`);
+            if(checkOk){
+                let data = {evid: evid};
+                fetch('/event/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then( (data) => {
+                        if(data.error){
+                            console.log('Delete event failed D:');
+                        }
+                    })
+                    .catch(err => console.error(err));
+            }
+        }
         function refreshPage(event) {
             //window.location.hash = `#${event}`;
             window.location.href = `#${event}`;
             window.location.reload();
         }
     </script>
-    <!--For the toasts-->
-    <div id="toastmaster" aria-live="polite" aria-atomic="true"></div>
+    <!--For the toasts
+    <div id="toastmaster" aria-live="polite" aria-atomic="true"></div>-->
 
     <% if(events && events.length > 0) { %>
 
@@ -217,7 +163,10 @@
             <div class="container">
                 <div class="row justify-content-md-center">
                 <h2 class="col-4">Your upcoming events</h2>
-                <button class="btn btn-primary col-2" type="button" data-toggle="collapse" data-target="#userEvents" aria-expanded="false" aria-controls="userEvents">Collapse</button>
+                <button class="btn btn-primary col-2" id="colBtn" type="button" data-toggle="collapse" data-target="#userEvents" aria-expanded="false" aria-controls="userEvents">
+                    <span id="colBtnShow">Show</span>
+                    <span id="colBtnHide">Hide</span>
+                </button>
                 </div>
             </div>
             <div class="collapse show" id="userEvents">
