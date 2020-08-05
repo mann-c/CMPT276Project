@@ -5,7 +5,6 @@ function initialize(passport) {
   console.log("Initialized");
 
   const authenticateUser = (req, username, password, done) => {
-    console.log(username, password, req.body.utype);
     if (req.body.utype === "USER") {
       pool.query(
         `SELECT * FROM users WHERE login = $1`,
@@ -14,16 +13,12 @@ function initialize(passport) {
           if (err) {
             throw err;
           }
-          console.log(results.rows);
 
           if (results.rows.length > 0) {
             const user = { data: results.rows[0], type: req.body.utype };
 
             //passes password check
             if (password === results.rows[0].password) {
-              console.log("here");
-
-              console.log(user);
 
               return done(null, user);
             }
@@ -47,16 +42,11 @@ function initialize(passport) {
           if (err) {
             throw err;
           }
-          console.log(results.rows);
           
           if (results.rows.length > 0) {
             const user = { data: results.rows[0], type: req.body.utype };
             //passes password check
             if (password === results.rows[0].password) {
-              console.log("here");
-
-              console.log(user);
-
               return done(null, user);
             }
             //fails password check

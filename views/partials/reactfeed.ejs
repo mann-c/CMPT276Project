@@ -39,10 +39,12 @@
                 <% if(event.login!==user.data.login && user.type === 'USER') { %>
                     <% if(!event.attendees.includes(user.data.login)) { %>
                         <form action="/event/join" method="POST">
+                            <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
                             <button type="submit" name="evid" value=<%= event.eventid %> >Join Event</button>
                         </form>
                     <% } else { %>
                         <form action="/event/unjoin" method="POST">
+                            <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
                             <button type="submit" name="evid" value=<%= event.eventid %> >Not Interested</button>
                         </form>
                     <% } %>
