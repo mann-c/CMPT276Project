@@ -5,7 +5,7 @@
   </head>
 
   
-  <body style="border: solid black; padding-bottom: 300px;">
+  <body style="border: solid black; padding-bottom: 300px; ">
     <div id="topsign">
       Grababite
     </div>
@@ -41,19 +41,20 @@
   <body style="border: solid black; padding-bottom: 300px;">
     <div id="userloginform">
       
-      <h3>User Login</h3>
+      <h3 style="font-family: Arial, Helvetica, sans-serif; font-size: 25px;">User Login</h3>
       
       <form class="" action="/login" method="post">
-        <span> Username:</span>
+        <span style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;"> Username:</span>
         <input
+          style="border: solid lightgrey; font-size: 14px;"
           type="text"
           id="username"
           name="username"
           maxlength="12"
           required
-        /><br />
-        <span>Password: </span
-        ><input
+        /><br /> <br>
+        <span style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;">Password: </span
+        ><input style="position: relative; left: 4px; border: solid lightgrey; font-size: 14px; "
           type="password"
           id="password"
           name="password"
@@ -63,9 +64,9 @@
         <input name="utype" value="USER" style="visibility: hidden;" /><br />
         <input class="buttons" type="submit" value="Login" />
       </form>
-
+      <br>
       
-      <h3>Dont have an Account, Register</h3>
+      <h3 style="font-family: Arial, Helvetica, sans-serif;">Dont have an Account, Register</h3>
       <form action="GotoUsrReg" method="GET">
         <input class="buttons" type="submit" value="Create USER Profile" />
       </form>

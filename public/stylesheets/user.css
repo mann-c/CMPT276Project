@@ -48,7 +48,7 @@
 background-color: rgb(111, 202, 238);
 position: relative; 
 left: 55px;
-font-size: large;
+font-size: 18px;
 border-radius: 9px;
 color: black;
 
@@ -62,20 +62,21 @@ color: black;
 
 #followersbutton{
     background-color: rgb(111, 202, 238);
-    font-size: large;
+    font-size: 18px;
     border-radius: 9px;
 
 }
 
 #followingbutton{
     background-color: rgb(111, 202, 238);
-    font-size: large;
+    font-size: 18px;
     border-radius: 9px;
 }
 
 #followersbutton:hover{
     cursor:pointer;
     background-color: rgb(169, 222, 243);
+   
 }
 
 #followingbutton:hover{

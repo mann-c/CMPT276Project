@@ -27,6 +27,7 @@ animation: fading .3s ease-in;
 
 #createbutton{
     position: relative;
+    font-size: 17px;
     right: 100px;
     background-color:  rgb(111, 202, 238);
     border-radius: 9px;

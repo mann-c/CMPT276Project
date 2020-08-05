@@ -23,6 +23,7 @@
     padding-left: 25px;
     padding-bottom: 13px;
     font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
 
 }
 
@@ -41,8 +42,8 @@
     background-color:  rgb(111, 202, 238);
     border-radius: 9px;
     color: black;
-  
-    font-size: 14.5px;
+    font-size: 18px;
+    
 }
 
 #Loginbutton:hover{

@@ -5,13 +5,13 @@
   <link rel="stylesheet" type="text/css" href="/stylesheets/user.css" />
 </head>
 
-<body>
+<body style="overflow-x: hidden;">
 
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
 <div class="container">
     <a style="float: right;"></a>
-    <p style="font-size: x-large; font-weight: bold;">User Profile</p>
+    <p style="font-size: x-large; font-weight: bold; font-size: 30px;">User Profile</p>
     <h2 style=" border: solid 2pt black; text-align: center; border-radius: 25;font-size: x-large;"><%=row.login%></h2>
     <body>
       <title><%=row.login%>Page</title>
@@ -34,16 +34,16 @@
               <div class="detail text-xs-center">
                   <br>
                   <div class="detail-block">
-                    <h4 class="detail-title">User Details</h4>
+                    <h4 class="detail-title" style="font-size: 20px;">User Details</h4> <br>
                     <p class="detail-text">
                   
                       <form action="/update" method="post">
-                        <strong>ID</strong>:<input type="text" name="login" id="login" value="<%=row.attributes.login%>"  readonly="readonly"/><br><br>
-                        <strong>Firstname</strong>:<input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/><br> <br>
-                        <strong>Lastname</strong>:<input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/><br><br>
-                        <strong>City</strong>:<input type="text" name="city" id="city" value="<%=row.attributes.city%>" required /><br><br>
-                        <strong>Bio</strong>:<input type="text" name="description" id="description" value="<%=row.attributes.description%>" required /><br><br>
-                        <strong>Password</strong>:<input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/><br> <br>
+                        <strong style="font-size: 18px;">ID</strong>:<input type="text" name="login" id="login" value="<%=row.attributes.login%>"  readonly="readonly"/><br><br>
+                        <strong style="font-size: 18px;">Firstname</strong>:<input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/><br> <br>
+                        <strong style="font-size: 18px;">Lastname</strong>:<input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/><br><br>
+                        <strong style="font-size: 18px;">City</strong>:<input type="text" name="city" id="city" value="<%=row.attributes.city%>" required /><br><br>
+                        <strong style="font-size: 18px;">Bio</strong>:<input type="text" name="description" id="description" value="<%=row.attributes.description%>" required /><br><br>
+                        <strong style="font-size: 18px;">Password</strong>:<input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/><br> <br>
                         <button class ="update"  id="Updatebutton" type="submit" name="function" value="update" >Update Profile</button>
                     
                       </form>

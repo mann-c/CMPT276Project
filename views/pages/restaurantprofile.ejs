@@ -5,7 +5,7 @@
     <link rel="stylesheet" type="text/css" href="/stylesheets/restaurantprofile.css" />
   </head>
 
-  <body>
+  <body style="overflow-x: hidden;">
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
 <div class="container">
@@ -35,8 +35,8 @@
         </div>
 
         <div id="Eventform">
-        <form action="/createEvent" method="post" id="<%= user.type %>" style="font-weight: bold;">
-            CREATE AN EVENT AT THIS RESTAURANT<br> <br>
+        <form action="/createEvent" method="post" id="<%= user.type %>" style="font-weight: bold; font-size: 16px;">
+            Create an Event at this Restaurant<br> <br>
             <label for="date">DATE:</label>
             <input
               type="date"
