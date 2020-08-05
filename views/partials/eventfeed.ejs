@@ -1,9 +1,9 @@
 <div class="event-feed">
-    <script src="/socket.io/socket.io.js"></script>
+    
     <script>
-        let socket = io();
-        let socketdata;
+        //get socket from papa nav
 
+        //Updates the numberinos on the page, fragile to change
         socket.on('updateevent', (updateType, eventID, userData) => { //We need eventid, user details
             switch(updateType) {    //apologies for my hackiness
                 case 'JOIN':
@@ -50,14 +50,17 @@
                     }
                     //Attendance Count Changes
                     let ujattendanceCount = document.getElementById(`${eventID}-attendance-count`);   //must be there for this request to be made
-                    let newCount = parseInt(ujattendanceCount.innerText) - 1;
-                    if(newCount == 0){
+                    let newCount = !ujattendanceCount? -1 : parseInt(ujattendanceCount.innerText) - 1;
+                    if(newCount <= 0){
                         /*document.getElementById(`${eventID}-attendance-list`)
                             .innerHTML = "<ul></ul>";
                         document.getElementById(`${eventID}-attendance-details`)
                             .removeChild(document.getElementById(`${eventID}-attendance-list`))*/
-                        document.getElementById(eventID)
+                        if(document.getElementById(`${eventID}-attendance-details`)){
+                            document.getElementById(eventID)
                             .removeChild(document.getElementById(`${eventID}-attendance-details`));
+                        }
+                        
                     } else {
                         ujattendanceCount.innerText = newCount;
                         //Attendance List Changes, we are just filling login for now
@@ -75,47 +78,14 @@
                             ujattendanceList.removeChild(toRemove);
                         }
                     }
-                    break;       
+                    break;
+                case 'DELETE':
+                    console.log(`event ${eventID} deleted`)
+                    let eventToDelete = document.getElementById(eventID);
+                    if(eventToDelete)
+                        eventToDelete.parentNode.removeChild(eventToDelete);
+                    break;
             }  
-        });
-
-        //Add event 
-        socket.on('pushevent', (event) => { //We need eventid, user details
-            let newToast = document.createElement('div');
-                newToast.classList.add('toast');
-                newToast.setAttribute('role', 'alert');
-                let toastHeader = document.createElement('div');
-                toastHeader.classList.add('toast-header');
-                    let username = document.createElement('strong');
-                    username.innerText = event.userid;
-                    /*let close = document.createElement('button');
-                    close.setAttribute('type', 'button');
-                    close.setAttribute('data-dismiss', 'toast');
-                    close.setAttribute('aria-label', 'Close');
-                    close.classList.add('ml-2', 'mb-1', 'close');
-                    close.innerHTML = '<span aria-hidden="true">&times;</span>';*/
-                toastHeader.appendChild(username);
-                //toastHeader.appendChild(close);
-                let toastBody = document.createElement('body');
-                toastBody.classList.add('toast-body');
-                    let text = document.createElement('span');
-                    text.innerText = `Created a new event`
-                    let eventButton = document.createElement('button');
-                    eventButton.innerText = 'Go to event';
-                    eventButton.setAttribute('onclick', `refreshPage(${event.eventid})`);
-                toastBody.appendChild(text);
-                toastBody.appendChild(eventButton);
-            newToast.appendChild(toastHeader);
-            newToast.appendChild(toastBody);
-            document.getElementById('toastmaster').appendChild(newToast);
-        });
-        //Remove event
-        socket.on('popevent', (socketin) => { //We need eventid, user details
-
-            
-            socketdata = document.getElementById('socketdata');
-            socketdata.innerHTML = 'Socket data' + socketin;
-            
         });
     </script>
     <script>
@@ -155,65 +125,73 @@
                 })
                 .catch(err => console.error(err));
         }
+        function deleteEvent(evid) {
+            let attendance = parseInt(document.getElementById(`${evid}-attendance-count`));
+            let checkOk = confirm(`Are you sure you want to cancel this event?${
+                attendance?` There are ${attendance} people counting on you`: ''
+            }`);
+            if(checkOk){
+                let data = {evid: evid};
+                fetch('/event/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then( (data) => {
+                        if(data.error){
+                            console.log('Delete event failed D:');
+                        }
+                    })
+                    .catch(err => console.error(err));
+            }
+        }
         function refreshPage(event) {
             //window.location.hash = `#${event}`;
-            window.location.href = `#${event}`;
+            window.location.href = `/feed#${event}`;
             window.location.reload();
         }
     </script>
-    <!--For the toasts-->
-    <div id="toastmaster" aria-live="polite" aria-atomic="true"></div>
 
     <% if(events && events.length > 0) { %>
-        <% for (let event of events) { %>
-            <div class="event-div" id=<%= event.eventid %> >
-                <p class="event-div-header">
-                    <span class="feed-item-creator">
-                        <span class="event-creator">
-                            <%= event.firstname %> <%= event.lastname %>
-                        </span>
-                        <span class="event-creator-profile">
-                            <a href="/user/<%= event.login %>" >@<%= event.login %></a>
-                        </span>
-                        <span class="event-creator-city">
-                            <%= event.usercity %>
-                        </span>
-                    </span>
-                    <span class="feed-item-date">
-                        <%= event.startdate.toString().substring(0,15) %>
-                    </span>
-                </p>
-                <p class="event-restaurant">
-                    Eating at <b><%= event.name %></b> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
-                </p>
-                <% if(event.login!==user.data.login && user.type === 'USER') { %>
-                    <% if(!event.attendees.includes(user.data.login)) { %>
-                        <button id=<%= `${event.eventid}-join` %> name="evid" onclick="<%=`joinEvent(${event.eventid})`%>">
-                            Join Event
-                        </button>
-                    <% } else { %>
-                        <button id=<%= `${event.eventid}-unjoin` %> name="evid" onclick="<%=`unjoinEvent(${event.eventid})`%>">
-                            Not Interested
-                        </button>
-                    <% } %>
-                <% } %>
-                
-                <% if(event.count>0) { %>
-                <details id=<%= `${event.eventid}-attendance-details` %>>
-                    <summary>With <span id=<%= `${event.eventid}-attendance-count` %>><%= event.count %></span></summary>
-                    <ul id=<%= `${event.eventid}-attendance-list` %> class="attendance-list">
-                        <% for (let attender of event.attendees) { %>
-                            <li><%= attender %></li>
-                        <% } %>
-                    </ul>
-                </details>
-                <% } %>
+
+        <% if (user.type === 'USER') { %>
+            <div class="container">
+                <div class="row justify-content-md-center">
+                <h2 class="col-4">Your upcoming events</h2>
+                <button class="btn btn-primary col-2" id="colBtn" type="button" data-toggle="collapse" data-target="#userEvents" aria-expanded="false" aria-controls="userEvents">
+                    <span id="colBtnShow">Show</span>
+                    <span id="colBtnHide">Hide</span>
+                </button>
+                </div>
             </div>
+            <div class="collapse show" id="userEvents">
+                <% for (let event of events) { %>
+                    <% if (event.login===user.data.login || event.attendees.includes(user.data.login)) { %>
+                        <%- include ('./feeditem.ejs', {event, user}) %>
+                    <% } %>
+                <% } %> 
+            </div>
+            <hr>
+        <% } %>
+        <h2>Events that might interest you</h2>
+        <% for (let event of events) { %>
+            <% if (user.type==='USER' && event.login!==user.data.login && !event.attendees.includes(user.data.login)) { %>
+                <%- include ('./feeditem.ejs', {event, user}) %>
+            <% } else if (user.type === 'REST') { %>
+                <%- include ('./feeditem.ejs', {event, user}) %>
+            <% } %>
         <% } %>
 
     <% } else { %>
         <h1>
-            There are no upcoming events, why not start one?
+            <% if (user.type === 'USER') { %>
+                There are no upcoming events, why not start one?
+            <% } else { %>
+                There are no upcoming events at your restaurant
+            <% } %>
         </h1>
     <% } %>
 </div>
