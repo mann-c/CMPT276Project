@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+  <link rel="stylesheet" type="text/css" href="/stylesheets/explore.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+   integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+   crossorigin=""/>
+   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+   integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+   crossorigin=""></script>
+</head>
+<body>
+    <%- include ('../partials/nav.ejs', {path: path}) %>
+
+    <div id="exploremap"></div>
+</body>
+<script>                                    //Centered on    Zoom Level
+    var mymap = L.map('exploremap').setView([49.25, -123.1], 12);
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: "<%= accessToken %>"
+    }).addTo(mymap);
+    
+    //This maps events, now we must add symbology somehow adn center on user's city, propagate that too
+    fetch('/api/getevents')
+      .then(res => res.json())
+      .then( (data) => {
+          if(data.error){
+              console.log('Get events failed D:');
+          }
+          let events = data.events;
+          let restaurantLocations = {};   //By restaurant ID you can access the marker
+          events.map( (event) => {
+              if(!restaurantLocations.hasOwnProperty(event.id)){
+                  let loc = [event.latitude, event.longitude];
+                  let marker = L.marker(loc).addTo(mymap);
+                  //marker.bindPopup(`<b>${event.name}</b><p>${event.address}</p>`);
+                  restaurantLocations[event.id] = {
+                    name: event.name,
+                    address: event.address,
+                    location: [event.latitude, event.longitude],
+                    marker: marker,
+                    events: [event]
+                  };
+              } else {
+                restaurantLocations[event.id].events.push(event);
+              }
+          });
+          for( let resto in restaurantLocations){
+              let eventCount = restaurantLocations[resto].events.length;
+              let eventString = '<ul class="popupList">\n';
+              let iter = 0;
+              const LIMIT = 5;
+              restaurantLocations[resto].events.map( ev => {
+                let date = new Date(Date.parse(ev.startdate)).toString().substring(0,10);
+                let theString = `<a href="/feed#${ev.eventid}"><li><b>${ev.login}</b> with ${ev.count} at <span>${ev.starttime.substring(0,5)} ${date}</span></li></a>\n`;
+                if(iter < LIMIT){
+                  eventString = eventString.concat(theString);
+                }
+                iter++;
+              })
+              if(iter>=LIMIT)
+                eventString = eventString.concat(`<li>  and ${iter-LIMIT} more events...</li>\n`);
+              eventString = eventString.concat("</ul>");
+              restaurantLocations[resto].marker.bindPopup(
+                `<a href="/restaurant/${resto}"><b>${restaurantLocations[resto].name}</b></a>
+                <h5>${eventCount} upcoming ${eventCount>1? 'events':'event'}</h5>
+                ${eventString}
+                <p>${restaurantLocations[resto].address}</p>`
+                );
+          }
+      })
+      .catch(err => console.error(err));
+</script>
+</html>

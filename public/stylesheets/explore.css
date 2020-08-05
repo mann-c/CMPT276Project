@@ -1,0 +1,13 @@
+#exploremap { 
+    height: 80vh; 
+}
+
+.popupList {
+    list-style: none;
+    margin: auto;
+    padding: 0;
+    }
+    .popupList li {
+        border-top: 1px solid black;
+        margin: auto;
+    }

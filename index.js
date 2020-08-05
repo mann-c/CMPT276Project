@@ -409,110 +409,109 @@ app.post('/event/join', (req,res) => {
 
   //User login is inserted into attendance table
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`;
-  pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
-    if (error){
+  pool.query(attendQuery, [evid, req.user.data.login], (aterror, atresult) => {
+    if (aterror){
       console.log("ERROR IN PG query: join event");
       res.status(406).json({error: 'FAILURE'});
     } // Else move on
-  });
-
-  //We update the page for all attendees, including newly joined
-  const attendeeQuery = `SELECT * FROM eventsattendance WHERE eventid = $1`;
-  pool.query(attendeeQuery, [evid], (perror, presult) => {
-    if(perror){
-      console.log("ERROR IN NESTED PG query: join event")
-      res.status(406).json({error: 'FAILURE'});
-    } else {
-      //Updates the view for attendees
-      let idList = []
-      if(presult.rowCount)
-        idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
-      
-      //We check the event record for the owner and restaurant, so we can notify them
-      const eventQuery = `SELECT ev.*, res.name FROM events ev
-                          INNER JOIN restaurants res ON ev.restid = res.id 
-                          WHERE eventid = $1`;
-      pool.query(eventQuery, [evid], (error, result) => {
-        if(error){
-          console.log("ERROR IN NESTED PG query: join event")
-          res.status(406).json({error: 'FAILURE'});
-        } else {
-          //Updates the view for restaurant and creator
-          socketUpdateEvent(
-            'JOIN',
-            evid,
-            {login: req.user.data.login},
-            [...idList, result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
-          );
-          //Notifies the creator of the event
-          socketNotifyUpdate(
-            'JOIN',
-            result.rows[0],                                                       //All event info
-            {
-              login: req.user.data.login,                                         //Login of who joined
-              name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
-            }
-          );
-          res.status(201).json({message: 'SUCCESS'});
-        }
-      });
-    }
+  
+    //We update the page for all attendees, including newly joined
+    const attendeeQuery = `SELECT * FROM eventsattendance WHERE eventid = $1`;
+    pool.query(attendeeQuery, [evid], (perror, presult) => {
+      if(perror){
+        console.log("ERROR IN NESTED PG query: join event")
+        res.status(406).json({error: 'FAILURE'});
+      } else {
+        //Updates the view for attendees
+        let idList = []
+        if(presult.rowCount)
+          idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
+        
+        //We check the event record for the owner and restaurant, so we can notify them
+        const eventQuery = `SELECT ev.*, res.name FROM events ev
+                            INNER JOIN restaurants res ON ev.restid = res.id 
+                            WHERE eventid = $1`;
+        pool.query(eventQuery, [evid], (error, result) => {
+          if(error){
+            console.log("ERROR IN NESTED PG query: join event")
+            res.status(406).json({error: 'FAILURE'});
+          } else {
+            //Updates the view for restaurant and creator
+            socketUpdateEvent(
+              'JOIN',
+              evid,
+              {login: req.user.data.login},
+              [...idList, result.rows[0].userid, result.rows[0].restid]   //Array of who to update for
+            );
+            //Notifies the creator of the event
+            socketNotifyUpdate(
+              'JOIN',
+              result.rows[0],                                                       //All event info
+              {
+                login: req.user.data.login,                                         //Login of who joined
+                name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+              }
+            );
+            res.status(201).json({message: 'SUCCESS'});
+          }
+        });
+      }
+    });
   });
 });
 
 app.post('/event/unjoin', (req,res) => {
   const {evid} = req.body;
   const attendQuery = `DELETE FROM eventsattendance where eventid = $1 and userid = $2`;
-  pool.query(attendQuery, [evid, req.user.data.login], (error, result) => {
-    if (error){
+  pool.query(attendQuery, [evid, req.user.data.login], (aterror, atresult) => {
+    if (aterror){
       console.log("ERROR IN PG query: unjoin event");
       res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
     } 
-  });
 
-  //We update the page for all attendees, excluding the one who left
-  const attendeeQuery = `SELECT * FROM eventsattendance WHERE eventid = $1`;
-  pool.query(attendeeQuery, [evid], (perror, presult) => {
-    if(perror){
-      console.log("ERROR IN NESTED PG query: join event")
-      res.status(406).json({perror: 'FAILURE'});
-    } else {
-      let idList = [];
-      //Updates the view for attendees
-      if(presult.rowCount)
-        idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
-      
-      //We check the event record for the owner and restaurant, so we can notify them
-      const eventQuery = `SELECT ev.*, res.name FROM events ev
-                          INNER JOIN restaurants res ON ev.restid = res.id 
-                          WHERE eventid = $1`;
-      pool.query(eventQuery, [evid], (error, result) => {
-        if(error){
-          console.log("ERROR IN NESTED PG query: unjoin event")
-          res.status(406).json({error: 'FAILURE'});
-        } else {
-          //Updates the view for restaurant and creator
-          socketUpdateEvent(
-            'UNJOIN',
-            evid,
-            {login: req.user.data.login},
-            [...idList, result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
-          );
-          //Notifies the creator of the event
-          socketNotifyUpdate(
-            'UNJOIN',
-            result.rows[0],                                                       //All event info
-            {
-              login: req.user.data.login,                                         //Login of who joined
-              name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
-            }
-          );
-          res.status(201).json({message: 'SUCCESS'});
-        }
-      });
-    }
+    //We update the page for all attendees, excluding the one who left
+    const attendeeQuery = `SELECT * FROM eventsattendance WHERE eventid = $1`;
+    pool.query(attendeeQuery, [evid], (perror, presult) => {
+      if(perror){
+        console.log("ERROR IN NESTED PG query: join event")
+        res.status(406).json({perror: 'FAILURE'});
+      } else {
+        let idList = [];
+        //Updates the view for attendees
+        if(presult.rowCount)
+          idList = presult.rows.map(row => row.userid);               //Array of objects -> Array of ids
+        
+        //We check the event record for the owner and restaurant, so we can notify them
+        const eventQuery = `SELECT ev.*, res.name FROM events ev
+                            INNER JOIN restaurants res ON ev.restid = res.id 
+                            WHERE eventid = $1`;
+        pool.query(eventQuery, [evid], (error, result) => {
+          if(error){
+            console.log("ERROR IN NESTED PG query: unjoin event")
+            res.status(406).json({error: 'FAILURE'});
+          } else {
+            //Updates the view for restaurant and creator
+            socketUpdateEvent(
+              'UNJOIN',
+              evid,
+              {login: req.user.data.login},
+              [...idList, result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
+            );
+            //Notifies the creator of the event
+            socketNotifyUpdate(
+              'UNJOIN',
+              result.rows[0],                                                       //All event info
+              {
+                login: req.user.data.login,                                         //Login of who joined
+                name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+              }
+            );
+            res.status(201).json({message: 'SUCCESS'});
+          }
+        });
+      }
+    });
   });
-
 });
 
 app.post('/event/delete', (req,res) => {
@@ -742,7 +741,20 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
 
 })
 
-app.get("/*", (req, res) => {
+app.get('/explore', checkNotAuthenticated, (req, res) => {
+  res.render('pages/explore', {accessToken: process.env.MAPBOX_TOKEN, pageTitle: "Grababite • Explore", path: "/explore", user: req.user});
+})
+
+app.get('/api/getevents', checkNotAuthenticated, (req, res) => {
+  eventsController.getFeedEvents(req.user.type, req.user.data, pool)
+      .then(answer => res.json({events: answer}))
+      .catch(err => {
+        console.log(err);
+        res.status(406).json({error: 'FAILURE'});
+      });
+})
+
+app.get('/*', (req, res) => {
   res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
 });
 
