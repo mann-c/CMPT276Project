@@ -1,32 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head> </head>
+  <head> 
+    <link rel="stylesheet" type="text/css" href="/stylesheets/registeruser.css" />
+  </head>
 
-  <body style="border: solid black; padding-bottom: 300px;">
+  <body style="border: solid black; padding-bottom: 600px;">
     <div class="container">
-      <div
-        style="
-          font-size: 30px;
-          background-color: black;
-          color: white;
-          padding-top: 13px;
-          padding-left: 25px;
-          padding-bottom: 13px;
-          font-weight: bold;
-        "
-      >
+      <div id="headtitle">
         Grababite
       </div>
-
+      <div id="animatepage">
       <ul>
         <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
         <%=error.msg %> <%});} %>
       </ul>
 
       <div style="position: relative; left: 50px;">
-        <h2>User Profile Creation</h2>
+        <h2 style="position: relative; left: 475px;">User Profile Creation</h2>
 
-        <div style="border: solid black; margin-right: 600px; padding: 30px;">
+        <div  id="userform">
           <form name="adduser" action="reguser" method="post">
             <span style="font-size: 20px;">Enter Username:</span>
             <input
@@ -83,10 +75,12 @@
               value="<%= typeof password != 'undefined' ? password : '' %>"
               style="border: solid grey;"
             /><br />
-            <input type="submit" value="CREATE USER PROFILE" />
+            <br>
+            <input id="submitbutton" type="submit" value="CREATE USER PROFILE" />
           </form>
           <p id="Errormsg"></p>
         </div>
+      </div>
       </div>
     </div>
 

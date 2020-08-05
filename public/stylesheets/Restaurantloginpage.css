@@ -1,0 +1,51 @@
+
+
+#animatepage{
+    animation: fading .5s ease-in;
+}
+@keyframes fading{
+    from {
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+
+
+#topbar{
+
+    font-size: 30px;
+    background-color: black;
+    color: white;
+    padding-top: 13px;
+    padding-left: 25px;
+    padding-bottom: 13px;
+    font-weight: bold;
+
+}
+
+#restaurantlogin{
+    
+    border: solid black;
+    margin-right: 900px;
+    position: relative;
+    left: 480px;
+    top: 100px;
+    padding: 10px 40px 40px 30px;
+
+}
+
+#Loginbutton{
+    background-color:  rgb(111, 202, 238);
+    border-radius: 9px;
+    color: black;
+  
+    font-size: 14.5px;
+}
+
+#Loginbutton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}

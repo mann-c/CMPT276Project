@@ -2,7 +2,7 @@
 <html>
 <head>
   <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
-
+  <link rel="stylesheet" type="text/css" href="/stylesheets/user.css" />
 </head>
 
 <body>
@@ -11,63 +11,67 @@
 
 <div class="container">
     <a style="float: right;"></a>
-    <p style="font-size: large;">User Profile</p>
-    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;font-size: x-large;"><%=row.login%></h2>
+    <p style="font-size: x-large; font-weight: bold;">User Profile</p>
+    <h2 style=" border: solid 2pt black; text-align: center; border-radius: 25;font-size: x-large;"><%=row.login%></h2>
     <body>
       <title><%=row.login%>Page</title>
       <% if( user.type === 'USER'){ %>
-        <table>
+        <table >
           <tr>
-            <form action="/user/following" method="post">
-              <button type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right;"> FOLLOWING </button>
-            </form>
-            <form action="/user/follower" method="post">
-              <button type="submit" name="uid" value="<%=row.attributes.login%>"style="float: right;"> FOLLOWER </button>
+            <form   action="/user/following" method="post">
+              <button id="followingbutton" type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right; position: relative; bottom:55px;"> Following </button>
+            </form> 
+            <form   action="/user/follower" method="post">
+              <button id="followersbutton" type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right; position: relative; bottom:55px;"> Followers </button>
             </form>
           </tr>
         </table>
 
         <% if (user.data.login===row.attributes.login){%>
-          <div class="container">
-            <h1><%=row.attributes.firstname%><%=row.attributes.lastname%> Profile</h1>
+          <div id="Userinfo">
+            <h1 style="font-size: 40px;"><%=row.attributes.firstname%><%=row.attributes.lastname%> Profile</h1>
             <div class="datail">
               <div class="detail text-xs-center">
                   <br>
                   <div class="detail-block">
                     <h4 class="detail-title">User Details</h4>
                     <p class="detail-text">
+                  
                       <form action="/update" method="post">
-                        <strong>ID</strong>:<input type="text" name="login" id="login" value="<%=row.attributes.login%>" readonly="readonly"/><br>
-                        <strong>Firstname</strong>:<input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/><br>
-                        <strong>Lastname</strong>:<input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/><br>
-                        <strong>City</strong>:<input type="text" name="city" id="city" value="<%=row.attributes.city%>" required/><br>
-                        <strong>Bio</strong>:<input type="text" name="description" id="description" value="<%=row.attributes.description%>" required/><br>
-                        <strong>Password</strong>:<input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/><br>
-                        <button class ="update" type="submit" name="function" value="update" style="cursor:pointer;">UPDATE</button>
+                        <strong>ID</strong>:<input type="text" name="login" id="login" value="<%=row.attributes.login%>"  readonly="readonly"/><br><br>
+                        <strong>Firstname</strong>:<input type="text" name="firstname" id="firstname" value="<%=row.attributes.firstname%>" required/><br> <br>
+                        <strong>Lastname</strong>:<input type="text" name="lastname" id="lastname" value="<%=row.attributes.lastname%>" required/><br><br>
+                        <strong>City</strong>:<input type="text" name="city" id="city" value="<%=row.attributes.city%>" required /><br><br>
+                        <strong>Bio</strong>:<input type="text" name="description" id="description" value="<%=row.attributes.description%>" required /><br><br>
+                        <strong>Password</strong>:<input type="text" name="password" id="password" value="<%=row.attributes.password%>" required/><br> <br>
+                        <button class ="update"  id="Updatebutton" type="submit" name="function" value="update" >Update Profile</button>
+                    
                       </form>
                     </p>
                 </div>
               </div>
            </div>
-          <form action = "/user/chat" method="post">
-            <button type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right;cursor:pointer;">CHAT</button>
+          <h3 style="position: relative; left: 500px;">Want to Chat?</h3>
+          <form  action = "/user/chat" method="post">
+            <button id="ChatButton" type="submit" name="uid" value="<%=row.attributes.login%>" >Chat</button>
           </form>
       <% } else {  %>
+        <div id="followform">
           <h1> <%=row.attributes.firstname%> <%=row.attributes.lastname%> </h1>
           <h3> @<%=row.attributes.login%>📍<%=row.attributes.city%>  </h3>
           <p> <%=row.attributes.description%> </p>
 
             <% if (user.type === 'USER' && !friend.includes(user.data.login)){ %>
               <form action="/user/follow" method="post">
-                <button type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
+                <button class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
               </form>
 
             <% } else if(user.type === 'USER') {  %>
             <form action="/user/unfollow" method="post">
-              <button type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
+              <button class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
             </form>
             <% } %>
-
+        </div>  
         <% } %>
     <% } %>
 </div>

@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html>
-  <head> </head>
+  <head> 
+    <link rel="stylesheet" type="text/css" href="/stylesheets/Mainpage.css" />
+  </head>
 
+  
   <body style="border: solid black; padding-bottom: 300px;">
-    <div
-      style="
-        font-size: 30px;
-        background-color: black;
-        color: white;
-        padding-top: 13px;
-        padding-left: 25px;
-        padding-bottom: 13px;
-        font-weight: bold;
-      "
-    >
+    <div id="topsign">
       Grababite
     </div>
     <ul>
@@ -22,17 +15,17 @@
     </ul>
     <ul>
       <% if (messages.error) { %>
-      <li><%= messages.error %></li>
+      <li style="color: red;"><%= messages.error %></li>
       <% } %>
     </ul>
     <ul>
       <% if (messages.msg) { %>
-      <li><%= messages.msg%></li>
+      <li style="color: red;"><%= messages.msg%></li>
       <% } %>
     </ul>
     <ul>
        <% if (messages==="THE USERNAME OR PASSWORD IS INCORRECT") { %>
-      <li><%= messages%></li>
+      <li style="color: red;"><%= messages%></li>
       <% } %>
     </ul>
     <br>
@@ -46,17 +39,10 @@
     <br>
   </body>
   <body style="border: solid black; padding-bottom: 300px;">
-    <div
-      style="
-        border: solid black;
-        margin-right: 900px;
-        position: relative;
-        left: 200px;
-        bottom: 147px;
-        padding: 10px 40px 40px 30px;
-      "
-    >
+    <div id="userloginform">
+      
       <h3>User Login</h3>
+      
       <form class="" action="/login" method="post">
         <span> Username:</span>
         <input
@@ -75,14 +61,23 @@
           required
         /><br />
         <input name="utype" value="USER" style="visibility: hidden;" /><br />
-        <input type="submit" value="Login" />
+        <input class="buttons" type="submit" value="Login" />
       </form>
 
+      
       <h3>Dont have an Account, Register</h3>
       <form action="GotoUsrReg" method="GET">
-        <input type="submit" value="Create USER Profile" />
+        <input class="buttons" type="submit" value="Create USER Profile" />
       </form>
     </div>
   </body>
-  <a href="/restaurantlogin"> LOGIN IN AS RESTAURANT OWNER</a> 
+  
+  <h3 id="restaurantownerlogin">Are you a Restaurant Owner?</h3>
+  <a href="/restaurantlogin"> 
+    
+  <button id="restaurantloginbutton">
+    Login as Restaurant Owner
+  </button>
+</a> 
+
 </html>
