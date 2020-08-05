@@ -16,7 +16,7 @@
     <div id="exploremap"></div>
 </body>
 <script>                                    //Centered on    Zoom Level
-    var mymap = L.map('exploremap').setView([49.25, -123.1], 12);
+    var mymap = L.map('exploremap').setView([49.2, -123], 11);
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 18,
@@ -26,7 +26,7 @@
         accessToken: "<%= accessToken %>"
     }).addTo(mymap);
     
-    //This maps events, now we must add symbology somehow adn center on user's city, propagate that too
+    //This maps events, now we must center on user's city, propagate that requirement too
     fetch('/api/getevents')
       .then(res => res.json())
       .then( (data) => {
@@ -38,13 +38,12 @@
           events.map( (event) => {
               if(!restaurantLocations.hasOwnProperty(event.id)){
                   let loc = [event.latitude, event.longitude];
-                  let marker = L.marker(loc).addTo(mymap);
+                  //let marker = L.marker(loc).addTo(mymap);
                   //marker.bindPopup(`<b>${event.name}</b><p>${event.address}</p>`);
                   restaurantLocations[event.id] = {
                     name: event.name,
                     address: event.address,
                     location: [event.latitude, event.longitude],
-                    marker: marker,
                     events: [event]
                   };
               } else {
@@ -54,16 +53,52 @@
           for( let resto in restaurantLocations){
               let eventCount = restaurantLocations[resto].events.length;
               let eventString = '<ul class="popupList">\n';
+              
+              //Counting and preparing HTML for popup on restaurant
+              let earliest;
               let iter = 0;
               const LIMIT = 5;
               restaurantLocations[resto].events.map( ev => {
-                let date = new Date(Date.parse(ev.startdate)).toString().substring(0,10);
-                let theString = `<a href="/feed#${ev.eventid}"><li><b>${ev.login}</b> with ${ev.count} at <span>${ev.starttime.substring(0,5)} ${date}</span></li></a>\n`;
+                let date = new Date(Date.parse(ev.startdate));
+                if(!earliest){
+                  earliest = date;
+                } else if(date<earliest) {
+                  earliest = date;
+                }
+                let printDate = date.toString().substring(0,10);
+                let theString = `<a href="/feed#${ev.eventid}"><li><b>${ev.login}</b> with ${ev.count} at <span>${ev.starttime.substring(0,5)} ${printDate}</span></li></a>\n`;
                 if(iter < LIMIT){
                   eventString = eventString.concat(theString);
                 }
                 iter++;
               })
+
+              //Colored markers downloaded from https://github.com/pointhi/leaflet-color-markers
+              //Get the time of the next event
+              let currentDate = new Date();
+              let markerIcon = {
+                  iconUrl: '/markers/marker-icon-2x-blue.png',
+
+                  iconSize:     [25, 41], // size of the icon
+                  iconAnchor:   [12.5, 41], // point of the icon which will correspond to marker's location
+                  popupAnchor:  [0, -41] // point from which the popup should open relative to the iconAnchor
+              };
+
+              if((currentDate.getTime() + 86400000) >= earliest.getTime()){           //24 Hours
+                console.log()
+                markerIcon.iconUrl = '/markers/marker-icon-2x-red.png'
+              } else if ((currentDate.getTime() + 604800000) >= earliest.getTime()) { //7 Days
+                markerIcon.iconUrl = '/markers/marker-icon-2x-orange.png'
+              } else {
+                /* Do nothing */
+              }
+
+              restaurantLocations[resto].marker = L.marker(
+                restaurantLocations[resto].location, 
+                {icon: L.icon(markerIcon)}
+              ).addTo(mymap);
+
+              //Truncation of too many events
               if(iter>=LIMIT)
                 eventString = eventString.concat(`<li>  and ${iter-LIMIT} more events...</li>\n`);
               eventString = eventString.concat("</ul>");
@@ -72,8 +107,23 @@
                 <h5>${eventCount} upcoming ${eventCount>1? 'events':'event'}</h5>
                 ${eventString}
                 <p>${restaurantLocations[resto].address}</p>`
-                );
+              );
           }
+          var legend = L.control({position: 'bottomleft'});
+
+          legend.onAdd = function (mymap) {
+              var div = L.DomUtil.create('div', 'info legend')
+              //Symbolize our markers
+              div.innerHTML +=
+                  '<h5>Restaurants</h5>' +
+                  '<span><img src="/markers/marker-icon-2x-red.png"></img> Event in 24 hours</span><br>' +
+                  '<span><img src="/markers/marker-icon-2x-orange.png"></img> Event in a week</span><br>' +
+                  '<span><img src="/markers/marker-icon-2x-blue.png"></img> Event after a week</span>' 
+
+              return div;
+          };
+
+          legend.addTo(mymap)
       })
       .catch(err => console.error(err));
 </script>
