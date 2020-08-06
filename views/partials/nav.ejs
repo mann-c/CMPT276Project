@@ -34,8 +34,8 @@
           User/Restaurant Search
         </a>
       </li>
-      <li class="<%= path === '/chat' ? 'active' : '' %>">
-        <a href="/chat">
+      <li class="<%= path === '/chat/:name' ? 'active' : '' %>">
+        <a href="/chat/<%=user.data.login%>">
           <span class="glyphicon glyphicon-home"></span>
           Chat
         </a>

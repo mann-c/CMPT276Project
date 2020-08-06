@@ -342,6 +342,27 @@ app.post("/testgetupdate",function(req,res){
 });
 
 //Update User Profile
+app.get('/update',checkNotAuthenticated,function(req,res){
+  var login = req.user.data.login;
+  var query = `select * from Users where login = $1`;
+  pool.query(query,[login],(error,result)=>{
+    if(error)
+      res.send(error);
+    var results = {'attributes':result.rows[0]};
+    var pathforprofile = '/update' + `${login}`;
+    res.render(
+      'pages/update',
+      {
+        row:results,
+        pageTitle: `Grababite • User • ${results.attributes.firstname} ${results.attributes.lastname}`,
+        path: pathforprofile,
+        user: req.user
+      }
+    );
+  });
+
+});
+
 app.post('/update',function(req,res){
   const login = req.body.login;
   const firstname = req.body.firstname;
@@ -359,7 +380,6 @@ app.post('/update',function(req,res){
     });
   }
 });
-
 //reroute to user when you don't know who is logged in
 app.get("/user", checkNotAuthenticated, (req, res, next) => {
   switch (req.user.type) {
@@ -451,68 +471,33 @@ app.post('/user/follower',(req,res)=>{
   });
 });
 
-// app.post('/user/chat',(req, res) => {
-//   const {uid} = req.body;
-//   var qry = `SELECT * FROM USERS WHERE login = '${uid}'`
-//   pool.query(qry,(err,result)=>{
-//     if(err)
-//       res.send(err);
-//     res.render('pages/chat', {user:req.user,pageTitle:"Chat",path:'/user/chat',user:req.user});
-//   });
-// });
-//
-// io.sockets.on('connection', (socket) => {
-//   // message
-//   var roomName = null;
-//
-//   socket.on('join', (data) => {
-//     roomName = data;
-//     socket.join(data);
-//   })
-//
-//   socket.on('message', (data) => {
-//     io.sockets.in(roomName).emit('message', data);
-//     console.log(data);
-//   });
-//
-//   socket.on('image', (data)=>{
-//     io.sockets.in(roomName).emit('image', data);
-//     console.log(data);
-//   })
-//
-// });
-//
-// app.post('/user/image', upload.single("image"), function(req, res, next) {
-//   try {
-//     console.log(req.file)
-//     var data = req.file;
-//     res.send(data.location);
-//   } catch (error) {
-//     console.error(error);
-//     next(error);
-//   }
-// });
-app.get('/chat', checkNotAuthenticated, (req,res) =>{
-    res.render('pages/chat',{pageTitle: 'Grababite • Chat', path: "/chat", user: req.user})
-  })
+app.get('/chat/:name',checkNotAuthenticated,(req,res)=>{
+  var name = req.params.name
+    var query = `select * from Users where login = $1`;
+    pool.query(query,[name],(error,result)=>{
+      if(error)
+        res.send(error);
+      var results = {'attributes':result.rows[0]};
+      res.render('pages/chat',{row:results,pageTitle: 'Grababite • Chat', path: '/chat'+`${name}`, user: req.user})
+    });
+});
+
 const users = {}
-io.sockets.on('connection', socket => {
+io.sockets.on('connection', socket =>
+
   socket.on('new-user', name => {
     users[socket.id] = name
     socket.broadcast.emit('user-connected', name)
   })
+
   socket.on('send-chat-message', message => {
     socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
-  })
-  socket.on("typing",message=>{
-    socket.broadcast.emit("typing",message)
   })
   socket.on('disconnect', () => {
     socket.broadcast.emit('user-disconnected', users[socket.id])
     delete users[socket.id]
-  })
-})
 
+})
 
 app.get('/Search',checkNotAuthenticated,(request,response) =>{
   pool.query('SELECT * FROM users',(error,results) =>{
