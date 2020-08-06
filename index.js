@@ -136,6 +136,7 @@ app.post("/reguser", (req, res) => {
   var preferences2 = req.body.preferences2;
   var preferences3 = req.body.preferences3;
   let errors = [];
+  var allpreferences= preferences+"," +preferences2 +"," + preferences3;
   let check = false;
   let inputplaced;
   pool.query(
@@ -163,8 +164,8 @@ app.post("/reguser", (req, res) => {
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5,$6,$7,$8)`,//Empty string between $4, $5 is the empty description
-          [username, first_name, last_name, city, password,preferences,preferences2,preferences3],
+          `INSERT INTO users VALUES($1,$2,$3,$4,$6,$5)`,//Empty string between $4, $5 is the empty description
+          [username, first_name, last_name, city, password,allpreferences],
           (error, result) => {
             if (error) {
               res.end(error);
@@ -499,13 +500,11 @@ app.post('/user/image', upload.single("image"), function(req, res, next) {
 });
 
 app.get('/Search',checkNotAuthenticated,(request,response) =>{
-  console.log(request.user.data.preference);
   pool.query('SELECT * FROM users',(error,results) =>{
     if (error){
       throw error;
     }
-    // pool.query('SELECT * FROM restaurants',(error,results1) =>{
-    pool.query('SELECT * FROM restaurants WHERE (lower(description) LIKE lower($1)) OR (lower(description) LIKE lower($2)) OR (lower(description) LIKE lower($3))',[request.user.data.preference,request.user.data.preference2,request.user.data.preference3],(error,results1) =>{
+     pool.query('SELECT * FROM restaurants',(error,results1) =>{
       if (error){
         throw error;
       }
