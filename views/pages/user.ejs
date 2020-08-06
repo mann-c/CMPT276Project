@@ -29,7 +29,7 @@
 
         <% if (user.data.login===row.attributes.login){%>
           <div id="Userinfo">
-            <h1 style="font-size: 40px;"><%=row.attributes.firstname%><%=row.attributes.lastname%> Profile</h1>
+            <h1 style="font-size: 40px;"><%=row.attributes.firstname%> <%=row.attributes.lastname%> Profile</h1>
             <div class="datail">
               <div class="detail text-xs-center">
                   <br>
@@ -59,16 +59,19 @@
         <div id="followform">
           <h1> <%=row.attributes.firstname%> <%=row.attributes.lastname%> </h1>
           <h3> @<%=row.attributes.login%>📍<%=row.attributes.city%>  </h3>
-          <p> <%=row.attributes.description%> </p>
+          <br>
+          <p style="font-size: 17px; "> <%=row.attributes.description%> </p>
 
             <% if (user.type === 'USER' && !friend.includes(user.data.login)){ %>
               <form action="/user/follow" method="post">
-                <button class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
+                <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
+                <button  class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
               </form>
 
             <% } else if(user.type === 'USER') {  %>
             <form action="/user/unfollow" method="post">
-              <button class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
+              <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
+              <button  class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
             </form>
             <% } %>
         </div>  

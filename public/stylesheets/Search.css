@@ -1,11 +1,5 @@
 
-body{
-    border-left: solid black;
-  
-}
-
-
-#excludenav{
+.excludenav{
     animation: fading .5s ease-in;
 }
 @keyframes fading{
@@ -17,75 +11,19 @@ body{
     }
 }
 
-#split-page{
-    position: absolute;
-    left: 680px;
-    top: 175px;
-    height: 1500px;
-    border-left: solid  black
-    
-}
 
 #RestaurantSearchside{
     position: absolute;
-    left:800px;
-    top:347px;
+    left:50px;
+    top:100px;
     width:450px;
     
 }
 #UserSearchside{
     position: absolute;
-    top:350px;
-    left:140px;
+    top:100px;
+    left:50px;
     width:450px;
-}
-
-#users{
-    border-top: solid lightgrey; 
-    padding-bottom: 20px; 
-    padding-top:20px;
-}
-
-#restaurants{
-     border-top: solid lightgrey;
-    padding-bottom: 20px;
-     padding-top:10px
-}
-
-#searchuserform{
-    position: absolute;
-    top: 220px;
-    left: 170px;
-}
-
-#Alluserform{
-    position: absolute;
-    top:220px;
-    left: 500px;
-}
-
-
-#Restaurantsearchform{
-    position: absolute;
-    left: 750px; 
-    top: 220px;
-}
-#Allrestaurantform{
-    position: absolute;
-    top:220px;
-    left: 1175px;
-}
-
-.explorebutton{
-    background-color: rgb(111, 202, 238);
-    font-size: large;
-    border-radius: 9px;
-    color: black;
-}
-
-.explorebutton:hover{
-    cursor:pointer;
-    background-color: rgb(169, 222, 243);
 }
 
 .buttons{
@@ -98,4 +36,10 @@ body{
 .buttons:hover{
     cursor:pointer;
     background-color: rgb(169, 222, 243);
+}
+
+#Showingallusers{
+    position: absolute;
+    left: 390px;
+    top: 87px;
 }

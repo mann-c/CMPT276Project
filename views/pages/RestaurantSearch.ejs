@@ -2,25 +2,49 @@
 <html>
     <head>
         <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/Search.css" />
       </head>
 
 <body>
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
-    <div class="container">
-
-        <% results.rows.forEach(function(r) { %>
-            <%  var hypertext = "/restaurant/" + r.id; 
-                var restaurantName = "Restaurant Name: " +r.name;%> 
-            <h3 style="font-weight: bold "><%=restaurantName%></h3> <br>
-            <span >  Location:</span> <span><%= r.city%></span> <br>
-            <span> Type:</span> <span> <%=r.type%></span> <br>
-            <a href="<%= hypertext%>">
-                <button>
-                    View Profile
-                </button>
-            </a><br><br><br>
-        <% }); %>
+    <div class="excludenav">
+    <div id="RestaurantSearchside">
+        <h2> Search for Restaurants</h2>
+        <p style="color:rgb(59, 57, 57)">Search by Restaurant Name, Address, or city</p>
+        <br>
+    
+        <form action="RestrSearch" method="post" id="search-rest">
+            <input type="text" id="Svar" name="Svar"  style="width: 200px; border: solid lightgray;" required>
+            <input class="buttons" type="submit" value="Search">
+        </form>
+        <br>
+        <%if (results.rows.length==0) { %>
+            <p style="color: red;">No Results Found</p>
+         <% } %>
+         
+    
+        <% if (results.rows.length!=0) {%>
+    
+            <% results.rows.forEach(function(r) { %>
+                <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+                <p><span style="font-weight: bold;">Restaurant Name:</span><%=r.name%></p>
+                <p><span style="font-weight: bold;">Address:</span><%=r.address%></p>
+                <p><span style="font-weight: bold;">City:</span><%=r.city%></p>
+                <p><span style="font-weight: bold;">Phone:</span><%=r.phone%></p>
+                <p><span style="font-weight: bold;">Rating:</span><%=r.rating%></p>
+                <p><span style="font-weight: bold;">Description:</span><%=r.description%></p>
+                <%var RestPg="/restaurant/" + r.id%>
+                <a href="<%=RestPg%>">
+                    <button class="buttons">
+                        Explore
+                    </button>
+                </a>
+            </div>
+            <% }); %>
+        <% }%>
+    
+        </div>
     </div>
 </body>
 </html>

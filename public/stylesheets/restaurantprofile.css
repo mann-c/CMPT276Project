@@ -1,7 +1,8 @@
 #Headtitle{
-font-size: 25px;
+font-size: 28px;
+font-weight: bold;
 position: relative;
-left: 475px;
+left: 444px;
 margin-bottom: 20px;
 animation: fading .3s ease-in;
 }
@@ -27,8 +28,8 @@ animation: fading .3s ease-in;
 
 #createbutton{
     position: relative;
+    left: 150px;
     font-size: 17px;
-    right: 100px;
     background-color:  rgb(111, 202, 238);
     border-radius: 9px;
     color: black;
@@ -42,7 +43,7 @@ animation: fading .3s ease-in;
 #picture{
     border: solid rgb(111, 202, 238);
     border-radius: 12px;
-    width: 750px;
+    width: 715px;
     animation: fading .5s ease-in;
     
 }

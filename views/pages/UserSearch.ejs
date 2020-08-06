@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/Search.css" />
+      </head>
+
+<body>
+    <%- include ('../partials/nav.ejs'), {path: path} %>
+<div class="excludenav">
+    <div id="UserSearchside">
+        <h2>Search For Users</h2>
+    
+        <p style="color:rgb(59, 57, 57)">Search User by Name or City</p>
+    
+         <form action="UsrSearch" method="post">
+            <input style="border: solid lightgrey;" type="text" name="Svar" required>
+            <input class="buttons" type="submit" value="Search for Users">
+        </form>
+        <br><br>
+       <!-- <div id="Showingallusers">
+        <form action="Search" method="GET">
+            <input class="buttons" type="submit" value="Show all Users">
+        </form>
+        </div> -->
+    
+        <%if (results.rows.length==0) {%>
+            <p>No results found</p>
+        <%} %>
+        <%if (results.rows.length!=0){ %>
+           
+            <% results.rows.forEach(function(r) { %>
+                <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+                <p><span style="font-weight: bold;">First Name: </span> <%= r.firstname %>   </p>
+                <p><span style="font-weight:bold">Last Name:</span><%=r.lastname %></p>
+                <p><span style="font-weight: bold;"><%=r.firstname%>'s City of Residence:</span><%=r.city%></p>
+                <p><span style="font-weight:bold">Description of <%=r.firstname%>:</span> <%=r.description%></p>
+                <% var UserPg="/user/" + r.login%>
+                <a href="<%=UserPg%>">
+                    <button class="buttons">
+                        Explore
+                    </button>
+    
+                </a>
+            </div>
+            <% }); %>
+        
+        <% }%>
+    
+        </div>
+        </div>
+</body>
+</html>
