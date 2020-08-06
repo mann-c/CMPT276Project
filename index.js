@@ -311,7 +311,12 @@ app.post('/createEvent', (req, res) => {
 });
 
 app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
-    pool.query('select * from restaurants where random() < 0.001;', (error,result) =>{
+  console.log(req.user.data);
+  var myarray = req.user.data.description.split(',');
+  var tryhard="%"+ myarray[0]+"%";
+  var tryhard2="%"+ myarray[1]+"%";
+  var tryhard3="%"+ myarray[2]+"%";
+    pool.query('select * from (select * from restaurants where lower(description) like lower($1) or lower(description) like lower($2) or lower(description) like lower($3)) as rans where random() < 0.01;',[tryhard,tryhard2,tryhard3],(error,result) =>{
       if (error){
         throw error;
       }

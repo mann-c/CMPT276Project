@@ -38,7 +38,7 @@
         <summary>With <span id=<%= `${event.eventid}-attendance-count` %>><%= event.count %></span></summary>
         <ul id=<%= `${event.eventid}-attendance-list` %> class="attendance-list">
             <% for (let attender of event.attendees) { %>
-                <li><%= attender %></li>
+                <a href="/user/<%= attender %>"><li>@<%= attender %></li></a>
             <% } %>
         </ul>
     </details>
