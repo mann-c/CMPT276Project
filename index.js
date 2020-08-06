@@ -144,11 +144,8 @@ app.post("/reguser", (req, res) => {
       if (error) {
         res.end(error);
       }
-      console.log(result.rows.length);
       if (result.rows.length > 0) {
-        console.log("same");
         errors.push({ msg: "Login is already taken" });
-        console.log(errors[0]);
         res.render("pages/registeruser", {
           errors,
           username,
@@ -237,6 +234,7 @@ app.get('/restaurant/:uid', checkNotAuthenticated, (req, res) => {
     }
   });
 });
+
 app.get("/test_get_all_create_events",(req,res)=>{
   pool.query(`SELECT * FROM events`,(error, result) => {
     if (error) {
@@ -248,6 +246,31 @@ app.get("/test_get_all_create_events",(req,res)=>{
     res.json(us);
   });
 });
+
+app.get("/test_get_all_friends",(req,res)=>{
+  pool.query(`SELECT * FROM friends`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
+app.get("/test_get_all_attendance",(req,res)=>{
+  pool.query(`SELECT * FROM eventsattendance`,(error, result) => {
+    if (error) {
+      res.end(error);
+    }
+    var results = { rows: result.rows };
+    var us=[];
+    us.push(results)
+    res.json(us);
+  });
+});
+
 app.post('/createEvent', (req, res) => {
   var date = req.body.date;
   var time = req.body.time;
@@ -255,9 +278,10 @@ app.post('/createEvent', (req, res) => {
   var rest = req.body.restaurant;
 
   var getPersonQuery = `insert into events values(DEFAULT, $1, $2, $3, $4) RETURNING *`;
-  pool.query(getPersonQuery, [user, rest, date, time], (error, result)=>{
-    if(error)
-      res.end(error);
+  pool.query(getPersonQuery, [user, rest, date, time], (error, result) => {
+    if(error){
+      res.end("Error with creating a new event");
+    }
     //We get the restaurant name for the socket message
     const restaurantQuery = `SELECT * FROM restaurants WHERE id = $1`;
     pool.query(restaurantQuery, [rest], (resterror, restresult) => {
@@ -287,7 +311,7 @@ app.post('/createEvent', (req, res) => {
 });
 
 app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
-    pool.query('SELECT * FROM restaurants ', (error,result) =>{
+    pool.query('select * from restaurants where random() < 0.001;', (error,result) =>{
       if (error){
         throw error;
       }
@@ -405,11 +429,11 @@ app.get("/user", checkNotAuthenticated, (req, res, next) => {
 });
 
 app.post('/event/join', (req,res) => {
-  const {evid} = req.body;
+  evid = req.body.evid;
 
   //User login is inserted into attendance table
   const attendQuery = `INSERT INTO eventsattendance VALUES ($1, $2)`;
-  pool.query(attendQuery, [evid, req.user.data.login], (aterror, atresult) => {
+  pool.query(attendQuery, [evid, req.body.login], (aterror, atresult) => {
     if (aterror){
       console.log("ERROR IN PG query: join event");
       res.status(406).json({error: 'FAILURE'});
@@ -440,7 +464,7 @@ app.post('/event/join', (req,res) => {
             socketUpdateEvent(
               'JOIN',
               evid,
-              {login: req.user.data.login},
+              {login: req.body.login},
               [...idList, result.rows[0].userid, result.rows[0].restid]   //Array of who to update for
             );
             //Notifies the creator of the event
@@ -461,9 +485,10 @@ app.post('/event/join', (req,res) => {
 });
 
 app.post('/event/unjoin', (req,res) => {
-  const {evid} = req.body;
+  evid = req.body.evid;
+  
   const attendQuery = `DELETE FROM eventsattendance where eventid = $1 and userid = $2`;
-  pool.query(attendQuery, [evid, req.user.data.login], (aterror, atresult) => {
+  pool.query(attendQuery, [evid, req.body.login], (aterror, atresult) => {
     if (aterror){
       console.log("ERROR IN PG query: unjoin event");
       res.status(406).json({error: 'FAILURE'}); //will be used for fetch post later
@@ -494,8 +519,8 @@ app.post('/event/unjoin', (req,res) => {
             socketUpdateEvent(
               'UNJOIN',
               evid,
-              {login: req.user.data.login},
-              [...idList, result.rows[0].userid, result.rows[0].restid, req.user.data.login]   //Array of who to update for
+              {login: req.body.login},
+              [...idList, result.rows[0].userid, result.rows[0].restid, req.body.login]   //Array of who to update for
             );
             //Notifies the creator of the event
             socketNotifyUpdate(
@@ -581,10 +606,12 @@ app.post('/event/delete', (req,res) => {
 });
 
 
+
+
 app.post('/user/follow', (req,res) => {
-  const {uid} = req.body;
+  uid = req.body.uid;
   const friendQuery = `INSERT INTO friends VALUES ($1, $2)`
-  pool.query(friendQuery, [req.user.data.login,uid], (error, result) => {
+  pool.query(friendQuery, [req.body.login,uid], (error, result) => {
     if (error){
       console.log("ERROR IN PG query: follow user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
@@ -594,9 +621,9 @@ app.post('/user/follow', (req,res) => {
 });
 
 app.post('/user/unfollow', (req,res) => {
-  const {uid} = req.body;
+  uid = req.body.uid;
   const friendQuery = `DELETE FROM FRIENDS where sourcefriend = $1 and destinationfriend = $2 `
-  pool.query(friendQuery,[req.user.data.login,uid],(error, result) => {
+  pool.query(friendQuery,[req.body.login,uid],(error, result) => {
     if (error){
       console.log("ERROR IN PG query: unfollower user");
       //res.status(406).json({error: 'FAILURE'}); will be used for fetch post later
@@ -685,61 +712,41 @@ app.post('/user/image', upload.single("image"), function(req, res, next) {
   }
 });
 
-app.get('/Search',checkNotAuthenticated,(request,response) =>{
-  pool.query('SELECT * FROM users',(error,results) =>{
+app.get('/UserSearch', checkNotAuthenticated, (req,res) =>{
+  pool.query('select * from users where random() < 0.25;', (error,result) =>{
     if (error){
       throw error;
     }
-    pool.query('SELECT * FROM restaurants',(error,results1) =>{
-      if (error){
-        throw error;
-      }
-      var result={'rows':results.rows,'rows2':results1.rows};
-      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
-    })
+    var results={'rows':result.rows};
+    console.log(results)
+    res.render('pages/UserSearch',{results, pageTitle: 'User Search', path: "/UserSearch", user: req.user});
+  })
+});
+
+app.post('/UsrSearch', checkNotAuthenticated,(request,response) =>{
+  Svar=request.body.Svar;
+  Tvar="%" + Svar + "%";
+  pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
+    if (error){
+      throw error;
+    }
+
+    response.render('pages/UserSearch',{results, pageTitle: 'Grababite • Users', path: "/UserSearch", user: request.user})
   });
+});
 
-  app.post('/UsrSearch',(request,response) =>{
-    const {Svar}=request.body;
-    const Tvar="%" + Svar + "%";
-    pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
-      if (error){
-        throw error;
-      }
+app.post('/RestrSearch',checkNotAuthenticated,(request,response) =>{
+  Svar=request.body.Svar;
+  Tvar="%" + Svar + "%";
 
-    pool.query('SELECT * FROM restaurants', (error,results2) =>{
-      if (error){
-        throw error;
-      }
-      var result={'rows':results.rows,'rows2':results2.rows};
-      response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
-    })
-
-    } )
-  })
-
-  app.post('/RestrSearch',(request,response) =>{
-  const {Svar}=request.body;
-  const Tvar="%" + Svar + "%";
-
-  pool.query('SELECT * FROM users',(error,results) =>{
+  pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results) =>{
     if (error){
       throw error;
     }
+    response.render('pages/RestaurantSearch',{results, pageTitle: 'Grababite • Restaurants', path: "/RestaurantSearch", user: request.user})
+  });
+});
 
-  pool.query('SELECT * FROM restaurants WHERE (lower(name) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(address) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar], (error,results2) =>{
-    if (error){
-      throw error;
-    }
-    var result={'rows':results.rows,'rows2':results2.rows};
-    response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user})
-  })
-
-  } )
-})
-
-
-})
 
 app.get('/explore', checkNotAuthenticated, (req, res) => {
   res.render('pages/explore', {accessToken: process.env.MAPBOX_TOKEN, pageTitle: "Grababite • Explore", path: "/explore", user: req.user});
