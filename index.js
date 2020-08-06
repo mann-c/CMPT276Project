@@ -513,22 +513,6 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
     })
   });
 
-  app.post('/Searchallrest',checkNotAuthenticated,(request,response) =>{
-    console.log(request.user.data.preference);
-    pool.query('SELECT * FROM users',(error,results) =>{
-      if (error){
-        throw error;
-      }
-      // pool.query('SELECT * FROM restaurants',(error,results1) =>{
-      pool.query('SELECT * FROM restaurants',(error,results1) =>{
-        if (error){
-          throw error;
-        }
-        var result={'rows':results.rows,'rows2':results1.rows};
-        response.render('pages/Search',{result, pageTitle: 'Grababite • Users • Restaurants', path: "/Search", user: request.user});
-      })
-    });
-  });
 
   app.post('/UsrSearch',(request,response) =>{
     const {Svar}=request.body;
