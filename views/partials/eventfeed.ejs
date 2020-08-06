@@ -92,7 +92,7 @@
         //Button actions -> fetch API
         function joinEvent(evid) {
             document.getElementById(`${evid}-join`).setAttribute('disabled', 'true');  //Disable button
-            let data = {evid: evid};
+            let data = {evid: evid, login: "<%= user.data.login %>"};
             fetch('/event/join', {
                 method: 'POST',
                 headers: {
@@ -109,7 +109,7 @@
                     .catch(err => console.error(err));
         }
         function unjoinEvent(evid) {
-            let data = {evid: evid};
+            let data = {evid: evid, login: "<%= user.data.login %>"};
             fetch('/event/unjoin', {
                 method: 'POST',
                 headers: {
@@ -131,7 +131,7 @@
                 attendance?` There are ${attendance} people counting on you`: ''
             }`);
             if(checkOk){
-                let data = {evid: evid};
+                let data = {evid: evid, login: "<%= user.data.login %>"};
                 fetch('/event/delete', {
                     method: 'POST',
                     headers: {
