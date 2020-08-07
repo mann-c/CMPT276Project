@@ -134,7 +134,11 @@ app.post("/reguser", (req, res) => {
   var last_name = req.body.last_name;
   var city = req.body.city;
   var password = req.body.password;
+  var preferences = req.body.preferences;
+  var preferences2 = req.body.preferences2;
+  var preferences3 = req.body.preferences3;
   let errors = [];
+  var allpreferences= preferences+"," +preferences2 +"," + preferences3;
   let check = false;
   let inputplaced;
   pool.query(
@@ -153,11 +157,14 @@ app.post("/reguser", (req, res) => {
           last_name,
           city,
           password,
+          preferences,
+          preferences2,
+          preferences3
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5)`,//Empty string between $4, $5 is the empty description
-          [username, first_name, last_name, city, password],
+          `INSERT INTO users VALUES($1,$2,$3,$4,$6,$5)`,//Empty string between $4, $5 is the empty description
+          [username, first_name, last_name, city, password,allpreferences],
           (error, result) => {
             if (error) {
               res.end(error);
@@ -311,11 +318,13 @@ app.post('/createEvent', (req, res) => {
 });
 
 app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
-  console.log(req.user.data);
-  var myarray = req.user.data.description.split(',');
-  var tryhard="%"+ myarray[0]+"%";
-  var tryhard2="%"+ myarray[1]+"%";
-  var tryhard3="%"+ myarray[2]+"%";
+  
+  pool.query(`select * from users where login=$1`,[req.user.data.login],(error,result)=>{
+    console.log(result.rows[0]);
+    var myarray = result.rows[0].description.split(',');
+    var tryhard="%"+ myarray[0]+"%";
+    var tryhard2="%"+ myarray[1]+"%";
+    var tryhard3="%"+ myarray[2]+"%";
     pool.query('select * from (select * from restaurants where lower(description) like lower($1) or lower(description) like lower($2) or lower(description) like lower($3)) as rans where random() < 0.01;',[tryhard,tryhard2,tryhard3],(error,result) =>{
       if (error){
         throw error;
@@ -324,6 +333,7 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
       res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
+})
 
 app.get('/feed', checkNotAuthenticated, (req, res) => {
   
