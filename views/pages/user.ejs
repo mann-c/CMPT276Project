@@ -18,10 +18,10 @@
       <% if( user.type === 'USER'){ %>
         <table>
           <tr>
-            <form action="/user/following" method="post">
+            <form action="/following" method="post">
               <button type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right;"> FOLLOWING </button>
             </form>
-            <form action="/user/follower" method="post">
+            <form action="/followers" method="post">
               <button type="submit" name="uid" value="<%=row.attributes.login%>"style="float: right;"> FOLLOWER </button>
             </form>
           </tr>

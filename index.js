@@ -657,7 +657,7 @@ app.post('/user/unfollow', (req,res) => {
   });
 });
 
-app.post('/user/following',(req,res)=>{
+app.post('/following',(req,res)=>{
   const {uid} = req.body;
   var qry = `select * from friends where sourcefriend = '${uid}'`
   pool.query(qry,(err,result)=>{
@@ -668,7 +668,7 @@ app.post('/user/following',(req,res)=>{
   });
 });
 
-app.post('/user/follower',(req,res)=>{
+app.post('/followers',(req,res)=>{
   const {uid} = req.body;
   var qry = `select * from friends where destinationfriend = '${uid}'`
   pool.query(qry,(err,result)=>{
@@ -693,9 +693,29 @@ app.get('/chat/:name',checkNotAuthenticated,(req,res)=>{
 const users = {}
 
 io.sockets.on('connection', socket =>{
-  socket.on('new-user', name => {
+  socket.on('new-user', (name, destinationUser) => {
     users[socket.id] = name
-    socket.broadcast.emit('user-connected', name)
+    let areTheyConnectedFlag = false;
+    let theSocket;
+    for(let id in users){
+      if(users[id] == destinationUser){
+        areTheyConnectedFlag = true;
+        theSocket = id;
+        break;
+      }
+    }
+    if(areTheyConnectedFlag){
+      io.to(theSocket).emit('user-connected', name)
+    } else {
+      //Notify them on the feed if they are online
+      if(feedSubscribers.hasOwnProperty(destinationUser)){
+        io.to(feedSubscribers[destinationUser]).emit('chatrequest', users[socket.id]);
+        io.to(socket.id).emit('user-not-connected', destinationUser);
+      } else {
+        io.to(socket.id).emit('user-not-online', destinationUser);
+      }
+      //also send back a message maybe saying hey they not connected
+    }
   })
 
   socket.on('send-chat-message', (message, destinationUser) => {
@@ -711,9 +731,14 @@ io.sockets.on('connection', socket =>{
     if(areTheyConnectedFlag){
       io.to(theSocket).emit('chat-message', {message: message, name: users[socket.id]});
     } else {
-      console.log(destinationUser + " is not in " + users);
       console.log("They are not connected")
       //Notify them on the feed if they are online
+      if(feedSubscribers.hasOwnProperty(destinationUser)){
+        io.to(feedSubscribers[destinationUser]).emit('chatrequest', users[socket.id]);
+        io.to(socket.id).emit('user-not-connected', destinationUser);
+      } else {
+        io.to(socket.id).emit('user-not-online', destinationUser);
+      }
       //also send back a message maybe saying hey they not connected
     }
   })
@@ -724,7 +749,7 @@ io.sockets.on('connection', socket =>{
   })
 
   socket.on('disconnect', () => {
-    //loop through subscribers for disconnect
+    //If they disconnected form the feed then loop through subscribers for disconnect
     for (let prop in feedSubscribers){
       if (feedSubscribers.hasOwnProperty(prop)){
         if (feedSubscribers.prop == socket.id){
@@ -733,8 +758,11 @@ io.sockets.on('connection', socket =>{
         }
       }
     }
-    socket.broadcast.emit('user-disconnected', users[socket.id])
-    delete users[socket.id]
+    //If they disconnected from the chat then:
+    if(users.hasOwnProperty(socket.id)){
+      socket.broadcast.emit('user-disconnected', users[socket.id])
+      delete users[socket.id]
+    }
   })
 });
 
@@ -798,7 +826,7 @@ app.get('/api/getevents', checkNotAuthenticated, (req, res) => {
       });
 })
 
-app.get('/*', (req, res) => {
+app.get('/*', checkNotAuthenticated, (req, res) => {
   res.status(404).render("pages/404", { path: req.originalUrl, user: req.user })
 });
 

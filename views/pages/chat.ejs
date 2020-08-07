@@ -129,10 +129,11 @@
   const messageContainer = document.getElementById('message-container')
   const messageForm = document.getElementById('send-container')
   const messageInput = document.getElementById('message-input')
+  const destinationUser = location.pathname.split('/')[2];
 
   const name = `<%=user.data.login%>`
   appendMessage('You joined')
-  socket.emit('new-user', name)
+  socket.emit('new-user', name, destinationUser)
 
   socket.on('chat-message', data => {
     appendMessage(`${data.name}: ${data.message}`)
@@ -143,7 +144,7 @@
   })
 
   socket.on('user-not-connected', name => {
-    appendMessage(`${name} has not joined the chat`);
+    appendMessage(`${name} has been requested to join the chat`);
   })
 
   socket.on('user-not-online', name => {
@@ -158,7 +159,7 @@
     e.preventDefault()
     const message = messageInput.value
     appendMessage(`You: ${message}`)
-    socket.emit('send-chat-message', message, location.pathname.split('/')[2])
+    socket.emit('send-chat-message', message, destinationUser)
     messageInput.value = ''
   })
 
