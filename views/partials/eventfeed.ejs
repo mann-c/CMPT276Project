@@ -176,7 +176,13 @@
             </div>
             <hr>
         <% } %>
-        <h2>Events that might interest you</h2>
+        <h2>
+            <% if (user.type === 'USER') { %>
+                Events that might interest you
+            <% } else { %>
+                Upcoming events at your restaurant
+            <% } %>
+        </h2>
         <% for (let event of events) { %>
             <% if (user.type==='USER' && event.login!==user.data.login && !event.attendees.includes(user.data.login)) { %>
                 <%- include ('./feeditem.ejs', {event, user}) %>

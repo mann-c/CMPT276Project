@@ -26,7 +26,7 @@
           Feed
         </a>
       </li>
-
+    <% if(user.type == "USER") { %>
       <li class="nav-item <%= path === '/RestaurantSearch' ? 'active' : '' %>"> 
         <a href="/RestaurantSearch" class="nav-link">
           Restaurants
@@ -44,14 +44,15 @@
           Explore!
         </a>
       </li>
+    <% } %>
     </ul>
   </div>
   <div class="row">
       <a id="navpop" role="button" class="btn btn-secondary nav-link text-light col ml-2" data-container="nav" data-toggle="popover" data-placement="bottom">
         <span class="longtext">Notifications </span>🔔<span class="badge badge-secondary"></span>
       </a>
-      <a href="/logout" role=button class="col nav-link btn btn-danger ml-2">
-        <span class="glyphicon glyphicon-book"></span> Logout
+      <a href="/logout" role="button" class="col nav-link btn btn-danger ml-2 mr-2">
+        <span class="glyphicon glyphicon-book"></span>Logout
       </a>
   </div>
 
