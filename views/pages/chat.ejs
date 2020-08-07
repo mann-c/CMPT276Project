@@ -113,7 +113,7 @@
     </nav>
   <div id="chatWrap">
     <div id ="chatHeader">Chat</div>
-      <div ="chatLog">
+      <div id ="chatLog">
         <div id="message-container"></div>
           <form id="send-container">
             <input type="text" id="message-input">
@@ -124,38 +124,40 @@
     </div>
   </div>
 </div>
-
   <script>
-  const socket = io.connect()
+  const socket = io()
   const messageContainer = document.getElementById('message-container')
   const messageForm = document.getElementById('send-container')
   const messageInput = document.getElementById('message-input')
 
   const name = `<%=row.attributes.login%>`
-
-  function appendMessage(message) {
-  const messageElement = document.createElement('div')
-  messageElement.innerText = message
-  messageContainer.append(messageElement)
-  }
   appendMessage('You joined')
   socket.emit('new-user', name)
 
+  socket.on('chat-message', data => {
+    appendMessage(`${data.name}: ${data.message}`)
+  })
+
   socket.on('user-connected', name => {
-  appendMessage(`${name} connected`)
+    appendMessage(`${name} connected`)
   })
 
   socket.on('user-disconnected', name => {
-  appendMessage(`${name} disconnected`)
+    appendMessage(`${name} disconnected`)
   })
 
   messageForm.addEventListener('submit', e => {
-  e.preventDefault()
-  const message = messageInput.value
-  appendMessage(`You: ${message}`)
-  socket.emit('send-chat-message', message)
-  messageInput.value = ''
+    e.preventDefault()
+    const message = messageInput.value
+    appendMessage(`You: ${message}`)
+    socket.emit('send-chat-message', message)
+    messageInput.value = ''
   })
 
+  function appendMessage(message) {
+    const messageElement = document.createElement('div')
+    messageElement.innerText = message
+    messageContainer.append(messageElement)
+  }
   </script>
 </html>
