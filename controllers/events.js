@@ -71,10 +71,9 @@ const getByRestId = async (uid, pool) => {
                           u.lastname, 
                           u.city AS usercity, 
                           res.*,
-                          ev.eventid
+                          ev.eventid,
                           ev.startdate, 
-                          ev.starttime,
-                          ev.eventid
+                          ev.starttime
                         FROM events ev 
                         INNER JOIN users u ON u.login = ev.userid 
                         INNER JOIN restaurants res ON ev.restid = res.id 
@@ -154,8 +153,13 @@ exports.getFeedEvents = async (usertype, userdata, pool) => {
           break;
         case REST:
             await getByRestId(userdata.id, pool)
-            .then(restevents => events.concat(restevents))
-            .catch(err => console.log(err));
+              .then(restevents => events = events.concat(restevents))
+              .catch(err => console.log(err));
+              
+            await addAttendanceInfo(events, pool)
+              .then(modified => events=modified)
+              .catch(err => console.log(err));
+
           break;
         default:
           console.log("events.js:162 Something has gone terribly wrong here");

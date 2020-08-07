@@ -3,12 +3,12 @@
 <head>
   <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
   <link rel="stylesheet" type="text/css" href="/stylesheets/feed.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/javascript.util/0.12.12/javascript.util.min.js"></script>
 </head>
 
 <body>
 
     <%- include ('../partials/nav.ejs', {path: path}) %>
-    <h2>Upcoming Events</h1>
     <%- include ('../partials/eventfeed.ejs', {events: events}) %>
 
 </body>

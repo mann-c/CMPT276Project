@@ -1,0 +1,23 @@
+#exploremap { 
+    height: 92vh; 
+}
+
+.popupList {
+    list-style: none;
+    margin: auto;
+    padding: 0;
+    }
+    .popupList li {
+        border-top: 1px solid black;
+        margin: auto;
+    }
+
+.legend{
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 1em;
+    padding: 2px;
+    }
+    .legend img{
+        height: 41px;
+        width: 25px;
+    }

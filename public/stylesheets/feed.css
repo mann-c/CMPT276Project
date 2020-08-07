@@ -28,3 +28,11 @@
             text-align: center;
             font-size: 1.6em;
         }
+
+.attendance-list{
+    list-style: none;
+}
+
+#colBtn #colBtnHide{display:inline}
+#colBtn:not(.collapsed)  #colBtnShow{display:none}
+#colBtn.collapsed #colBtnHide{display:none}
