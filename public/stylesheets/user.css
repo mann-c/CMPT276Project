@@ -1,4 +1,4 @@
-@keyframes example {
+/*@keyframes example {
     
     from {left:0px;}
     to {left:440px;}
@@ -124,5 +124,117 @@ color: black;
         opacity: 1;
     }
 }
+
+
+*/
+
+
+
+
+
+#Userinfo{
+    position: relative;
+    left: 35%;
+  
+}
+
+#login{
+    position: relative; 
+    left: 68px;
+}
+
+#city{
+    position: relative;
+     left: 55px;
+}
+
+#description{
+    position: relative ; 
+    left: 60px;
+}
+
+#firstname{
+    position: relative;
+    left: 15px;
+}
+
+#lastname{
+    position: relative;
+    left: 15px;
+}
+
+#password{
+    position: relative;
+    left: 15px ;
+}
+
+#Updatebutton{
+
+background-color: rgb(111, 202, 238);
+position: relative; 
+left: 55px;
+font-size: 18px;
+border-radius: 9px;
+color: black;
+
+}
+
+#Updatebutton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+    
+}
+
+#followersbutton{
+    background-color: rgb(111, 202, 238);
+    font-size: 18px;
+    border-radius: 9px;
+
+}
+
+#followingbutton{
+    background-color: rgb(111, 202, 238);
+    font-size: 18px;
+    border-radius: 9px;
+}
+
+#followersbutton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+   
+}
+
+#followingbutton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
+#ChatButton{
+    background-color: rgb(111, 202, 238);
+    font-size: large;
+    border-radius: 9px;
+    position: relative;
+    left: 550px;
+    top: 20px;
+    color: black;
+}
+
+#ChatButton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
+
+.buttons{
+    background-color: rgb(111, 202, 238);
+    font-size: large;
+    border-radius: 9px;
+}
+
+.buttons:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
 
 

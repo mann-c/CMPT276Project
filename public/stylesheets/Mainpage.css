@@ -35,16 +35,19 @@ body{
     border: solid black;
     margin-right: 900px;
     position: relative;
+    
     bottom: 100px;
     padding: 10px 40px 40px 30px;
     animation: example 1.1s;
     animation-fill-mode: forwards;
     min-width: 300px;
    
-    
-   
-  
 }
+
+
+
+
+
 
 #userloginform {animation-timing-function: ease;}
 
@@ -101,6 +104,8 @@ body{
 
   #restaurantloginbutton {animation-timing-function: ease;}
   #restaurantownerlogin {animation-timing-function: ease;}
+
+
 
 #restaurantloginbutton{
     animation: example1 1.1s;
