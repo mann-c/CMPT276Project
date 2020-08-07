@@ -483,8 +483,8 @@ app.get('/chat/:name',checkNotAuthenticated,(req,res)=>{
 });
 
 const users = {}
-io.sockets.on('connection', socket =>
 
+io.sockets.on('connection', socket =>{
   socket.on('new-user', name => {
     users[socket.id] = name
     socket.broadcast.emit('user-connected', name)
@@ -496,7 +496,7 @@ io.sockets.on('connection', socket =>
   socket.on('disconnect', () => {
     socket.broadcast.emit('user-disconnected', users[socket.id])
     delete users[socket.id]
-
+  })
 })
 
 app.get('/Search',checkNotAuthenticated,(request,response) =>{
@@ -532,7 +532,7 @@ app.get('/Search',checkNotAuthenticated,(request,response) =>{
     } )
   })
 
-  app.post('/RestrSearch',(request,response) =>{
+app.post('/RestrSearch',(request,response) =>{
   const {Svar}=request.body;
   const Tvar="%" + Svar + "%";
 
