@@ -14,7 +14,7 @@
 
 #RestaurantSearchside{
     position: absolute;
-    left:50px;
+    left:510px;
     top:100px;
     width:450px;
     
@@ -22,7 +22,7 @@
 #UserSearchside{
     position: absolute;
     top:100px;
-    left:50px;
+    left:510px;
     width:450px;
 }
 
@@ -42,4 +42,9 @@
     position: absolute;
     left: 390px;
     top: 87px;
+}
+
+#search-rest{
+    position: relative;
+    left: 80px;
 }

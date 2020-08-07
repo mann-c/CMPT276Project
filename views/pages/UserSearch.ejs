@@ -9,11 +9,11 @@
     <%- include ('../partials/nav.ejs'), {path: path} %>
 <div class="excludenav">
     <div id="UserSearchside">
-        <h2>Search For Users</h2>
+        <h2 style="position: relative; left: 85px;">Search For Users</h2>
     
-        <p style="color:rgb(59, 57, 57)">Search User by Name or City</p>
+        <p style="color:rgb(59, 57, 57); position: relative; left: 98px;">Search User by Name or City</p>
     
-         <form action="UsrSearch" method="post">
+         <form action="UsrSearch" method="post" style="position:relative; left: 42px;">
             <input style="border: solid lightgrey;" type="text" name="Svar" required>
             <input class="buttons" type="submit" value="Search for Users">
         </form>
