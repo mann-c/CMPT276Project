@@ -17,8 +17,8 @@
             <input type="submit" value="Enter">
         </form>
     
-        <form action="Search" method="GET">
-            <input type="submit" value="Show all Users">
+        <form action="UserSearch" method="GET">
+            <input type="submit" value="Show Users">
         </form>
     
         <%if (results.rows.length==0) {%>
@@ -27,7 +27,8 @@
         <%if (results.rows.length!=0){ %>
            
             <% results.rows.forEach(function(r) { %>
-                <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+            <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+                <p><span style="font-weight: bold;">Username: </span> <%= r.login %>   </p>
                 <p><span style="font-weight: bold;">First Name: </span> <%= r.firstname %>   </p>
                 <p><span style="font-weight:bold">Last Name:</span><%=r.lastname %></p>
                 <p><span style="font-weight: bold;"><%=r.firstname%>'s City of Residence:</span><%=r.city%></p>

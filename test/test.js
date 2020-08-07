@@ -7,104 +7,9 @@ var expect = chai.expect;
 chai.use(chaiHttp);
 chai.request('http://localhost:5000').get('/');
 
-var username_for_mod = "trial33"
-
-describe("Test login with different credentials and user registration", function(){
-
-    it("Confirm that registration is rejected if a username already exits", function(done){
-        chai.request(server).get('/testgetall').end(function(error,res){
-            var numberofusers= res.body[0].rows.length;
-                chai.request(server).post('/reguser').send({"username":"chan", "first_name":"ddc", "last_name":"cdcd", "city":"cdcsd", "password":"cdc", "description":" "})
-                .end(function(error,res){
-                        chai.request(server).get('/testgetall')
-                        .end(function(error,res){
-                            var numberofusers2= res.body[0].rows.length;
-                            var total= numberofusers-numberofusers2;
-                            total.should.equal(0);
-                            done();
-                        });
-                });
-        });
-    });
-
-    it("Should get all users and check if a new username is input in and add new user", function(done){
-        chai.request(server).get('/testgetall').end(function(error,res){
-            var numberofusers= res.body[0].rows.length;
-            
-                chai.request(server).post('/reguser').send({"username":username_for_mod, "first_name":"Haha", "last_name":"Hoho", "city":"Burn", "password":"passy1"})
-                .end(function(error,res){
-                        chai.request(server).get('/testgetall')
-                        .end(function(error,res){
-                            var numberofusers2= res.body[0].rows.length;
-                            (numberofusers2-numberofusers).should.equal(1);
-                        });
-                    done();
-                });
-        });
-    });
-
-    it("user should not be logged in", function(done){
-        chai.request(server).post('/login').send({username:"j", password:"1", utype:"USER"})
-            .end(function(error,res){
-                var val=res.text.indexOf("INCORRECT")
-                if(val>0){val=true;}
-                val.should.equal(true);
-                done();
-            });
-    });
-
-    it("user should be logged in", function(done){
-        chai.request(server).post('/login').send({username:"chan", password:"hello", utype:"USER"})
-            .end(function(error,res){
-                var val=res.text.indexOf("INCORRECT")
-                if(val>0){val=true;}
-                else{
-                    val=false;
-                }
-                val.should.equal(false);
-            done();
-            });
-    });
-
-    it("User should be able to log out", function(done){
-        chai.request(server).get('/logout').end(function(error, res){
-            res.should.have.status(200);
-            done();
-        })
-    });
- });
-
-describe("User information update", function(){
-    it("Should update the user's information", function(done){
-        chai.request(server).post("/testgetupdate").send({"username":username_for_mod})
-            .end(function(error,res){
-                var first_name1=res.body[0].rows[0].firstname;
-                chai.request(server).post('/update').send({"login":username_for_mod, "firstname":"newna422", "lastname":"cdcd", "city":"cdcsd","description":" " ,"password":"cdc","function":"update"})
-                .end(function(error,res){
-                    chai.request(server).post("/testgetupdate").send({"username":username_for_mod})
-                    .end(function(error,res){
-                        
-                        var first_name2=res.body[0].rows[0].firstname;
-                        first_name2.should.not.equal(first_name1);
-                        
-                    })
-                    done();
-                })
-            })
-    });
-});
-
-describe("User shouldn't be able to login with incorrect information", function(){
-    it("User should not be logged in", function(done){
-        chai.request(server).post('/login').send({username:"j", password:"1", utype:"USER"})
-            .end(function(error,res){
-                var val=res.text.indexOf("INCORRECT")
-                if(val>0){val=true;}
-                val.should.equal(true);
-                done();
-            });
-    });
-});
+// two variables need to be incremented by 1 each time the test is run
+var username_for_mod = "trial43"
+var event_delete = '96'
 
 describe("Share a dining event", function(){
     var cookie;
@@ -274,6 +179,24 @@ describe("Add a friend and join an event", function(){
                 });
         });
     });
+
+    it("Event can be deleted after it is in the feed", function(done){
+        chai.request(server).get('/test_get_all_create_events').end(function(error,res){
+            var numberofusers= res.body[0].rows.length;
+            
+            chai.request(server).post('/event/delete').send({"evid":event_delete, "login":"chan"})
+                .end(function(error,res){
+                    
+                        chai.request(server).get('/test_get_all_create_events')
+                            .end(function(error,res){
+                                
+                                var numberofusers2= res.body[0].rows.length;
+                                (numberofusers2-numberofusers).should.equal(-1);
+                                done();
+                            });
+                });
+        });
+    });
 });
 
 
@@ -298,4 +221,101 @@ describe("Login as a restaurant user and look at the feed", function(){
                 done();
             });
     })
+});
+
+describe("Test login with different credentials and user registration", function(){
+
+    it("Confirm that registration is rejected if a username already exits", function(done){
+        chai.request(server).get('/testgetall').end(function(error,res){
+            var numberofusers= res.body[0].rows.length;
+                chai.request(server).post('/reguser').send({"username":"chan", "first_name":"ddc", "last_name":"cdcd", "city":"cdcsd", "password":"cdc", "description":" "})
+                .end(function(error,res){
+                        chai.request(server).get('/testgetall')
+                        .end(function(error,res){
+                            var numberofusers2= res.body[0].rows.length;
+                            var total= numberofusers-numberofusers2;
+                            total.should.equal(0);
+                            done();
+                        });
+                });
+        });
+    });
+
+    it("Should get all users and check if a new username is input in and add new user", function(done){
+        chai.request(server).get('/testgetall').end(function(error,res){
+            var numberofusers= res.body[0].rows.length;
+            
+                chai.request(server).post('/reguser').send({"username":username_for_mod, "first_name":"Haha", "last_name":"Hoho", "city":"Burn", "password":"passy1"})
+                .end(function(error,res){
+                        chai.request(server).get('/testgetall')
+                        .end(function(error,res){
+                            var numberofusers2= res.body[0].rows.length;
+                            (numberofusers2-numberofusers).should.equal(1);
+                        });
+                    done();
+                });
+        });
+    });
+
+    it("user should not be logged in", function(done){
+        chai.request(server).post('/login').send({username:"j", password:"1", utype:"USER"})
+            .end(function(error,res){
+                var val=res.text.indexOf("INCORRECT")
+                if(val>0){val=true;}
+                val.should.equal(true);
+                done();
+            });
+    });
+
+    it("user should be logged in", function(done){
+        chai.request(server).post('/login').send({username:"chan", password:"hello", utype:"USER"})
+            .end(function(error,res){
+                var val=res.text.indexOf("INCORRECT")
+                if(val>0){val=true;}
+                else{
+                    val=false;
+                }
+                val.should.equal(false);
+            done();
+            });
+    });
+
+    it("User should be able to log out", function(done){
+        chai.request(server).get('/logout').end(function(error, res){
+            res.should.have.status(200);
+            done();
+        })
+    });
+ });
+
+describe("User information update", function(){
+    it("Should update the user's information", function(done){
+        chai.request(server).post("/testgetupdate").send({"username":username_for_mod})
+            .end(function(error,res){
+                var first_name1=res.body[0].rows[0].firstname;
+                chai.request(server).post('/update').send({"login":username_for_mod, "firstname":"newna422", "lastname":"cdcd", "city":"cdcsd","description":" " ,"password":"cdc","function":"update"})
+                .end(function(error,res){
+                    chai.request(server).post("/testgetupdate").send({"username":username_for_mod})
+                    .end(function(error,res){
+                        
+                        var first_name2=res.body[0].rows[0].firstname;
+                        first_name2.should.not.equal(first_name1);
+                        
+                    })
+                    done();
+                })
+            })
+    });
+});
+
+describe("User shouldn't be able to login with incorrect information", function(){
+    it("User should not be logged in", function(done){
+        chai.request(server).post('/login').send({username:"j", password:"1", utype:"USER"})
+            .end(function(error,res){
+                var val=res.text.indexOf("INCORRECT")
+                if(val>0){val=true;}
+                val.should.equal(true);
+                done();
+            });
+    });
 });
