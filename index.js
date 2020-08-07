@@ -490,8 +490,24 @@ io.sockets.on('connection', socket =>{
     socket.broadcast.emit('user-connected', name)
   })
 
-  socket.on('send-chat-message', message => {
-    socket.broadcast.emit('chat-message', { message: message, name: users[socket.id] })
+  socket.on('send-chat-message', (message, destinationUser) => {
+    let areTheyConnectedFlag = false;
+    let theSocket;
+    for(let id in users){
+      if(users[id] == destinationUser){
+        areTheyConnectedFlag = true;
+        theSocket = id;
+        break;
+      }
+    }
+    if(areTheyConnectedFlag){
+      io.to(theSocket).emit('chat-message', {message: message, name: users[socket.id]});
+    } else {
+      console.log(destinationUser + " is not in " + users);
+      console.log("They are not connected")
+      //Notify them on the feed if they are online
+      //also send back a message maybe saying hey they not connected
+    }
   })
   socket.on('disconnect', () => {
     socket.broadcast.emit('user-disconnected', users[socket.id])
