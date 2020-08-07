@@ -1,0 +1,27 @@
+.followbuttons{
+    background-color: rgb(111, 202, 238);
+    font-size: large;
+    border-radius: 9px;
+    color: black;
+    cursor:pointer;
+}
+
+.followbuttons:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
+
+
+@keyframes example {
+    
+    from {top:600px;}
+    to {top:40px;}
+  }
+
+#follow-unfollow {animation-timing-function: ease;}
+#follow-unfollow{
+    position: relative;
+    animation: example 1s;
+    animation-fill-mode: forwards;
+}

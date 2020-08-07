@@ -4,14 +4,16 @@
 
 <head>
   <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+  <link rel="stylesheet" type="text/css" href="/stylesheets/follow.css" />
 </head>
 
 <body>
 
 <%- include ('../partials/nav.ejs'), {path: path} %>
+<div id="follow-unfollow">
 <% if (pageTitle === "Following"){%>
   <% if (followingcount === 0){%>
-    <h3>THERE IS NO FOLLOWING</h3>
+    <h3 style="position: relative; left: 40px;";">THERE IS NO FOLLOWING</h3>
     <% } else {%>
     <div class="container">
      <h2 class="pn">FOLLOWING</h2>
@@ -22,7 +24,9 @@
           <%var json = following[i];%>
              <tr>
              <td>
-               <button onclick = "location.href='/user/<%=json.destinationfriend%>'" style="cursor:pointer;">
+               <button class="followbuttons" 
+
+               onclick = "location.href='/user/<%=json.destinationfriend%>'" ">
                <%=json.destinationfriend%>
              </td>
              </tr>
@@ -34,10 +38,10 @@
 
 <%} else if(pageTitle === "Follower") {%>
   <% if (followercount === 0){%>
-    <h3>THERE IS NO FOLLOWER</h3>
+    <h3 style="position: relative; left: 40px;">THERE ARE NO FOLLOWERS</h3>
   <%} else {%>
     <div class="container">
-     <h2 class="pn">FOLLOWER</h2>
+     <h2 class="pn">FOLLOWERS</h2>
      <p class="fl"><%=followercount%> Followers</p>
      <table class="table">
         <tbody >
@@ -45,7 +49,7 @@
           <%var json = follower[i];%>
              <tr>
              <td>
-               <button onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
+               <button class="followbuttons" onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
                <%=json.sourcefriend%>
              </td>
              </tr>
@@ -55,5 +59,6 @@
     </div>
   <%}%>
 <%}%>
+</div>
 </body>
 </html>

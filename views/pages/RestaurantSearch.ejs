@@ -2,20 +2,24 @@
 <html>
     <head>
         <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+        <link rel="stylesheet" type="text/css" href="/stylesheets/Search.css" />
       </head>
 
 <body>
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
+    <div class="excludenav">
     <div id="RestaurantSearchside">
-        <h2> Search for Restaurants</h2>
-        <p style="color:rgb(59, 57, 57)">Search by Restaurant Name, Address, or city</p>
+        <h2 style="position: relative; left: 60px;"> Search for Restaurants</h2>
+        <br>
+        <p style="color:rgb(59, 57, 57); position: relative; left: 50px;">Search by Restaurant Name, Address, or city</p>
+        
     
         <form action="RestrSearch" method="post" id="search-rest">
-            <input type="text" id="Svar" name="Svar"  style="width: 200px;" required>
-            <input type="submit" value="Search">
+            <input type="text" id="Svar" name="Svar"  style="width: 200px; border: solid lightgray;" required>
+            <input class="buttons" type="submit" value="Search">
         </form>
-    
+        <br>
         <%if (results.rows.length==0) { %>
             <p style="color: red;">No Results Found</p>
          <% } %>
@@ -33,7 +37,7 @@
                 <p><span style="font-weight: bold;">Description:</span><%=r.description%></p>
                 <%var RestPg="/restaurant/" + r.id%>
                 <a href="<%=RestPg%>">
-                    <button>
+                    <button class="buttons">
                         Explore
                     </button>
                 </a>
@@ -42,5 +46,6 @@
         <% }%>
     
         </div>
+    </div>
 </body>
 </html>

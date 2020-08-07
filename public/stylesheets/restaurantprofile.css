@@ -1,0 +1,57 @@
+#Headtitle{
+font-size: 28px;
+font-weight: bold;
+position: relative;
+left: 444px;
+margin-bottom: 20px;
+animation: fading .3s ease-in;
+}
+
+#restaurantname{
+    border: solid 2pt rgb(111, 202, 238);
+    text-align: center;
+    border-radius: 25;
+    font-size: x-large;
+    
+}
+
+
+
+
+
+#Eventform{
+    position: absolute;
+    left: 900px;
+    top: 200px;
+    animation: fading .7s ease-in;
+}
+
+#createbutton{
+    position: relative;
+    left: 150px;
+    font-size: 17px;
+    background-color:  rgb(111, 202, 238);
+    border-radius: 9px;
+    color: black;
+}
+
+#createbutton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
+#picture{
+    border: solid rgb(111, 202, 238);
+    border-radius: 12px;
+    width: 715px;
+    animation: fading .5s ease-in;
+    
+}
+@keyframes fading{
+    from {
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}

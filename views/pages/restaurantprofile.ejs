@@ -2,9 +2,10 @@
 <html>
   <head>
     <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/restaurantprofile.css" />
   </head>
 
-  <body>
+  <body style="overflow-x: hidden;">
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
 <div class="container">
@@ -20,18 +21,22 @@
       apiKey = process.env.GOOGLE_API;
       src = "https://www.google.com/maps/embed/v1/place?key="+apiKey+"&q=" + restName + "+" + addressNoSpace; 
     %>
-    <p style="font-size: large;">Restaurant Profile</p>
-    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;
-    font-size: x-large;"><%=results.attributes.name%></h2>
+    <p id="Headtitle">Restaurant Profile</p>
+    <h2 id="restaurantname" ><%=results.attributes.name%></h2>
     <body>
-        <img src="<%=results.attributes.imageurl%>" alt="Restaurant Image">
-        <div style="font-size: large; color: maroon;"><div>Address</div><%=results.attributes.address%></div>
-        <div style="font-size: large; color: maroon;"><div>Phone</div><%=results.attributes.phone%></div>
-        <div style="font-size: large; color: maroon;"><div>Price</div><%=results.attributes.price%></div>
-        <div style="font-size: large; color: maroon;"><div>Yelp Rating</div><%=results.attributes.rating%></div>
+        <img id="picture" src="<%=results.attributes.imageurl%>" alt="Restaurant Image">
+        <br><br>
+        <div id="Createevent">
+        <div style="font-size: large; ">Address: <%=results.attributes.address%></div>
+        <div style="font-size: large; ">Phone:<%=results.attributes.phone%></div>
+        <div style="font-size: large; ">Price:<%=results.attributes.price%></div>
+        <div style="font-size: large;">Yelp Rating:<%=results.attributes.rating%></div>
         <iframe width="600" height="450" src="<%=src%>>" frameborder="0" allowfullscreen></iframe><br><br>
-        <form action="/createEvent" method="post" id="<%= user.type %>" style="font-weight: bold;">
-            CREATE AN EVENT AT THIS RESTAURANT!!!<br>
+        </div>
+
+        <div id="Eventform">
+        <form action="/createEvent" method="post" id="<%= user.type %>" style="font-weight: bold; font-size: 16px;">
+            Create an Event at this Restaurant<br> <br>
             <label for="date">DATE:</label>
             <input
               type="date"
@@ -49,11 +54,12 @@
               min="00:00"
               value=""
               required
-            /><br /><br />
+            /><br />
             <input name="user" value="<%= user.data.login%>" style="visibility: hidden;" />
             <input name="restaurant" value="<%= results.attributes.id%>" style="visibility: hidden;" />
-            <input type="submit" value="CREATE EVENT" />
+            <input id="createbutton" type="submit" value="Create Event" />
           </form>
+          </div>
           <script type="text/javascript">
             if(document.getElementById("REST") != null){
                 document.getElementById("REST").style.visibility = 'hidden';
