@@ -17,11 +17,9 @@
             <input style="border: solid lightgrey;" type="text" name="Svar" required>
             <input class="buttons" type="submit" value="Search for Users">
         </form>
+        <br>
     
-        <form action="UserSearch" method="GET">
-            <input type="submit" value="Show Users">
-        </form>
-        </div> -->
+        
     
         <%if (results.rows.length==0) {%>
             <p>No results found</p>
@@ -29,7 +27,7 @@
         <%if (results.rows.length!=0){ %>
            
             <% results.rows.forEach(function(r) { %>
-            <div style="border-top: solid lightgrey; padding-bottom: 20px; padding-top:10px">
+            <div style="border-top: solid lightgrey; ">
                 <p><span style="font-weight: bold;">Username: </span> <%= r.login %>   </p>
                 <p><span style="font-weight: bold;">First Name: </span> <%= r.firstname %>   </p>
                 <p><span style="font-weight:bold">Last Name:</span><%=r.lastname %></p>
