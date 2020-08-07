@@ -32,8 +32,9 @@
     border: solid black;
     margin-right: 900px;
     position: relative;
-    left: 480px;
-    top: 100px;
+    left: 30%;
+    top: 31%;
+    min-width: 200px;
     padding: 10px 40px 40px 30px;
 
 }
