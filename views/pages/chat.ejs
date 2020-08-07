@@ -1,150 +1,172 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
-
-  <style>
-  body {
-  background-color: lightblue;
-  }
-  </style>
-  <meta charset="utf8" />
-  <title>Mobile Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Grababite Chat App</title>
+  <script src="/socket.io/socket.io.js"></script
   <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
-
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-  <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
-  <script src=”https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js”> </script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    window.onload = function () {
-      //var room = prompt('방 이름을 입력하세요.', '');
-      var room = "event gathering"
-      var socket = io.connect();
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      font-family: Copperplate;
 
-      socket.emit('join', room);
+    }
+    #message-container {
+      width: 80%;
+      width: 600px;
+    }
 
-      socket.on('message', function (data) {
+    #message-container div {
+      background-color: #FFF;
+      padding: 5px;
+    }
 
-        var output = '';
-        output += '<li>';
-        output += '    <h3>' + data.name + '</h3>';
-        output += '    <p>' + data.message + '</p>';
-        output += '    <p>' + data.date + '</p>';
-        output += '</li>';
+    #message-container div:nth-child(2n) {
+      background-color: #FFF;
+      width: 600px;
+    }
 
-        $(output).prependTo('#content');
-        $('#content').listview('refresh');
-      });
-      function readURL(input) {
-        if (input.files && input.files[0]) {
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            $('#blah').attr('src', e.target.result);
-          }
-          reader.readAsDataURL(input.files[0]);
-        }
-      }
+    #send-container {
+      position: fixed;
+      padding-bottom: 30px;
+      bottom: 0;
+      background-color: white;
+      width: 600px;
+      width: 80%;
 
-      $('#button').click(function () {
-        socket.emit('message', {
-          name: $('#name').val(),
-          message: $('#message').val(),
+    }
 
-          date: new Date().toUTCString()
-        });
-      });
+    #message-input {
+      flex-grow: 1;
+      width: 580px;
+    }
+    #chatWrap {
+    width: 600px;
+    border: 1px solid #ddd;
+    }
+    #chatHeader {
+        height: 60px;
+        text-align: center;
+        line-height: 60px;
+        font-size: 25px;
+        font-weight: 900;
+        border-bottom: 1px solid #ddd;
+        color: #9400D3;
+    }
+    #chatLog {
+        height: 700px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    nav {
+    width: 600px;
+    min-width: 600px;
+    height: 50px;
+    background: #9400D3;
+    color: black;
+    padding: 0px 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+  }
+    #logoutBtn{
+    color: black !important;
+    text-transform: uppercase;
+    text-decoration: none;
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    display: inline-block;
+    border: none;
+    transition: all 0.4s ease 0s;
+    }
+    #send-button{
+    color: black !important;
+    text-transform: uppercase;
+    text-decoration: none;
+    background-color: #9400D3;
+    padding: 10px;
+    border-radius: 5px;
+    display: inline-block;
+    border: none;
+    transition: all 0.4s ease 0s;
+    }
 
-      socket.on('image', function (data) {
-        var output = '';
-        output += '<li>';
-        output += '    <h3>' + data.name + '</h3>';
-        output += '    <img src =' + data.message + ' height = 200px width = 200px>';
-        output += '    <p>' + data.date + '</p>';
-        output += '</li>';
-
-        $(output).prependTo('#content');
-        $('#content').listview('refresh');
-      });
-
-      $(function(){
-        $('#uploadBtn').on('click', function(){
-        uploadFile();
-        });
-      });
-
-      function uploadFile(){
-        var form = $('#uploadForm')[0];
-        var formData = new FormData();
-        formData.append("image", $("input[name=test]")[0].files[0]);
-        var obj = {formData}
-        $.ajax({
-          url : '/user/image',
-          //url : 'https://thunder276.herokuapp.com/user/image',
-          type : 'POST',
-          method: "POST",
-          timeout: 0,
-          processData: false,
-          mimeType: "multipart/form-data",
-          contentType: false,
-          data: formData,
-
-          success: function (data) {
-            socket.emit('image', {
-              name: $('#name').val(),
-              message: data,
-              date: new Date().toUTCString()
-            });
-            alert("complete");
-            $("#btnSubmit").prop("disabled", false);
-          },
-          error: function (e) {
-            console.log("ERROR : ", e);
-            $("#btnSubmit").prop("disabled", false);
-            alert("fail");
-          }
-        }).done(function(data){
-          callback(data);
-        });
-        $.submit();
-      }
-
-    };
-  </script>
+  </style>
 </head>
-
 <body>
-
-  <div data-role="page" style="background-color:#F8F8FF;">
-    <div data-role="header" style="background-color:#D8BFD8;">
-      <h1>Grababite Chat</h1>
-    </div>
-    <div data-role="content">
-      <h3>Enter name for chat</h3>
-      <input id="name" />
-      <a data-role="button" href="#chatpage" style="background-color:#E6E6FA;">Start Chat</a>
-      <button id="chatOut" style="background-color:#E6E6FA;" onclick = "location.href='/user/<%=user.data.login%>'">Back to Profile</button>
+<div id="contentWrap">
+    <nav>
+      <span id="nav-header">
+        Chat app
+      </span>
+      <button id="logoutBtn" onclick = "location.href='/user/<%=user.data.login%>'">BACK</button>
+    </nav>
+  <div id="chatWrap">
+    <div id ="chatHeader">Chat</div>
+      <div id ="chatLog">
+        <div id="message-container"></div>
+          <form id="send-container">
+            <input type="text" id="message-input">
+              <button type="submit" id="send-button">Send</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
-  <div data-role="page" id="chatpage" style="background-color:#F8F8FF;">
-    <div data-role="header" style="background-color:#D8BFD8;">
-      <h1>Grababite Chat</h1>
-    </div>
-    <div data-role="content">
-      <input id="message" />
-      <button id='button' style="background-color:#E6E6FA;">Send</button>
-      <form id="uploadForm" method="post" enctype="multipart/form-data">
-        <input type="file" name="test" id="test"/>
-        <button type="button" id="uploadBtn" style="background-color:#E6E6FA;">Upload</button>
-      </form>
-      <button id="chatOut" style="background-color:#E6E6FA;" onclick = "location.href='/user/<%=user.data.login%>'">Back to Profile</button>
-      <ul id="content" data-role="listview" data-inset="true"></ul>
-    </div>
+</div>
+  <script>
+  const socket = io()
+  const messageContainer = document.getElementById('message-container')
+  const messageForm = document.getElementById('send-container')
+  const messageInput = document.getElementById('message-input')
+  const destinationUser = location.pathname.split('/')[2];
 
-  </div>
-</body>
+  const name = `<%=user.data.login%>`
+  appendMessage('You joined')
+  socket.emit('new-user', name, destinationUser)
 
+  socket.on('chat-message', data => {
+    appendMessage(`${data.name}: ${data.message}`)
+  })
+
+  socket.on('user-connected', name => {
+    appendMessage(`${name} connected`)
+  })
+
+  socket.on('user-not-connected', name => {
+    appendMessage(`${name} has been requested to join the chat`);
+  })
+
+  socket.on('user-not-online', name => {
+    appendMessage(`${name} is not online now`);
+  })
+
+  socket.on('user-disconnected', name => {
+    appendMessage(`${name} disconnected`)
+  })
+
+  messageForm.addEventListener('submit', e => {
+    e.preventDefault()
+    const message = messageInput.value
+    appendMessage(`You: ${message}`)
+    socket.emit('send-chat-message', message, destinationUser)
+    messageInput.value = ''
+  })
+
+  function appendMessage(message) {
+    const messageElement = document.createElement('div')
+    messageElement.innerText = message
+    messageContainer.append(messageElement)
+  }
+  </script>
 </html>

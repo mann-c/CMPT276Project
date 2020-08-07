@@ -26,7 +26,7 @@
           Feed
         </a>
       </li>
-    <% if(user.type == "USER") { %>
+    <% if(user && user.type == "USER") { %>
       <li class="nav-item <%= path === '/RestaurantSearch' ? 'active' : '' %>"> 
         <a href="/RestaurantSearch" class="nav-link" title="Search for restaurants">
           Restaurants
@@ -100,11 +100,52 @@
               break;       
       }
   })
-  pushNotification = (actor, action, subject) =>{
+
+  socket.on('chatrequest', (chatter) => {
+    chatNotification(chatter);
+  })
+
+  chatNotification = (chatter) => {
+    let notificationItem = $('<li>');
+      notificationItem.addClass('notification-list-item');
+      let notificationBody = $('<p>');
+        notificationBody.addClass('notification-list body')
+        let notificationActor = $('<b>');
+          notificationActor.addClass('notification-list-title');
+          notificationActor.text(chatter)
+        let notificationSubject = $('<a>');
+          notificationSubject.addClass('notification-list-event');
+          notificationSubject.text(" is waiting to chat with you.");
+          notificationSubject.attr('href', `/chat/${chatter}`);
+    notificationBody.append(notificationActor, notificationSubject);
+    notificationItem.append(notificationBody);
+    if($('#notification-div').children().length>0){
+      let notificationList = $('#notification-div').children('.notification-list');
+      notificationList.prepend(notificationItem);
+    } else {
+      console.log($('#notification-div').html())
+      console.log($('#notification-div').children())
+
+      let notificationList = $('<ul>').addClass('notification-list');
+      notificationList.append(notificationItem);
+      $('#notification-div').empty().append(notificationList);
+    }
+    //Remove, replace and show popover
+    $("#navpop").popover('dispose');
+    $("#navpop").popover({
+      'title' : 'Notifications', 
+      'html' : true,
+      'placement' : 'bottom',
+      'content' : $('#notification-div').html()
+    });
+    $("#navpop").popover('show');
+    console.log($('#notification-div').children())
+  }
+  pushNotification = (actor, action, subject) => {
     let notificationItem = $('<li>');
       notificationItem.addClass('notification-list-item');
     let notificationBody = $('<p>');
-      notificationBody.addClass('notification-list body')
+      notificationBody.addClass('notification-list body');
     let notificationActor = $('<b>');
       notificationActor.addClass('notification-list-title');
       notificationActor.text(actor)
@@ -113,11 +154,10 @@
       notificationText.text(action)
     let notificationSubject = $('<a>');
       notificationSubject.addClass('notification-list-event');
-      console.log("pushNotification >>",Object.keys(subject), subject.name);
       notificationSubject.text(`${subject.name}`);
       notificationSubject.attr('href', `/feed#${subject.eventid}`);
       if("<%= path%>" === "/feed")
-        notificationSubject.attr('onclick', `refreshPage(${subject.eventid})`)
+        notificationSubject.attr('onclick', `refreshPage(${subject.eventid})`);
     notificationBody.append(notificationActor, notificationText, notificationSubject);
     notificationItem.append(notificationBody);
     //Add to list

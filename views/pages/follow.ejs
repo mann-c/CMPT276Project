@@ -24,10 +24,11 @@
           <%var json = following[i];%>
              <tr>
              <td>
-               <button class="followbuttons" 
-
-               onclick = "location.href='/user/<%=json.destinationfriend%>'" ">
+               <button class="followbuttons" onclick = "location.href='/user/<%=json.destinationfriend%>'" style="cursor:pointer;">
                <%=json.destinationfriend%>
+               <button class="chatbtn" onclick = "location.href='/chat/<%=json.destinationfriend%>'" style="cursor:pointer;">
+                 💬
+
              </td>
              </tr>
               <%}%>
@@ -51,6 +52,9 @@
              <td>
                <button class="followbuttons" onclick = "location.href='/user/<%=json.sourcefriend%>'" style="cursor:pointer;">
                <%=json.sourcefriend%>
+               <button class="chatbtn" onclick = "location.href='/chat/<%=json.sourcefriend%>'" style="cursor:pointer;">
+                💬
+
              </td>
              </tr>
               <%}%>
