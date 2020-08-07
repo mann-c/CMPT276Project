@@ -134,7 +134,11 @@ app.post("/reguser", (req, res) => {
   var last_name = req.body.last_name;
   var city = req.body.city;
   var password = req.body.password;
+  var preferences = req.body.preferences;
+  var preferences2 = req.body.preferences2;
+  var preferences3 = req.body.preferences3;
   let errors = [];
+  var allpreferences= preferences+"," +preferences2 +"," + preferences3;
   let check = false;
   let inputplaced;
   pool.query(
@@ -153,11 +157,14 @@ app.post("/reguser", (req, res) => {
           last_name,
           city,
           password,
+          preferences,
+          preferences2,
+          preferences3
         });
       } else {
         pool.query(
-          `INSERT INTO users VALUES($1,$2,$3,$4,'',$5)`,//Empty string between $4, $5 is the empty description
-          [username, first_name, last_name, city, password],
+          `INSERT INTO users VALUES($1,$2,$3,$4,$6,$5)`,//Empty string between $4, $5 is the empty description
+          [username, first_name, last_name, city, password,allpreferences],
           (error, result) => {
             if (error) {
               res.end(error);
@@ -311,11 +318,13 @@ app.post('/createEvent', (req, res) => {
 });
 
 app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
-  console.log(req.user.data);
-  var myarray = req.user.data.description.split(',');
-  var tryhard="%"+ myarray[0]+"%";
-  var tryhard2="%"+ myarray[1]+"%";
-  var tryhard3="%"+ myarray[2]+"%";
+  
+  pool.query(`select * from users where login=$1`,[req.user.data.login],(error,result)=>{
+    console.log(result.rows[0]);
+    var myarray = result.rows[0].description.split(',');
+    var tryhard="%"+ myarray[0]+"%";
+    var tryhard2="%"+ myarray[1]+"%";
+    var tryhard3="%"+ myarray[2]+"%";
     pool.query('select * from (select * from restaurants where lower(description) like lower($1) or lower(description) like lower($2) or lower(description) like lower($3)) as rans where random() < 0.01;',[tryhard,tryhard2,tryhard3],(error,result) =>{
       if (error){
         throw error;
@@ -324,6 +333,7 @@ app.get('/RestaurantSearch', checkNotAuthenticated, (req,res) =>{
       res.render('pages/RestaurantSearch',{results, pageTitle: 'Restaurant Search', path: "/RestaurantSearch", user: req.user});
     })
   })
+})
 
 app.get('/feed', checkNotAuthenticated, (req, res) => {
   
@@ -477,8 +487,8 @@ app.post('/event/join', (req,res) => {
               'JOIN',
               result.rows[0],                                                       //All event info
               {
-                login: req.user.data.login,                                         //Login of who joined
-                name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+                login: req.body.login,                                         //Login of who joined
+                name: `${req.body.firstname} ${req.body.lastname}`        //Name of who joined
               }
             );
             res.status(201).json({message: 'SUCCESS'});
@@ -532,8 +542,8 @@ app.post('/event/unjoin', (req,res) => {
               'UNJOIN',
               result.rows[0],                                                       //All event info
               {
-                login: req.user.data.login,                                         //Login of who joined
-                name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+                login: req.body.login,                                         //Login of who joined
+                name: `${req.body.firstname} ${req.body.lastname}`        //Name of who joined
               }
             );
             res.status(201).json({message: 'SUCCESS'});
@@ -545,7 +555,7 @@ app.post('/event/unjoin', (req,res) => {
 });
 
 app.post('/event/delete', (req,res) => {
-  const {evid} = req.body;
+  evid = req.body.evid;
   let deletedEvent;
   let deletedEventAttendees;
   console.log('delete requested for event ' + evid);
@@ -577,7 +587,7 @@ app.post('/event/delete', (req,res) => {
           } else {
             //Notifies the followers of the event
             const followerQuery = `SELECT * FROM friends WHERE destinationfriend = $1`;
-            pool.query(followerQuery, [req.user.data.login], (followerror, followresult) => {
+            pool.query(followerQuery, [req.body.login], (followerror, followresult) => {
               if(followerror){
                 console.log("ERROR IN NESTED(2) PG query: create event")
                 res.status(406).json({error: 'FAILURE'});
@@ -592,7 +602,7 @@ app.post('/event/delete', (req,res) => {
                 socketUpdateEvent(
                   'DELETE',
                   evid,
-                  {login: req.user.data.login},
+                  {login: req.body.login},
                   [...followers,...idList, outerresult.rows[0].userid, outerresult.rows[0].restid] //Array of who to update for
                 );
                 //Notifies the deletion of the event
@@ -731,7 +741,7 @@ app.get('/UserSearch', checkNotAuthenticated, (req,res) =>{
 app.post('/UsrSearch', checkNotAuthenticated,(request,response) =>{
   Svar=request.body.Svar;
   Tvar="%" + Svar + "%";
-  pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
+  pool.query('SELECT * FROM users WHERE (lower(login) LIKE lower($1)) OR (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
     if (error){
       throw error;
     }
