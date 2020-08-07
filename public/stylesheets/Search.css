@@ -1,0 +1,55 @@
+
+.excludenav{
+    animation: fading .5s ease-in;
+    
+   
+}
+@keyframes fading{
+    from {
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}
+
+
+#RestaurantSearchside{
+   
+    position: absolute;
+    top:20%;
+    left:34%;
+    width:450px;
+   
+   
+}
+#UserSearchside{
+    position: absolute;
+    top:20%;
+    left:34%;
+    width:450px;
+   
+}
+
+.buttons{
+    background-color:  rgb(111, 202, 238);
+    border-radius: 9px;
+    color: black;
+    font-size: 16px;
+}
+
+.buttons:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
+#Showingallusers{
+    position: absolute;
+    left: 390px;
+    top: 87px;
+}
+
+#search-rest{
+    position: relative;
+    left: 80px;
+}

@@ -1,21 +1,14 @@
 <!DOCTYPE html>
 <html>
-  <head> </head>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/Restaurantloginpage.css" />
+  </head>
 
   <body style="border: solid black; padding-bottom: 300px;">
-    <div
-      style="
-        font-size: 30px;
-        background-color: black;
-        color: white;
-        padding-top: 13px;
-        padding-left: 25px;
-        padding-bottom: 13px;
-        font-weight: bold;
-      "
-    >
+    <div id="topbar">
       Grababite
     </div>
+    <div id="animatepage">
     <ul>
       <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
       <%=error.msg %> <%});} %>
@@ -35,29 +28,22 @@
             <li><%= messages%></li>
             <% } %>
     </ul>
-    <div
-      style="
-        border: solid black;
-        margin-right: 900px;
-        position: relative;
-        left: 700px;
-        top: 100px;
-        padding: 10px 40px 40px 30px;
-      "
-    >
-      <h3>Restaurant Login</h3>
+    <div id="restaurantlogin">
+      <h3 style="font-family: Arial, Helvetica, sans-serif; font-size: 25px;">Restaurant Login</h3>
       
       <form action="/logrestaurant" method="post">
-        <span> Username:</span>
+        <span style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;"> Username:</span>
         <input
+        style="border: solid lightgrey; font-size: 14px;"
           type="text"
           id="username"
           name="username"
           value="<%= typeof usernameinput != 'undefined' ? usernameinput : '' %>"
           required
-        /><br />
-        <span>Password: </span
+        /><br /><br>
+        <span style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;">Password: </span
         ><input
+        style="border: solid lightgrey; font-size: 14px;"
           type="password"
           id="password"
           name="password"
@@ -66,15 +52,12 @@
         />
         <br />
         <input name="utype" value="REST" style="visibility: hidden;" /><br />
-        <input type="submit" value="Login" />
+        <input id="Loginbutton" type="submit" value="Login" />
       </form>
-      <p>PLEASE ASK GRABABITE IN ORDER TO REGISTER AS RESTAURANT USER</p>
-      <p>FOR TESTING ONLY-> 
-        username: Jam
-        password: password1
-        username: WaterCafe
-        password: password1</p>
+      <p style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;">Please ask Grababite to Register as Restaurant User</p>
+      <p style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;">For Testing Only -> username: Jam password:password1 username:WaterCafe password:password1</p>
     </div>
+  </div>
   </body>
   
 </html>

@@ -2,33 +2,32 @@
 <html>
 <head>
   <%- include ('../partials/header.ejs'), {pageTitle: pageTitle} %>
-
+  <link rel="stylesheet" type="text/css" href="/stylesheets/user.css" />
 </head>
 
-<body>
+<body style="overflow-x: hidden;">
 
     <%- include ('../partials/nav.ejs'), {path: path} %>
 
 <div class="container">
     <a style="float: right;"></a>
-    <p style="font-size: large;">User Profile</p>
-    <h2 style=" border: solid 2pt palevioletred; text-align: center; border-radius: 25;font-size: x-large;"><%=row.login%></h2>
+    <p style="font-size: x-large; font-weight: bold; font-size: 30px;">User Profile</p>
+    <h2 style=" border: solid 2pt black; text-align: center; border-radius: 25;font-size: x-large;"><%=row.login%></h2>
     <body>
       <title><%=row.login%>Page</title>
       <% if( user.type === 'USER'){ %>
-        <table>
+        <table >
           <tr>
-            <form action="/following" method="post">
-              <button type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right;"> FOLLOWING </button>
-            </form>
-            <form action="/followers" method="post">
-              <button type="submit" name="uid" value="<%=row.attributes.login%>"style="float: right;"> FOLLOWER </button>
+            <form   action="/following" method="post">
+              <button id="followingbutton" type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right; position: relative; bottom:55px;"> Following </button>
+            </form> 
+            <form   action="/followers" method="post">
+              <button id="followersbutton" type="submit" name="uid" value="<%=row.attributes.login%>" style="float: right; position: relative; bottom:55px;"> Followers </button>
             </form>
           </tr>
         </table>
 
         <% if (user.data.login===row.attributes.login){%>
-
                     <h4 class="detail-title">User Details</h4>
                     <p class="detail-text">
                       <h1> <%=row.attributes.firstname%> <%=row.attributes.lastname%> </h1>
@@ -36,26 +35,26 @@
                       <p> <%=row.attributes.description%> </p>
                     </p>
                     <button onclick = "location.href='/update'" style="cursor:pointer;"> UPDATE </button>
-
-
       <% } else {  %>
+        <div id="followform">
           <h1> <%=row.attributes.firstname%> <%=row.attributes.lastname%> </h1>
           <h3> @<%=row.attributes.login%>📍<%=row.attributes.city%>  </h3>
-          <p> <%=row.attributes.description%> </p>
+          <br>
+          <p style="font-size: 17px; "> <%=row.attributes.description%> </p>
 
             <% if (user.type === 'USER' && !friend.includes(user.data.login)){ %>
               <form action="/user/follow" method="post">
                 <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
-                <button type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
+                <button  class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
               </form>
 
             <% } else if(user.type === 'USER') {  %>
             <form action="/user/unfollow" method="post">
               <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
-              <button type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
+              <button  class="buttons" type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
             </form>
             <% } %>
-
+        </div>  
         <% } %>
     <% } %>
 </div>

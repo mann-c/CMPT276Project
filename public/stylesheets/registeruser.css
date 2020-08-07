@@ -1,0 +1,52 @@
+#headtitle{
+    
+    font-size: 30px;
+    background-color: black;
+    color: white;
+    padding-top: 13px;
+    padding-left: 25px;
+    padding-bottom: 13px;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+  
+}
+
+#userform{
+   border: solid black;
+    width: 500px;
+    padding: 30px;
+    padding-left: 200px;
+    position: absolute;
+    left: 22%;
+    
+    
+
+}
+
+#submitbutton{
+    background-color: rgb(111, 202, 238);
+    font-size: 18px;
+    border-radius: 9px;
+    color: black;
+    position: relative;
+    left: 53px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+#submitbutton:hover{
+    cursor:pointer;
+    background-color: rgb(169, 222, 243);
+}
+
+#animatepage{
+    animation: fading .5s ease-in;
+}
+@keyframes fading{
+    from {
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+}

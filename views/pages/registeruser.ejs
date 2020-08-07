@@ -1,34 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head> </head>
+  <head> 
+    <link rel="stylesheet" type="text/css" href="/stylesheets/registeruser.css" />
+  </head>
 
-  <body style="border: solid black; padding-bottom: 300px;">
+  <body style="border: solid black; padding-bottom: 600px; overflow-x: hidden;">
     <div class="container">
-      <div
-        style="
-          font-size: 30px;
-          background-color: black;
-          color: white;
-          padding-top: 13px;
-          padding-left: 25px;
-          padding-bottom: 13px;
-          font-weight: bold;
-        "
-      >
+      <div id="headtitle">
         Grababite
       </div>
-
+      <div id="animatepage">
       <ul>
         <%if (typeof errors != "undefined"){ errors.forEach(function(error){ %>
         <%=error.msg %> <%});} %>
       </ul>
 
       <div style="position: relative; left: 50px;">
-        <h2>User Profile Creation</h2>
+        <h2 style="position: relative; left: 38%; font-family: Arial, Helvetica, sans-serif; font-size: 25px;">User Profile Creation</h2>
 
-        <div style="border: solid black; margin-right: 600px; padding: 30px;">
+        <div  id="userform">
           <form name="adduser" action="reguser" method="post">
-            <span style="font-size: 20px;">Enter Username:</span>
+            <span style="font-family: Arial, Helvetica, sans-serif; font-size: 18px;">Enter Username:</span>
             <input
               type="text"
               id="username"
@@ -36,10 +28,10 @@
               value="<%= typeof username != 'undefined' ? username : '' %>"
               maxlength="12"
               required
-              style="border: solid grey;"
+              style="border: solid lightgrey; font-size: 14px;"
             /><br />
             <p id="iderr" style="color: red;"></p>
-            <span style="font-size: 20px;"> Enter First name:</span
+            <span style=" font-family: Arial, Helvetica, sans-serif; font-size: 18px;"> Enter First name:</span
             ><input
               type="text"
               id="first_name"
@@ -47,10 +39,10 @@
               value="<%= typeof first_name != 'undefined' ? first_name : '' %>"
               maxlength="12"
               required
-              style="border: solid grey;"
+              style="border: solid lightgrey; font-size: 14px;"
             /><br />
             <p id="nameerr" style="color: red;"></p>
-            <span style="font-size: 20px;"> Enter Last Name:</span>
+            <span style=" font-family: Arial, Helvetica, sans-serif; font-size: 18px;"> Enter Last Name:</span>
             <input
               type="text"
               id="last_name"
@@ -58,10 +50,10 @@
               value="<%= typeof last_name != 'undefined' ? last_name : '' %>"
               maxlength="12"
               required
-              style="border: solid grey;"
+              style="border: solid lightgrey; font-size: 14px;"
             /><br />
             <p id="cityerr" style="color: red;"></p>
-            <span style="font-size: 20px;"> Enter City:</span>
+            <span style=" font-family: Arial, Helvetica, sans-serif; font-size: 18px;"> Enter City:</span>
             <input
               type="text"
               id="city"
@@ -69,11 +61,95 @@
               maxlength="12"
               required
               value="<%= typeof city != 'undefined' ? city : '' %>"
-              style="border: solid grey;"
+              style="border: solid lightgrey; font-size: 14px;"
             /><br />
+
+            <p id="preferenceser" style="color: red;"></p>
+            <label for="preferences">Choose a Preferences:</label>
+            <select id="preferences" name="preferences">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="canadian">Canadian</option>
+            <option value="french">French</option>
+            <option value="korean">Korean</option>
+            <option value="indian">Indian</option>
+            <option value="mexican">Mexican</option>
+            <option value="italian">Italian</option>
+            <option value="bars">Bars</option>
+            <option value="lounges">Lounges</option>
+            <option value="seafood">seafood</option>
+            <option value="japanese">japanese</option>
+            <option value="sushi">sushi</option>
+            <option value="coffee">coffee</option>
+            <option value="cafes">cafes</option>
+            <option value="noodles">noodles</option>
+            <option value="ramen">ramen</option>
+            <option value="tapas">tapas</option>
+            <option value="comfortfood">comfortfood</option>
+            <option value="tapasmallplates">tapasmallplates</option>
+            <option value="belgian">belgian</option>
+            </select> <br/>
+
+
+            <p id="preferenceser2" style="color: red;"></p>
+            <label for="preferences2">Choose a Preferences:</label>
+            <select id="preferences2" name="preferences2">
+              <option value="lunch">Lunch</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="dinner">Dinner</option>
+              <option value="canadian">Canadian</option>
+              <option value="french">French</option>
+              <option value="korean">Korean</option>
+              <option value="indian">Indian</option>
+              <option value="mexican">Mexican</option>
+              <option value="italian">Italian</option>
+              <option value="bars">Bars</option>
+              <option value="lounges">Lounges</option>
+              <option value="seafood">seafood</option>
+              <option value="japanese">japanese</option>
+              <option value="sushi">sushi</option>
+              <option value="coffee">coffee</option>
+              <option value="cafes">cafes</option>
+              <option value="noodles">noodles</option>
+              <option value="ramen">ramen</option>
+              <option value="tapas">tapas</option>
+              <option value="comfortfood">comfortfood</option>
+              <option value="tapasmallplates">tapasmallplates</option>
+              <option value="belgian">belgian</option>
+            </select> <br/>
+
+            <p id="preferenceser3" style="color: red;"></p>
+            <label for="preferences3">Choose a Preferences:</label>
+            <select id="preferences3" name="preferences3">
+              <option value="dinner">Dinner</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="canadian">Canadian</option>
+              <option value="french">French</option>
+              <option value="korean">Korean</option>
+              <option value="indian">Indian</option>
+              <option value="mexican">Mexican</option>
+              <option value="italian">Italian</option>
+              <option value="bars">Bars</option>
+              <option value="lounges">Lounges</option>
+              <option value="seafood">seafood</option>
+              <option value="japanese">japanese</option>
+              <option value="sushi">sushi</option>
+              <option value="coffee">coffee</option>
+              <option value="cafes">cafes</option>
+              <option value="noodles">noodles</option>
+              <option value="ramen">ramen</option>
+              <option value="tapas">tapas</option>
+              <option value="comfortfood">comfortfood</option>
+              <option value="tapasmallplates">tapasmallplates</option>
+              <option value="belgian">belgian</option>
+            
+            </select> <br/>
+
             <p id="passerr" style="color: red;"></p>
 
-            <span style="font-size: 20px;"> Enter Password:</span>
+            <span style=" font-family: Arial, Helvetica, sans-serif; font-size: 18px;"> Enter Password:</span>
             <input
               type="password"
               id="password"
@@ -81,20 +157,16 @@
               maxlength="12"
               required
               value="<%= typeof password != 'undefined' ? password : '' %>"
-              style="border: solid grey;"
+              style="border: solid lightgrey; font-size: 14px;"
             /><br />
-            <input type="submit" value="CREATE USER PROFILE" />
+            <br><br>
+            <input id="submitbutton" type="submit" value="Create User Profile" />
           </form>
           <p id="Errormsg"></p>
         </div>
       </div>
+      </div>
     </div>
 
-    <style media="screen">
-      #subbut:hover {
-        cursor: pointer;
-        background-color: lightgray;
-      }
-    </style>
   </body>
 </html>
