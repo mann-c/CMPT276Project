@@ -477,8 +477,8 @@ app.post('/event/join', (req,res) => {
               'JOIN',
               result.rows[0],                                                       //All event info
               {
-                login: req.user.data.login,                                         //Login of who joined
-                name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+                login: req.body.login,                                         //Login of who joined
+                name: `${req.body.firstname} ${req.body.lastname}`        //Name of who joined
               }
             );
             res.status(201).json({message: 'SUCCESS'});
@@ -532,8 +532,8 @@ app.post('/event/unjoin', (req,res) => {
               'UNJOIN',
               result.rows[0],                                                       //All event info
               {
-                login: req.user.data.login,                                         //Login of who joined
-                name: `${req.user.data.firstname} ${req.user.data.lastname}`        //Name of who joined
+                login: req.body.login,                                         //Login of who joined
+                name: `${req.body.firstname} ${req.body.lastname}`        //Name of who joined
               }
             );
             res.status(201).json({message: 'SUCCESS'});
@@ -545,7 +545,7 @@ app.post('/event/unjoin', (req,res) => {
 });
 
 app.post('/event/delete', (req,res) => {
-  const {evid} = req.body;
+  evid = req.body.evid;
   let deletedEvent;
   let deletedEventAttendees;
   console.log('delete requested for event ' + evid);
@@ -577,7 +577,7 @@ app.post('/event/delete', (req,res) => {
           } else {
             //Notifies the followers of the event
             const followerQuery = `SELECT * FROM friends WHERE destinationfriend = $1`;
-            pool.query(followerQuery, [req.user.data.login], (followerror, followresult) => {
+            pool.query(followerQuery, [req.body.login], (followerror, followresult) => {
               if(followerror){
                 console.log("ERROR IN NESTED(2) PG query: create event")
                 res.status(406).json({error: 'FAILURE'});
@@ -592,7 +592,7 @@ app.post('/event/delete', (req,res) => {
                 socketUpdateEvent(
                   'DELETE',
                   evid,
-                  {login: req.user.data.login},
+                  {login: req.body.login},
                   [...followers,...idList, outerresult.rows[0].userid, outerresult.rows[0].restid] //Array of who to update for
                 );
                 //Notifies the deletion of the event
@@ -731,7 +731,7 @@ app.get('/UserSearch', checkNotAuthenticated, (req,res) =>{
 app.post('/UsrSearch', checkNotAuthenticated,(request,response) =>{
   Svar=request.body.Svar;
   Tvar="%" + Svar + "%";
-  pool.query('SELECT * FROM users WHERE (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
+  pool.query('SELECT * FROM users WHERE (lower(login) LIKE lower($1)) OR (lower(firstName) LIKE lower($1)) OR (lower(lastName) LIKE lower($1)) OR (lower(city) LIKE lower($1)) OR (lower(description) LIKE lower($1))',[Tvar],(error,results) =>{
     if (error){
       throw error;
     }
