@@ -1,1 +1,27 @@
 /*For global styling*/
+
+.longtext{
+    display: inline;
+}
+
+.popover-body{
+    overflow-y: auto;
+    max-height: 40vh;
+}
+.notification-list{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    }
+    .notification-list-item{
+        display: flex;
+        margin: 0;
+        padding: 0;
+        flex-direction: row;
+    }
+@media only screen and (max-width: 720px) {
+
+.longtext{
+    display: none;
+}
+}

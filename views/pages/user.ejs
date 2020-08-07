@@ -45,11 +45,13 @@
 
             <% if (user.type === 'USER' && !friend.includes(user.data.login)){ %>
               <form action="/user/follow" method="post">
+                <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
                 <button type="submit" name="uid" value="<%=row.attributes.login%>"> FOLLOW </button>
               </form>
 
             <% } else if(user.type === 'USER') {  %>
             <form action="/user/unfollow" method="post">
+              <input name="login" value="<%= user.data.login%>" style="visibility: hidden;" />
               <button type="submit" name="uid" value="<%=row.attributes.login%>"> UNFOLLOW </button>
             </form>
             <% } %>

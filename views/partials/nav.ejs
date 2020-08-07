@@ -1,54 +1,148 @@
-<nav class="navbar navbar-default navbar-static-top navbar-inverse">
-  <div class="container">
-    <a class="navbar-brand" href="/feed">Grababite</a>
-    <ul class="nav navbar-nav mr-auto">
-    <% if(user.type=='USER'){ %>
-      <li class="<%= path===`/user/${user.data.login}` ? 'active' : '' %>">
-        <a href="/user/<%=user.data.login%>">
-          Profile
-        </a>
-      </li>
-    <% } else { %>
-      <li class="<%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
-        <a href="/restaurant/<%=user.data.id%>">
-          Profile
-        </a>
-      </li>
-    <% } %>
-      <li class="nav-link <%= path === '/feed' ? 'active' : '' %>">
-        <a href="/feed">
-          <span class="glyphicon glyphicon-home"></span>
+<nav class="navbar navbar-expand-md sticky-top navbar-dark bg-dark">
+  <a class="navbar-brand" href="/feed">Grababite</a>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarLinks" aria-controls="navbarLinks" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarLinks">
+    <ul class="navbar-nav">
+      <% if(user.type=='USER'){ %>
+        <li class="nav-item <%= path===`/user/${user.data.login}` ? 'active' : '' %>">
+          <a href="/user/<%=user.data.login%>" title="Your profile" class="nav-link">
+            Profile
+          </a>
+        </li>
+      <% } else { %>
+        <li class="nav-item <%= path===`/restaurant/${user.data.id}` ? 'active' : '' %>">
+          <a href="/restaurant/<%=user.data.id%>" title="Your profile" class="nav-link">
+            Profile
+          </a>
+        </li>
+      <% } %>
+      <li class="nav-item <%= path === '/feed' ? 'active' : '' %>">
+        <a href="/feed" class="nav-link" title="Your feed of events">
+          <span class="glyphicon glyphicon-home"></span> 
           Feed
         </a>
       </li>
-      <!-- <li class="<%= path === '/RestaurantSearch' ? 'active' : '' %>">
-        <a href="/RestaurantSearch">
-          <span class="glyphicon glyphicon-home"></span>
-          Restaurant List
-        </a>
-      </li> -->
-
-      <li class="<%= path === '/Search' ? 'active' : '' %>">
-        <a href="/Search">
-          <span class="glyphicon glyphicon-home"></span>
-          User/Restaurant Search
+    <% if(user.type == "USER") { %>
+      <li class="nav-item <%= path === '/RestaurantSearch' ? 'active' : '' %>"> 
+        <a href="/RestaurantSearch" class="nav-link" title="Search for restaurants">
+          Restaurants
         </a>
       </li>
-      <li class="<%= path === '/chat/:name' ? 'active' : '' %>">
-        <a href="/chat/<%=user.data.login%>">
-          <span class="glyphicon glyphicon-home"></span>
-          Chat
+      
+      <li class="nav-item <%= path === '/UserSearch' ? 'active' : '' %>"> 
+        <a href="/UserSearch" class="nav-link" title="Search for users">
+          Users
         </a>
       </li>
 
-
-    </ul>
-    <ul class="nav navbar-nav navbar-right">
-      <li class="navbar-right">
-        <a href="/logout"
-          ><span class="glyphicon glyphicon-book"></span> Logout</a
-        >
+      <li class="nav-item <%= path === '/explore' ? 'active' : '' %>"> 
+        <a href="/explore"class="nav-link" title="Explore events by map">
+          Explore!
+        </a>
       </li>
+    <% } %>
     </ul>
   </div>
+  <div class="row flex-nowrap">
+      <a id="navpop" role="button" class="btn btn-secondary nav-link text-light col ml-2" data-container="nav" data-toggle="popover" data-placement="bottom" title="Toggle notifications">
+        <span class="longtext">Notifications </span>🔔
+      </a>
+      <a href="/logout" role="button" class="col nav-link btn btn-danger ml-2 mr-2" title="Log out of Grababite">
+        <span class="glyphicon glyphicon-book"></span>Logout
+      </a>
+  </div>
+
+  <div id="notification-div" class="container-sm mh-50 overflow-auto" style="display:none; background: #000;">
+    Nothing to see here
+  </div>
+  <script>
+    $("#navpop").popover({
+      'container': 'body',
+      'title' : 'Notifications', 
+      'html' : true,
+      'placement' : 'bottom',
+      'content' : $('#notification-div').html()
+    });
+  </script>
 </nav>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io.connect();
+  //Socket init
+  socket.emit('subscribe', '<%= user.type=="USER"? user.data.login: user.data.id %>');
+
+  socket.on('testing', (msg) => {
+      console.log(msg);
+  });
+
+  //Add event 
+  socket.on('pushevent', (eventData) => { //We need eventid, user details
+    //Create element
+    pushNotification(eventData.userid, " created a new event at ", eventData);
+  });
+  //Remove event
+  socket.on('popevent', (eventData) => { //We need eventid, user details
+    pushNotification(eventData.userid, " removed their event at ", eventData);   
+  });
+
+  socket.on('updateattendance', (type, eventData, userData) => {
+      switch(type) {    //apologies for my hackiness
+          case 'JOIN':
+            console.log(eventData);
+              pushNotification(userData.login, " is coming to your event at ", eventData);
+              break;
+          case 'UNJOIN':
+              pushNotification(userData.login, " is no longer coming to ", eventData);
+              break;       
+      }
+  })
+  pushNotification = (actor, action, subject) =>{
+    let notificationItem = $('<li>');
+      notificationItem.addClass('notification-list-item');
+    let notificationBody = $('<p>');
+      notificationBody.addClass('notification-list body')
+    let notificationActor = $('<b>');
+      notificationActor.addClass('notification-list-title');
+      notificationActor.text(actor)
+    let notificationText = $('<span>');
+      notificationText.addClass('notification-list-text');
+      notificationText.text(action)
+    let notificationSubject = $('<a>');
+      notificationSubject.addClass('notification-list-event');
+      console.log("pushNotification >>",Object.keys(subject), subject.name);
+      notificationSubject.text(`${subject.name}`);
+      notificationSubject.attr('href', `/feed#${subject.eventid}`);
+      if("<%= path%>" === "/feed")
+        notificationSubject.attr('onclick', `refreshPage(${subject.eventid})`)
+    notificationBody.append(notificationActor, notificationText, notificationSubject);
+    notificationItem.append(notificationBody);
+    //Add to list
+    if($('#notification-div').children().length>0){
+      //console.log("Creating another event")
+      let notificationList = $('#notification-div').children('.notification-list');
+      notificationList.prepend(notificationItem);
+    } else {
+      console.log($('#notification-div').html())
+      console.log($('#notification-div').children())
+
+      //console.log("Creating first event ever");
+      let notificationList = $('<ul>').addClass('notification-list');
+      notificationList.append(notificationItem);
+      $('#notification-div').empty().append(notificationList);
+    }
+    //Remove, replace and show popover
+    $("#navpop").popover('dispose');
+    $("#navpop").popover({
+      'title' : 'Notifications', 
+      'html' : true,
+      'placement' : 'bottom',
+      'content' : $('#notification-div').html()
+    });
+    $("#navpop").popover('show');
+    console.log($('#notification-div').children())
+  }
+</script>
