@@ -4,6 +4,10 @@
     display: inline;
 }
 
+.popover-body{
+    overflow-y: auto;
+    max-height: 40vh;
+}
 .notification-list{
     margin: 0;
     padding: 0;
