@@ -36,7 +36,7 @@
                         attendanceList = document.getElementById(`${eventID}-attendance-list`);
                     }
                     let newAttender = document.createElement('li');
-                    newAttender.innerText = userData.login;
+                        newAttender.innerHTML = `<a href="/user/${userData.login}">@${userData.login}</a>`;
                     attendanceList.appendChild(newAttender);
                     break;
                 case 'UNJOIN':
@@ -70,7 +70,7 @@
                         let children = ujattendanceList.childNodes;
                         let toRemove;
                         children.forEach(function(child){
-                            if(child.innerText==userData.login){
+                            if(child.innerHTML==`<a href="/user/${userData.login}">@${userData.login}</a>`){
                                 toRemove = child;
                             }
                         });
@@ -176,7 +176,13 @@
             </div>
             <hr>
         <% } %>
-        <h2>Events that might interest you</h2>
+        <h2>
+            <% if (user.type === 'USER') { %>
+                Events that might interest you
+            <% } else { %>
+                Upcoming events at your restaurant
+            <% } %>
+        </h2>
         <% for (let event of events) { %>
             <% if (user.type==='USER' && event.login!==user.data.login && !event.attendees.includes(user.data.login)) { %>
                 <%- include ('./feeditem.ejs', {event, user}) %>
