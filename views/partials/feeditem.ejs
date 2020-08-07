@@ -16,7 +16,7 @@
         </span>
     </p>
     <p class="event-restaurant">
-        Eating at <b><%= event.name %></b> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
+        Eating at <a href="/restaurant/<%= event.id%>"><b><%= event.name %></b></a> 📍<%= event.city %> at <b><%= event.starttime.substring(0,5) %></b>
     </p>
     <% if(user.type === 'USER' && event.login!==user.data.login) { %>
         <% if(!event.attendees.includes(user.data.login)) { %>
